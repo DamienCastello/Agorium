@@ -35,7 +35,7 @@ nodemon # Start server
 ```
 Now you are ready to use this backend project
 
-# App web React
+# App web Vue3
 *requirements :*
 - node >= 20.15.0
 - npm >= 10.7.0
