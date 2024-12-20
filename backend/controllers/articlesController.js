@@ -1,5 +1,8 @@
 const models = require('../models');
 const Article = models.Article;
+const multer = require("multer");
+
+const upload = multer({ dest: "uploads/" });
 
 module.exports = {
     index: function(req, res, next) {
@@ -23,16 +26,26 @@ module.exports = {
             res.status(500).json({ error });
         });
     },
-    create: function(req, res, next) {
+    create: function (req, res, next) {
+        upload.single("image");
+        const { title, description, urlYoutube, userId } = req.body;
+
+        const imagePath = req.file ? req.file.path : null;
+
         Article.create({
-            title: req.body.title,
-            description: req.body.description,
-            image: req.body.image ?? null,
-            urlYoutube: req.body.urlYoutube ?? null,
-            userId: req.body.userId
+        title: title,
+        description: description,
+        image: imagePath,
+        urlYoutube: urlYoutube || null,
+        userId: userId,
         })
-            .then((article) => { res.json({ article }); })
-            .catch((error) => { res.status(500).json({error}) })
+        .then((article) => {
+            res.json({ article });
+        })
+        .catch((error) => {
+            console.error("Error creating article:", error);
+            res.status(500).json({ error });
+        });
     },
     update: function (req, res, next) {
         const user = req.user; // user signed with JWT
@@ -86,8 +99,7 @@ module.exports = {
                 console.error(error);
                 res.status(500).json({ error: "An error occurred while fetching the article" });
             });
-    },
-    
+    },    
     delete: function(req, res, next) {
         Article.findByPk(req.params.id)
             .then((article) => { 
