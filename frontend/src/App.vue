@@ -4,7 +4,7 @@
       <Navbar />
     </template>
     <template #main>
-      <Articles />
+      <RouterView />
     </template>
     <template #footer>
       <Footer></Footer>
@@ -16,7 +16,6 @@
 import Layout from "./components/Layout.vue";
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
-import Articles from "./components/Articles.vue";
 </script>
 
 <style scoped>
