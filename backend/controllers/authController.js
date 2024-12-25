@@ -1,83 +1,82 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models').User;
 const bcrypt = require('bcrypt');
+require('dotenv').config();
 
-const requestIP = require('request-ip');
-
+const secretKey = process.env.JWT_SECRET;
 
 //////////////////////////////
 // WORK IN PROGRESS ON LOGIN
 //////////////////////////////
 module.exports = {
-    signInUser: async function (req, res, next) {
-        await User.findOne({ where: { email: req.body.email } })
-            .then((user) => {
-                if (user === null) {
-                    console.log('Not found!');
-                } else {
-                    bcrypt.compare(req.body.password, user.password, function (error, response) {
-                        if (error) {
-                            // handle error
-                            console.log("error on compare:", error)
-                        }
-                        if (response !== true) {
-                           console.log('Bad Password!');
-                           return res.status(400).json({ success: false, message: 'password doesn\'t match' });
-                        }
-                        if (response) {
-                            //Signin jwt with your SECRET key 
-                            const token = jwt.sign(user.dataValues, 'wakeup_secret');
-                            //Return user and token in json response 
-
-                            res.json({ user, token });
-                        } else {
-                            // response is OutgoingMessage object that server response http request
-                            return res.json({ success: false, message: 'password doesn\'t match' });
-                        }
-                    });
-                }
-            })
-            .catch((err) => { console.log("error on findUser", err, err.message) })
-
+    signIn: async function (req, res, next) {
+        if (!req.body.email || !req.body.password) {
+            return res.status(400).json({ message: 'Email & password required.' });
+        }
+    
+        try {
+            const user = await User.findOne({ where: { email: req.body.email } });
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+    
+            const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({ success: false, message: 'Invalid password' });
+            }
+    
+            const userData = {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                avatar: user.avatar,
+                isAdmin: user.isAdmin,
+            };
+    
+            const token = jwt.sign(userData, secretKey, { expiresIn: '1d' });
+            return res.json({ user: userData, token });
+        } catch (error) {
+            console.error("Erreur lors de la connexion :", error);
+            return res.status(500).json({ message: "Erreur interne du serveur." });
+        }
     },
-    signUpUser: function (req, res, next) {
-        const ipAddress = requestIP.getClientIp(req);
-
-        const saltRounds = 10;
-        bcrypt.genSalt(saltRounds, function(err, salt) {
-            bcrypt.hash(req.body.password, salt, function(err, hash) {
-                console.log("check file", req.file ? `${ipAddress}/${req.file.path}` : null)
-        User.create({
-            email: req.body.email,
-            password: hash,
-            name: req.body.name,
-            avatar: req.file ? `${ipAddress}/${req.file.path}` : null,
-            isAdmin: false
-        })
-            .then((newUser) => {
-                const userDatas = {
-                    id: newUser.id,
-                    email: newUser.email,
-                    password: newUser.password,
-                    name: newUser.name,
-                    avatar: newUser.avatar,
-                    isAdmin: newUser.isAdmin,
-                };
-
-                //TODO: NOTIF mailer
-                const token = jwt.sign(userDatas, 'wakeup_secret');
-                /* Return user and token in json response */
-                res.json({ user: userDatas, token });
-            })
-            .catch((error) => {
-                console.log(error.message);
-                res.status(500).json({ message: error.message, error });
+    signUp: async function (req, res, next) {
+        if (!req.body.email || !req.body.password) {
+            return res.status(400).json({ message: 'Email & password are required.' });
+        }
+    
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(req.body.email)) {
+            return res.status(400).json({ message: 'Invalid email format.' });
+        }
+    
+        try {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    
+            const newUser = await User.create({
+                email: req.body.email,
+                password: hashedPassword,
+                name: req.body.email.split('@')[0],
+                avatar: req.file ? `${req.file.path}` : null,
+                isAdmin: false
             });
-            });
-        });
-        
-        
-    },
+    
+            const userData = {
+                id: newUser.id,
+                email: newUser.email,
+                name: newUser.name,
+                avatar: newUser.avatar,
+                isAdmin: newUser.isAdmin,
+            };
+    
+            const token = jwt.sign(userData, secretKey, { expiresIn: '1d' });
+            return res.json({ user: userData, token });
+        } catch (error) {
+            console.error("Erreur lors de la création de l'utilisateur :", error);
+            return res.status(500).json({ message: "Erreur interne du serveur.", error });
+        }
+    }
 
 
 

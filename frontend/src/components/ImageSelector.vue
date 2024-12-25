@@ -1,9 +1,9 @@
 <template>
     <fieldset>
-      <label for="image">Upload une image:</label>
+      <label for="preview">Upload une image:</label>
       <input
         type="file"
-        id="image"
+        id="preview"
         @change="handleFileUpload"
         accept="image/*"
       />
@@ -24,7 +24,7 @@
   import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 
   const props = defineProps(["imagePreview"]);
-  const emit = defineEmits(["update:selectedFile", , "update:imagePreview"]);
+  const emit = defineEmits(["update:selectedFile", "update:imagePreview"]);
   
   const handleFileUpload = (event) => {
     const file = event.target.files[0];

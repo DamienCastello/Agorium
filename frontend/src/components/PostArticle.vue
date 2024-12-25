@@ -53,10 +53,12 @@
 <script setup>
 import axios from "axios";
 import { ref, computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
 import url from "@/utils/url";
 import UrlYoutubeFieldset from "./UrlYoutubeFieldset.vue";
 import ImageSelector from "./ImageSelector.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
+import { useRouter } from "vue-router";
 
 const lorem =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -66,11 +68,15 @@ const form = ref({
   title: "",
   description: "",
 });
+
+const authStore = useAuthStore();
+const router = useRouter()
+
 const withVideo = ref(true);
 const selectedFile = ref(null);
 const imagePreview = ref(null);
 
-// Toggle between video and image
+// Toggle between video and preview
 const toggleWithVideo = () => {
   withVideo.value = !withVideo.value;
 };
@@ -89,7 +95,6 @@ const updateImagePreview = (preview) => {
   imagePreview.value = preview;
 };
 
-// Submit form
 const handleSubmit = () => {
   if (!selectedFile.value && !withVideo.value) {
     alert("Please select an image or include a YouTube URL!");
@@ -99,8 +104,9 @@ const handleSubmit = () => {
   const formData = new FormData();
   formData.append("title", form.value.title);
   formData.append("description", form.value.description);
-  if (!withVideo.value) formData.append("image", selectedFile.value);
-  // TODO: set formData append userId connected
+  if (!withVideo.value) formData.append("preview", selectedFile.value);
+  else formData.append("urlYoutube", form.value.urlYoutube);
+  formData.append('userId', authStore.user.id);
 
   axios
     .post(`${url.baseUrl}:${url.portBack}/api/v1/articles/`, formData, {
@@ -110,6 +116,7 @@ const handleSubmit = () => {
     })
     .then((response) => {
       console.log("Article successfully created:", response.data);
+      router.push('/articles');
     })
     .catch((error) => {
       console.error("Error creating article:", error);

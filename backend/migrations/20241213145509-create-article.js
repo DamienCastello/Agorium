@@ -13,17 +13,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         validate: {
-          len: [3, 20]
+          len: [3, 50]
         }
       },
       description: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        validate: {
-          len: [3, 20]
-        }
+        type: Sequelize.TEXT('medium'),
+        allowNull: false
       },
-      image: {
+      preview: {
         type: Sequelize.STRING,
         allowNull: true
       },

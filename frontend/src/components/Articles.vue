@@ -5,10 +5,8 @@
     </div>
     <div class="aria-busy-container" :aria-busy="state === 'loading'">
       <div v-for="(article, index) in articles" :key="index">
-        <h1>{{ article.title }}</h1>
-        <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
-        <p>{{ article.description }}</p>
-        <hr />
+        <VideoArticle v-if="article.urlYoutube" :article="article" />
+        <PreviewArticle v-if="article.preview" :article="article" />
       </div>
     </div>
   </div>
@@ -18,8 +16,8 @@
 import axios from "axios";
 import { onMounted, ref } from "vue";
 import url from "../utils/url";
-import extractYoutubeUrl from "../utils/extractYoutubeUrl";
-import Player from "./Player.vue";
+import VideoArticle from "./VideoArticle.vue";
+import PreviewArticle from "./PreviewArticle.vue";
 
 const articles = ref(null);
 const state = ref("loading");
@@ -35,7 +33,6 @@ onMounted(() => {
     .then((response) => {
       articles.value = response.data.articles;
       state.value = "idle";
-      console.log("check : ", articles);
     })
     .catch((error) => {
       console.log("error : ", error);
