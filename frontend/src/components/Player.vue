@@ -14,8 +14,6 @@
   const { videoId } = defineProps({
     videoId: String
   })
-
-  console.log("check prop : ", videoId)
   </script>
 
 <style scoped>

@@ -23,16 +23,35 @@ module.exports = {
             res.status(500).json({ error });
         });
     },
-    create: function(req, res, next) {
+    create: function (req, res, next) {
+        const { title, description, urlYoutube } = req.body;
+
+        if (!title || !description) {
+            return res.status(400).json({ error: "Title and description are required" });
+          }
+    
+        const userId = req.user.id;
+
+        const imagePath = req.file ? req.file.path : null;
+
+        if (!userId) {
+            return res.status(400).json({ error: "UserId is required" });
+        }
+    
         Article.create({
-            title: req.body.title,
-            description: req.body.description,
-            image: req.body.image ?? null,
-            urlYoutube: req.body.urlYoutube ?? null,
-            userId: req.body.userId
+            title: title,
+            description: description,
+            preview: imagePath,
+            urlYoutube: urlYoutube || null,
+            userId: userId,
         })
-            .then((article) => { res.json({ article }); })
-            .catch((error) => { res.status(500).json({error}) })
+        .then((article) => {
+            res.json({ article });
+        })
+        .catch((error) => {
+            console.error("Error creating article:", error);
+            res.status(500).json({ error });
+        });
     },
     update: function (req, res, next) {
         const user = req.user; // user signed with JWT
@@ -53,7 +72,7 @@ module.exports = {
                     article.update({
                         title: req.body.title || article.title,
                         description: req.body.description || article.description,
-                        image: req.body.image || article.image,
+                        preview: req.body.preview || article.preview,
                         urlYoutube: req.body.urlYoutube || article.urlYoutube,
                     })
                         .then((updatedArticle) => {
@@ -86,8 +105,7 @@ module.exports = {
                 console.error(error);
                 res.status(500).json({ error: "An error occurred while fetching the article" });
             });
-    },
-    
+    },    
     delete: function(req, res, next) {
         Article.findByPk(req.params.id)
             .then((article) => { 

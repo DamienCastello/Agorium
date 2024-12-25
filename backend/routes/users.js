@@ -3,18 +3,18 @@ var router = express.Router();
 
 const usersController = require('../controllers/usersController')
 
-const { isAdmin } = require('../middlewares/auth');
-const passport = require('passport');
+const { isAdmin } = require('../middlewares/admin');
+const { authenticateJwt } = require('../middlewares/auth');
 
 /* GET resources listing. */
-router.get('/', passport.authenticate('jwt', { session: false }), usersController.index);
+router.get('/', authenticateJwt, usersController.index);
 //show
-router.get('/:id', passport.authenticate('jwt', { session: false }), usersController.show);
+router.get('/:id', authenticateJwt, usersController.show);
 //create
-router.post('/', passport.authenticate('jwt', { session: false }), isAdmin, usersController.create);
+router.post('/', authenticateJwt, isAdmin, usersController.create);
 //update
-router.put('/:id', passport.authenticate('jwt', { session: false }), isAdmin, usersController.update);
+router.put('/:id', authenticateJwt, isAdmin, usersController.update);
 //delete
-router.delete('/:id', passport.authenticate('jwt', { session: false }), isAdmin, usersController.delete);
+router.delete('/:id', authenticateJwt, isAdmin, usersController.delete);
 
 module.exports = router;
