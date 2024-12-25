@@ -1,8 +1,5 @@
 const models = require('../models');
 const Article = models.Article;
-const multer = require("multer");
-
-const upload = multer({ dest: "uploads/" });
 
 module.exports = {
     index: function(req, res, next) {
@@ -27,17 +24,26 @@ module.exports = {
         });
     },
     create: function (req, res, next) {
-        upload.single("image");
-        const { title, description, urlYoutube, userId } = req.body;
+        const { title, description, urlYoutube } = req.body;
+
+        if (!title || !description) {
+            return res.status(400).json({ error: "Title and description are required" });
+          }
+    
+        const userId = req.user.id;
 
         const imagePath = req.file ? req.file.path : null;
 
+        if (!userId) {
+            return res.status(400).json({ error: "UserId is required" });
+        }
+    
         Article.create({
-        title: title,
-        description: description,
-        image: imagePath,
-        urlYoutube: urlYoutube || null,
-        userId: userId,
+            title: title,
+            description: description,
+            preview: imagePath,
+            urlYoutube: urlYoutube || null,
+            userId: userId,
         })
         .then((article) => {
             res.json({ article });
@@ -66,7 +72,7 @@ module.exports = {
                     article.update({
                         title: req.body.title || article.title,
                         description: req.body.description || article.description,
-                        image: req.body.image || article.image,
+                        preview: req.body.preview || article.preview,
                         urlYoutube: req.body.urlYoutube || article.urlYoutube,
                     })
                         .then((updatedArticle) => {

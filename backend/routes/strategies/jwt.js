@@ -6,9 +6,7 @@ const User = models.User;
 
 var opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-//TODO: fix get env
-//opts.secretOrKey = process.env.JWT_SECRET;
-opts.secretOrKey = 'wakeup_secret';
+opts.secretOrKey = process.env.JWT_SECRET;
 
 const jwtAuthStrategy = passport.use(new JwtStrategy(opts, function (jwt_payload, done) {
     User.findAll({ where: { id: jwt_payload.id } })
