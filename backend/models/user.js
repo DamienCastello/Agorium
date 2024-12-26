@@ -14,6 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Article, {
         foreignKey: 'userId'
       });
+      User.belongsToMany(models.Article, { through: 'Like', foreignKey: 'userId' });
+      User.hasMany(models.Comment, { foreignKey: 'userId', onDelete: 'CASCADE' });
     }
   }
   User.init({

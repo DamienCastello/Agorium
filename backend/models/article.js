@@ -14,6 +14,13 @@ module.exports = (sequelize, DataTypes) => {
       Article.belongsTo(models.User, {
         foreignKey: 'userId'
       });
+      Article.belongsToMany(models.User, { through: 'Like', foreignKey: 'articleId' });
+      Article.belongsToMany(models.Tag, {
+        through: models.ArticleTag,
+        as: 'tags',
+        foreignKey: 'articleId',
+    });
+      Article.hasMany(models.Comment, { foreignKey: 'articleId', onDelete: 'CASCADE' });
     }
   }
   Article.init({
