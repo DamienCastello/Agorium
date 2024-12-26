@@ -8,7 +8,30 @@ module.exports = {
         Article.findAll({
             offset: offset,
             limit: limit,
-            include: [models.User],
+            include: [
+                {
+                    model: models.User,
+                    attributes: ['id', 'name', 'email'],
+                },
+                {
+                    model: models.Comment,
+                    include: {
+                        model: models.User,
+                        attributes: ['id', 'name', 'email'],
+                    },
+                },
+                {
+                    model: models.Like,
+                    include: {
+                        model: models.User,
+                        attributes: ['id', 'name', 'email'],
+                    },
+                },
+                {
+                    model: models.Tag,
+                    attributes: ['id', 'name'],
+                },
+            ],
             })
             .then((articles) => { res.json({ articles }); })
             .catch((error) => { res.status(500).json({error}) })
