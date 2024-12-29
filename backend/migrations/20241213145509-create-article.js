@@ -35,7 +35,7 @@ module.exports = {
           foreignKey: 'id'
         }
       },
-      valid: {
+      isValid: {
         type: Sequelize.BOOLEAN
       },
       validatedBy: {

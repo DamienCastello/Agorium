@@ -14,6 +14,13 @@ module.exports = {
         allowNull: false,
         unique: true
       },
+      isValid: {
+        type: Sequelize.BOOLEAN
+      },
+      validatedBy: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

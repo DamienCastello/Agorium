@@ -24,6 +24,9 @@
   background-color: #f8f9fa;
   border-bottom: 1px solid #ddd;
   padding: 0 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 main {
@@ -41,5 +44,8 @@ footer {
   flex-shrink: 0;
   text-align: center;
   padding: 16px;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
 }
 </style>

@@ -4,7 +4,11 @@
       <Navbar :isAuthenticated="authStore.isAuthenticated()" @logout="authStore.logout" />
     </template>
     <template #main>
-      <RouterView />
+      <div class="content">
+        <slot name="main">
+          <RouterView />
+        </slot>
+      </div>
     </template>
     <template #footer>
       <Footer></Footer>
@@ -21,30 +25,3 @@ import { useAuthStore } from './stores/auth';
 const authStore = useAuthStore();
 </script>
 
-<style scoped>
-.layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-header {
-  flex-shrink: 0;
-}
-
-main {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 16px;
-  width: 100%;
-}
-
-footer {
-  flex-shrink: 0;
-  text-align: center;
-  padding: 16px;
-}
-</style>

@@ -5,14 +5,17 @@
         id="urlYoutube"
         type="text"
         placeholder="https://www.youtube.com/watch?v=U3tqI9Sf5yU"
-        v-model="youtubeUrl"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
       />
     </fieldset>
   </template>
   
-  <script setup>
-  import { ref } from "vue";
-  
-  const youtubeUrl = ref("");
-  </script>
+<script setup>
+defineProps({
+  modelValue: String,
+});
+
+defineEmits(["update:modelValue"]);
+</script>
   
