@@ -19,7 +19,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Tag.init({
-    name: DataTypes.STRING
+    name: DataTypes.STRING,
+    isValid: {
+      type: DataTypes.BOOLEAN,
+    },
+    validatedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    }
   }, {
     sequelize,
     modelName: 'Tag',

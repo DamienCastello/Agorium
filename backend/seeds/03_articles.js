@@ -9,7 +9,7 @@ const { Article, Like, Tag } = models;
       urlYoutube: 'https://www.youtube.com/watch?v=aHXTnmysFfw',
       preview: null,
       userId: 1,
-      valid: true,
+      isValid: true,
       validator: 1,
     });
 
@@ -27,7 +27,7 @@ const { Article, Like, Tag } = models;
       urlYoutube: 'https://www.youtube.com/watch?v=pNhjfgD0_m8',
       preview: null,
       userId: 1,
-      valid: false,
+      isValid: false,
       validator: null,
     });
 

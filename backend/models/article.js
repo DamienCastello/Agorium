@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Article extends Model {
     /**
@@ -10,19 +11,33 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
       Article.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      Article.belongsToMany(models.User, { through: 'Like', foreignKey: 'articleId' });
+
+      Article.belongsToMany(models.User, {
+        through: models.Like,
+        foreignKey: 'articleId',
+        otherKey: 'userId',
+        as: 'user',
+      });
+
+      // Ajout direct de l'association
+      Article.hasMany(models.Like, {
+        foreignKey: 'articleId',
+        as: 'likes',
+      });
+
       Article.belongsToMany(models.Tag, {
         through: models.ArticleTag,
         as: 'tags',
         foreignKey: 'articleId',
-    });
-      Article.hasMany(models.Comment, { foreignKey: 'articleId', onDelete: 'CASCADE' });
+      });
+
+      Article.hasMany(models.Comment, { foreignKey: 'articleId', onDelete: 'CASCADE', as: 'comments' });
     }
   }
+
   Article.init({
     title: DataTypes.STRING,
     description: DataTypes.STRING,
@@ -34,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    valid: {
+    isValid: {
       type: DataTypes.BOOLEAN,
     },
     validatedBy: {
@@ -45,5 +60,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Article',
   });
+
   return Article;
 };

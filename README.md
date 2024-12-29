@@ -4,7 +4,7 @@ NPM is used to manage dependencies
 ## Philosophie du projet
 Ce projet a pour objectif de regrouper des articles illustrés par une image ou une vidéo youtube.
 Un formulaire permet aux utilisateurs d'alimenter la liste d'articles.
-
+Les utilisateurs peuvent commenter les articles.
 
 # Backend Node.js
 *requirements :*
@@ -29,7 +29,7 @@ after you can run
 npx sequelize-cli db:create # Run db creation
 npx sequelize-cli db:migrate # Run migrations
 
-node seeds/01_users.js && node seeds/02_articles.js && node seeds/03_tags.js # Run seeds
+node seeds/01_users.js && node seeds/02_tags.js && node seeds/03_articles.js && node seeds/04_comments.js# Run seeds
 
 nodemon # Start server
 ```
@@ -41,8 +41,6 @@ Now you are ready to use this backend project
 - npm >= 10.7.0
 
 first run `npm install`
-
-write your ipv4 in src/utils/url.js
 
 run `npm start`
 

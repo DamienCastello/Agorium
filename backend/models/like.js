@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // Associer User ↔ Like ↔ Article
-      Like.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+      Like.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE', as: 'user' });
       Like.belongsTo(models.Article, { foreignKey: 'articleId', onDelete: 'CASCADE' });
     }
   }
