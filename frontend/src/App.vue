@@ -1,7 +1,7 @@
 <template>
   <Layout class="layout">
     <template #header>
-      <Navbar :isAuthenticated="authStore.isAuthenticated()" @logout="authStore.logout" />
+      <Navbar :isAdmin="authStore.isAdmin()" :isAuthenticated="authStore.isAuthenticated()" @logout="authStore.logout" />
     </template>
     <template #main>
       <div class="content">

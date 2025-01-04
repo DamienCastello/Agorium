@@ -163,8 +163,8 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .article-container {
-    max-width: 400px;
-    min-width: 400px;
+    max-width: 300px;
+    min-width: 300px;
   }
   h1 {
     font-size: 20px;
@@ -183,8 +183,10 @@ span {
 .tags-badges {
   margin-bottom: 8px;
   display: flex;
-  gap: 8px;
-  justify-content: flex-start;
+  flex-wrap: wrap; /* Permet de regrouper les badges serrés */
+  gap: 8px; /* Gère l'espacement uniforme entre badges */
+  justify-content: flex-start; /* Aligne les badges à gauche */
+  max-width: fit-content; /* Limite la largeur du conteneur aux badges */
 }
 
 .badge {
@@ -192,8 +194,8 @@ span {
   color: #ffffff;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 12px !important;
+  font-weight: 400;
   white-space: nowrap;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   text-align: center;

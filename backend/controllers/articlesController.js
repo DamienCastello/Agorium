@@ -235,6 +235,8 @@ module.exports = {
   validate: function (req, res, next) {
     const user = req.user;
 
+    const { isValid, refusalReasons, overallReasonForRefusal } = req.body;
+
     if (!user.isAdmin) {
       return res.status(403).json({ error: "You are not authorized to validate this article" });
     }
@@ -245,7 +247,12 @@ module.exports = {
           return res.status(404).json({ error: "Article not found" });
         }
 
-        article.update({ isValid: true, validatedBy: user.id })
+        article.update({ 
+          isValid: isValid, 
+          refusalReasons: refusalReasons, 
+          overallReasonForRefusal: overallReasonForRefusal, 
+          validatedBy: user.id 
+        })
           .then((validatedArticle) => res.json({ validatedArticle }))
           .catch((error) => res.status(500).json({ error: "Error validating article" }));
       })

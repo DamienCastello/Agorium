@@ -15,7 +15,7 @@ router.post('/', authenticateJwt, tagsController.create);
 //update
 router.put('/:id', authenticateJwt, tagsController.update);
 //validate
-router.put('/:id/validate', authenticateJwt, isAdmin, tagsController.create);
+router.put('/:id/validate', authenticateJwt, isAdmin, tagsController.validate);
 //delete
 router.delete('/:id', authenticateJwt, isAdmin, tagsController.delete);
 

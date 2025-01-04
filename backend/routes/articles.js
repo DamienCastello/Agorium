@@ -29,7 +29,7 @@ router.post('/', authenticateJwt, previewUploader.single("preview"), (req, res, 
 //update
 router.put('/:id', authenticateJwt, articlesController.update);
 //validate
-router.put('/:id/validate', authenticateJwt, isAdmin, articlesController.update);
+router.put('/:id/validate', authenticateJwt, isAdmin, articlesController.validate);
 //delete
 router.delete('/:id', authenticateJwt, isAdmin, articlesController.delete);
 
