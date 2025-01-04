@@ -35,8 +35,17 @@ module.exports = {
           foreignKey: 'id'
         }
       },
+      refusalReasons: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
+      overallReasonForRefusal: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
       isValid: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        allowNull: true
       },
       validatedBy: {
         type: Sequelize.INTEGER,

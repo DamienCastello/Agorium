@@ -21,7 +21,7 @@
   position: relative;
   width: 100%;
   padding-bottom: 56.25%;
-  height: 0;
+  height: 100% !important;
   overflow: hidden;
   background-color: #000;
   border-radius: 8px;

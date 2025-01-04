@@ -49,8 +49,17 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    refusalReasons: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    overallReasonForRefusal: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     isValid: {
       type: DataTypes.BOOLEAN,
+      allowNull: true
     },
     validatedBy: {
       type: DataTypes.INTEGER,
