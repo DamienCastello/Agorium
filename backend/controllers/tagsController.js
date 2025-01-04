@@ -93,22 +93,28 @@ module.exports = {
                 res.status(500).json({ error: 'An error occurred while finding the tag.' });
             });
     },
-
     validate: function (req, res, next) {
         const user = req.user; // user signed with JWT
+
+        const { id, isValid, refusalReason } = req.body
 
         if (!user.isAdmin) {
             return res.status(403).json({ error: 'Only an admin can validate a tag.' });
         }
 
-        Tag.findByPk(req.params.id)
+        if (isValid === null || isValid === undefined) {
+            return res.status(403).json({ error: 'Tag validation must have a value.' });
+        }
+
+        Tag.findByPk(id)
             .then((tag) => {
                 if (!tag) {
                     return res.status(404).json({ error: 'Tag not found.' });
                 }
 
                 tag.update({
-                    isValid: true,
+                    isValid: isValid,
+                    refusalReason: refusalReason,
                     validatedBy: user.id,
                 })
                     .then((validatedTag) => {
@@ -124,7 +130,6 @@ module.exports = {
                 res.status(500).json({ error: 'An error occurred while updating the tag.' });
             });
     },
-
     delete: function (req, res, next) {
         const user = req.user; // user signed with JWT
 

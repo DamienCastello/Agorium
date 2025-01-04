@@ -27,5 +27,8 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated() {
       return !!this.token;
     },
+    isAdmin() {
+      return this.user?.isAdmin;
+    }
   }
 });

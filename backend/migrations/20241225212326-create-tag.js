@@ -11,11 +11,14 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false,
         unique: true
       },
       isValid: {
         type: Sequelize.BOOLEAN
+      },
+      refusalReason: {
+        type: Sequelize.STRING,
+        allowNull: true
       },
       validatedBy: {
         type: Sequelize.INTEGER,

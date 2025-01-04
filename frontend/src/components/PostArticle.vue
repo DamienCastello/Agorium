@@ -1,9 +1,10 @@
 <template>
   <div>
     <h1>Poster un nouvel article</h1>
-    <fieldset>
-      <label>
+      
+        <label>
         <input
+        class="switch"
           name="withVideo"
           type="checkbox"
           role="switch"
@@ -12,7 +13,8 @@
         />
         Inclure une vidéo youtube
       </label>
-    </fieldset>
+      
+      
     <form @submit.prevent="handleSubmit">
       <fieldset>
         <label for="title">Titre <span style="color: red">*</span></label>
@@ -292,6 +294,10 @@ const toggleDropdown = () => {
 </script>
 
 <style scoped>
+input.switch {
+  min-width: 50px !important;
+}
+
 .dropdown-placeholder {
   font-size: 18px;
   font-weight: lighter;
@@ -322,6 +328,12 @@ const toggleDropdown = () => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  max-width: 455px;
+}
+@media (max-width: 768px) {
+  .dropdown-toggle {
+    max-width: 292px;
+  }
 }
 
 .selected-tags-container {
@@ -430,5 +442,4 @@ const toggleDropdown = () => {
 .add-tag-button:hover {
   background-color: #4b00b3;
 }
-
 </style>

@@ -1,0 +1,824 @@
+<template>
+    <div class="container">
+        <div v-if="state === 'error'">
+            <p>Impossible de charger cet article</p>
+        </div>
+        <div v-else-if="state === 'loading'">
+            <p>Chargement de l'article...</p>
+        </div>
+        <div v-else class="article-container">
+            <div v-if="isMobile">
+                <!-- Mobile View -->
+                <h3>Validation des tags</h3>
+                <div v-for="tag in article.tags" :key="tag.id" class="tag-container">
+                    <div class="tag-row">
+                        <span class="tag-name">{{ tag.name }}</span>
+                        <div class="tag-actions">
+                            <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')" class="mobile-icon-tag">
+                                <CheckIcon class="icon-check" />
+                            </span>
+                            <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')" class="mobile-icon-tag">
+                                <CrossIcon class="icon-cross" />
+                            </span>
+                        </div>
+                        <textarea :disabled="tag.isValid" v-model="tag.refusalReason"
+                            placeholder="Motif du refus du tag"></textarea>
+                        <button @click="updateTag(tag)">Update</button>
+                    </div>
+                </div>
+
+                <h3>Validation des champs de l'article</h3>
+                <div class="field">
+                    <label>Titre: </label>
+                    <span>{{ article.title }}</span>
+                </div>
+                <div class="group">
+                    <div class="field-row">
+                        <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.title.isValid }"
+                            @click="accept(article, 'title')">
+                            <CheckIcon />
+                        </div>
+                        <div class="icon-fields-mobile" :class="{ refused: article.refusalReasons.title.isValid === false }"
+                            @click="refuse(article, 'title')">
+                            <CrossIcon />
+                        </div>
+                        <textarea :disabled="article.refusalReasons.title.isValid"
+                            v-model="article.refusalReasons.title.value"
+                            placeholder="Motif du refus du titre"></textarea>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div v-if="article.urlYoutube">
+                    <div class="field">
+                        <label>Vidéo: </label>
+                    </div>
+                    <div class="player">
+                        <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
+                    </div>
+                    <div class="group">
+                        <div class="field-row">
+                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.urlYoutube.isValid }"
+                                @click="accept(article, 'urlYoutube')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.urlYoutube.isValid === false }"
+                                @click="refuse(article, 'urlYoutube')">
+                                <CrossIcon />
+                            </div>
+                            <textarea :disabled="article.refusalReasons.urlYoutube.isValid"
+                                v-model="article.refusalReasons.urlYoutube.value"
+                                placeholder="Motif du refus de la vidéo"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div v-else-if="article.preview">
+                    <div class="field">
+                        <label>Preview: </label>
+                    </div>
+                    <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
+                    <div class="group">
+                        <div class="field-row">
+                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.preview.isValid }"
+                                @click="accept(article, 'preview')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.preview.isValid === false }"
+                                @click="refuse(article, 'preview')">
+                                <CrossIcon />
+                            </div>
+                            <textarea :disabled="article.refusalReasons.preview.isValid"
+                                v-model="article.refusalReasons.preview.value"
+                                placeholder="Motif du refus de l'image"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="field">
+                    <label>Description: </label>
+                    <span>{{ article.description }}</span>
+                </div>
+                <div class="group">
+                    <div class="field-row">
+                        <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.description.isValid }"
+                            @click="accept(article, 'description')">
+                            <CheckIcon />
+                        </div>
+                        <div class="icon-fields-mobile"
+                            :class="{ refused: article.refusalReasons.description.isValid === false }"
+                            @click="refuse(article, 'description')">
+                            <CrossIcon />
+                        </div>
+                        <textarea :disabled="article.refusalReasons.description.isValid"
+                            v-model="article.refusalReasons.description.value"
+                            placeholder="Motif du refus de la description"></textarea>
+                    </div>
+                </div>
+
+                <h3>Validation générale de l'article</h3>
+                <div class="group">
+                    <div class="field-row">
+                        <div class="icon-fields-mobile" :class="{ validated: article.isValid }"
+                            @click="accept(article, 'overall')">
+                            <CheckIcon />
+                        </div>
+                        <div class="icon-fields-mobile" :class="{ refused: article.isValid === false }"
+                            @click="refuse(article, 'overall')">
+                            <CrossIcon />
+                        </div>
+                        <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
+                            placeholder="Motif du refus de l'article" class="final-textarea"></textarea>
+                        <button @click="updateArticle(article)">Update</button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else>
+                <!-- PC View -->
+                <h3>Validation des tags</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Tag</th>
+                            <th scope="col">Valider</th>
+                            <th scope="col">Refuser</th>
+                            <th scope="col">Raison</th>
+                            <th scope="col">Sauvegarder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="tag in article.tags" :key="tag.id">
+                            <th scope="row">{{ tag.name }}</th>
+                            <td :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')">
+                                <CheckIcon class="icon-check" />
+                            </td>
+                            <td :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')">
+                                <CrossIcon class="icon-cross" />
+                            </td>
+
+
+                            <td><textarea :disabled="tag.isValid" v-model="tag.refusalReason"
+                                    placeholder="Motif du refus du tag"></textarea>
+                            </td>
+                            <td><button @click="updateTag(tag)">Update</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+
+
+                <h3>Validation des champs de l'article</h3>
+                <div class="field">
+                    <label>Titre: </label>
+                    <span>{{ article.title }}</span>
+                </div>
+                <div class="group">
+                    <table class="table-fields">
+                        <thead>
+                            <tr>
+                                <th scope="col">Valider</th>
+                                <th scope="col">Refuser</th>
+                                <th scope="col">Raison</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <td class="icon-fields" :class="{ validated: article.refusalReasons.title.isValid }"
+                                @click="accept(article, 'title')">
+                                <CheckIcon />
+                            </td>
+                            <td class="icon-fields" :class="{ refused: article.refusalReasons.title.isValid === false }"
+                                @click="refuse(article, 'title')">
+                                <CrossIcon />
+                            </td>
+                            <td>
+                                <textarea :disabled="article.refusalReasons.title.isValid"
+                                    v-model="article.refusalReasons.title.value"
+                                    placeholder="Motif du refus du titre"></textarea>
+                            </td>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr />
+
+                <div v-if="article.urlYoutube">
+                    <div class="field">
+                        <label>Vidéo: </label>
+                    </div>
+                    <div class="player">
+                        <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
+                    </div>
+                    <div class="group">
+                        <table class="table-fields">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Valider</th>
+                                    <th scope="col">Refuser</th>
+                                    <th scope="col">Raison</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <td class="icon-fields"
+                                    :class="{ validated: article.refusalReasons.urlYoutube.isValid }"
+                                    @click="accept(article, 'urlYoutube')">
+                                    <CheckIcon />
+                                </td>
+                                <td class="icon-fields"
+                                    :class="{ refused: article.refusalReasons.urlYoutube.isValid === false }"
+                                    @click="refuse(article, 'urlYoutube')">
+                                    <CrossIcon />
+                                </td>
+                                <td>
+                                    <textarea :disabled="article.refusalReasons.urlYoutube.isValid"
+                                        v-model="article.refusalReasons.urlYoutube.value"
+                                        placeholder="Motif du refus de la vidéo"></textarea>
+                                </td>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div v-else-if="article.preview">
+                    <div class="field">
+                        <label>Preview: </label>
+                    </div>
+                    <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
+                    <div class="group">
+                        <table class="table-fields">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Valider</th>
+                                    <th scope="col">Refuser</th>
+                                    <th scope="col">Raison</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <td class="icon-fields" :class="{ validated: article.refusalReasons.preview.isValid }"
+                                    @click="accept(article, 'preview')">
+                                    <CheckIcon />
+                                </td>
+                                <td class="icon-fields"
+                                    :class="{ refused: article.refusalReasons.preview.isValid === false }"
+                                    @click="refuse(article, 'preview')">
+                                    <CrossIcon />
+                                </td>
+                                <td>
+                                    <textarea :disabled="article.refusalReasons.preview.isValid"
+                                        v-model="article.refusalReasons.preview.value"
+                                        placeholder="Motif du refus de l'image"></textarea>
+                                </td>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="field">
+                    <label>Description: </label>
+                    <span>{{ article.description }}</span>
+                </div>
+                <div class="group">
+                    <table class="table-fields">
+                        <thead>
+                            <tr>
+                                <th scope="col">Valider</th>
+                                <th scope="col">Refuser</th>
+                                <th scope="col">Raison</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <td class="icon-fields" :class="{ validated: article.refusalReasons.description.isValid }"
+                                @click="accept(article, 'description')">
+                                <CheckIcon />
+                            </td>
+                            <td class="icon-fields"
+                                :class="{ refused: article.refusalReasons.description.isValid === false }"
+                                @click="refuse(article, 'description')">
+                                <CrossIcon />
+                            </td>
+                            <td>
+                                <textarea :disabled="article.refusalReasons.description.isValid"
+                                    v-model="article.refusalReasons.description.value"
+                                    placeholder="Motif du refus de la description"></textarea>
+                            </td>
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <h3>Validation générale de l'article</h3>
+                <div class="group">
+                    <table class="table-fields">
+                        <thead>
+                            <tr>
+                                <th scope="col">Valider</th>
+                                <th scope="col">Refuser</th>
+                                <th scope="col">Raison</th>
+                                <th scope="col">Sauvegarder</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <td class="icon-fields" :class="{ validated: article.isValid }"
+                                @click="accept(article, 'overall')">
+                                <CheckIcon />
+                            </td>
+                            <td class="icon-fields" :class="{ refused: article.isValid === false }"
+                                @click="refuse(article, 'overall')">
+                                <CrossIcon />
+                            </td>
+                            <td>
+                                <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
+                                    placeholder="Motif du refus de l'article" class="final-textarea">
+                                </textarea>
+                            </td>
+                            <td class="group-final-submit">
+                                <button @click="updateArticle(article)">Update</button>
+                            </td>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+
+
+        </div>
+    </div>
+</template>
+
+<script setup>
+import axios from "axios";
+import { onMounted, ref, onBeforeUnmount, nextTick } from "vue";
+import { useRoute } from "vue-router";
+import extractYoutubeUrl from "../utils/extractYoutubeUrl";
+import Player from "./Player.vue";
+import url from "../utils/url";
+import { useAuthStore } from "@/stores/auth";
+import CheckIcon from "./icons/checkIcon.vue";
+import CrossIcon from "./icons/crossIcon.vue";
+import { useNavbarStore } from "../stores/navbar";
+
+const isMobile = ref(false);
+const article = ref(null);
+const state = ref("loading");
+const route = useRoute();
+const authStore = useAuthStore();
+const tags = ref([])
+const navbarStore = useNavbarStore();
+
+const checkWindowSize = () => {
+    if (window.innerWidth <= 768) {
+        isMobile.value = true;
+    } else {
+        isMobile.value = false;
+    }
+};
+
+const accept = (item, entity) => {
+    if (entity === 'tag') {
+        item.refusalReason = "";
+        item.isValid = true;
+    } else if (entity === 'title') {
+        item.refusalReasons.title.value = "";
+        item.refusalReasons.title.isValid = true;
+    } else if (entity === 'urlYoutube') {
+        item.refusalReasons.urlYoutube.value = "";
+        item.refusalReasons.urlYoutube.isValid = true;
+    } else if (entity === 'preview') {
+        item.refusalReasons.preview.value = "";
+        item.refusalReasons.preview.isValid = true;
+    } else if (entity === 'description') {
+        item.refusalReasons.description.value = "";
+        item.refusalReasons.description.isValid = true;
+    } else if (entity === 'overall') {
+        let canValidate = true;
+
+        //Verify tags validations before validate article
+        for (let i = 0; i < article.value.tags.length; i++) {
+            if (!article.value.tags[i].isValid) {
+                console.log("some tag not valid")
+                canValidate = false
+            }
+        }
+
+        //Verify fields validations before validate article
+        if (article.value.preview === null) {
+            if (
+                !item.refusalReasons.title.isValid ||
+                !item.refusalReasons.urlYoutube.isValid ||
+                !item.refusalReasons.description.isValid
+            ) {
+                console.log("some field not valid (preview article)")
+                canValidate = false
+            }
+        } else if (article.value.urlYoutube === null) {
+            if (
+                !item.refusalReasons.title.isValid ||
+                !item.refusalReasons.preview.isValid ||
+                !item.refusalReasons.description.isValid
+            ) {
+                console.log("some field not valid (vidéo article)")
+                canValidate = false
+            }
+        }
+        //Finaly can validate article if all validations are true
+        if (canValidate) {
+            console.log("final validation impossible: some validation is refused")
+            item.overallReasonForRefusal = "";
+            item.isValid = true;
+        }
+    }
+}
+
+const refuse = (item, entity) => {
+    if (entity === 'tag') {
+        item.isValid = false;
+    } else if (entity === 'title') {
+        item.refusalReasons.title.isValid = false;
+    } else if (entity === 'urlYoutube') {
+        item.refusalReasons.urlYoutube.isValid = false;
+    } else if (entity === 'preview') {
+        item.refusalReasons.preview.isValid = false;
+    } else if (entity === 'description') {
+        item.refusalReasons.description.isValid = false;
+    } else if (entity === 'overall') {
+        console.log("enter refused over")
+        item.isValid = false
+    }
+    console.log(entity, item)
+}
+
+const updateTag = (tag) => {
+    const updatedTag = {
+        id: tag.id,
+        isValid: tag.isValid,
+        refusalReason: tag.refusalReason,
+        validatedBy: authStore.user?.id
+    };
+
+    axios.put(`${url.baseUrl}:${url.portBack}/api/v1/tags/${tag.id}/validate`, updatedTag, {
+        withCredentials: true,
+    }).then(response => {
+        console.log("Tag validation updated successfully!");
+    }).catch(error => {
+        console.error("Error updating validation:", error);
+    });
+};
+
+const updateArticle = (article) => {
+    const updatedArticle = {
+        id: article.id,
+        tags: article.tags,
+        refusalReasons: JSON.stringify({
+            title: {
+                value: article.refusalReasons.title.value,
+                isValid: article.refusalReasons.title.isValid,
+                validatedBy: authStore.user?.id
+            },
+            description: {
+                value: article.refusalReasons.description.value,
+                isValid: article.refusalReasons.description.isValid,
+                validatedBy: authStore.user?.id
+            },
+            preview: {
+                value: article.refusalReasons.preview.value,
+                isValid: article.refusalReasons.preview.isValid,
+                validatedBy: authStore.user?.id
+            },
+            urlYoutube: {
+                value: article.refusalReasons.urlYoutube.value,
+                isValid: article.refusalReasons.urlYoutube.isValid,
+                validatedBy: authStore.user?.id
+            }
+        }),
+        overallReasonForRefusal: article.overallReasonForRefusal,
+        isValid: article.isValid,
+        validatedBy: authStore.user?.id
+    };
+
+    axios.put(`${url.baseUrl}:${url.portBack}/api/v1/articles/${article.id}/validate`, updatedArticle, {
+        withCredentials: true,
+    }).then(response => {
+        console.log("Tag validation updated successfully!");
+    }).catch(error => {
+        console.error("Error updating validation:", error);
+    });
+};
+
+onMounted(() => {
+    checkWindowSize();
+
+    window.addEventListener('resize', () => {
+        checkWindowSize();
+    });
+
+
+    const articleId = route.params.id;
+
+    if (!articleId) {
+        state.value = "error";
+        return;
+    }
+
+    axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles/${articleId}`, {
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+    })
+        .then((response) => {
+            console.log("res : ", response)
+            if (response.data && response.data.article) {
+                const fetchedArticle = response.data.article;
+                if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
+                    try {
+                        fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
+                    } catch (e) {
+                        console.error("Erreur lors du parsing de refusalReasons :", e);
+                        fetchedArticle.refusalReasons = {};
+                    }
+                    article.value = fetchedArticle;
+                    tags.value = fetchedArticle.tags;
+                    state.value = "idle";
+                } else {
+                    article.value = response.data.article;
+                    tags.value = response.data.article.tags;
+                    state.value = "idle";
+                }
+            } else {
+                state.value = "error";
+            }
+        })
+        .catch((error) => {
+            console.log("Error fetching article:", error.message);
+            state.value = "error";
+        })
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', checkWindowSize);
+});
+</script>
+
+<style>
+.field {
+    display: flex;
+    justify-content: center;
+    text-align: center !important;
+    align-items: center !important;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+fieldset {
+    margin-bottom: 0px 25px;
+}
+
+fieldset legend label {
+    margin-bottom: 0px !important;
+}
+
+.field span {
+    font-weight: normal;
+}
+
+label {
+    margin-right: 15px;
+}
+
+.player {
+    margin-bottom: 15px;
+}
+
+.icon-check {
+    cursor: pointer;
+    font-size: 41px;
+}
+
+.icon-cross {
+    cursor: pointer;
+    font-size: 48px;
+}
+
+.group {
+    display: flex;
+    justify-content: center;
+}
+
+.group-final {
+    display: flex;
+    justify-content: center;
+    height: 100px;
+}
+
+.icon-fields {
+    cursor: pointer;
+    width: 60px !important;
+    font-size: 40px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-fields {
+    width: 50%;
+    border-collapse: collapse;
+}
+
+th {
+    cursor: default;
+}
+
+th,
+td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 6px;
+    border: 1px solid #ddd;
+}
+
+thead th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+td input,
+td textarea,
+fieldset input,
+fieldset textarea {
+    width: 100%;
+    min-width: 200px;
+    padding: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+}
+
+.final-textarea {
+    resize: vertical !important;
+    min-height: 80px;
+}
+
+td.validated {
+    background-color: green;
+}
+
+td.refused {
+    background-color: crimson;
+}
+
+button {
+    font-size: 14px;
+    padding: 6px;
+}
+
+
+/* mobile style */
+.field,
+.group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.tag-container {
+    margin-bottom: 15px;
+}
+
+.tag-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tag-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.tag-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon {
+    cursor: pointer;
+}
+
+textarea {
+    width: 100%;
+    min-width: 180px;
+    padding: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+    margin-bottom: 10px;
+}
+
+.group-final-submit {
+    display: flex;
+    justify-content: center;
+    height: 100px;
+}
+
+.final-textarea {
+    resize: vertical !important;
+    min-height: 80px;
+}
+
+.icon-fields-mobile {
+    cursor: pointer;
+    width: 60px !important;
+    font-size: 30px;
+    text-align: center;
+    border: 1px solid grey;
+    margin-bottom: 2px;
+    border-radius: 10px;
+}
+
+.mobile-icon-tag {
+    cursor: pointer;
+    width: 60px !important;
+    font-size: 30px;
+    text-align: center;
+    border: 1px solid grey;
+    margin-bottom: 2px;
+    border-radius: 10px;
+}
+
+button {
+    font-size: 14px;
+    padding: 6px;
+}
+
+@media (max-width: 768px) {
+    h3 {
+        text-align: center;
+    }
+
+    .tag-row {
+        display: block;
+        text-align: center;
+    }
+
+    .tag-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .group {
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px !important;
+
+    }
+
+    textarea {
+        font-size: 12px;
+        min-width: 150px;
+        margin-top: 10px;
+    }
+
+    button {
+        font-size: 18px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+
+    .field-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    span.validated, div.validated {
+        background-color: green;
+    }
+
+    span.refused, div.refused {
+        background-color: crimson;
+    }
+    
+}
+</style>
