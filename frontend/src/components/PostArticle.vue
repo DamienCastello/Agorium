@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div @mousedown="handleClickOutsideNavbar">
     <h1>Poster un nouvel article</h1>
       
         <label>
@@ -111,7 +111,7 @@
       <p v-if="selectedTags.length === 0" class="comment-info">Sélectionnez au moins un tag.</p>      
       <button 
         type="submit" 
-        :disabled="selectedTags.length === 0"
+        :disabled="selectedTags.length === 0 || navbarStore.isMenuOpen"
       >
           Poster l'article
       </button>
@@ -121,13 +121,14 @@
 
 <script setup>
 import axios from "axios";
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import url from "@/utils/url";
 import UrlYoutubeFieldset from "./UrlYoutubeFieldset.vue";
 import ImageSelector from "./ImageSelector.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useRouter } from "vue-router";
+import { useNavbarStore } from "../stores/navbar";
 
 const lorem =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -139,6 +140,7 @@ const form = ref({
 });
 
 const authStore = useAuthStore();
+const navbarStore = useNavbarStore();
 const router = useRouter();
 
 const state = ref("loading");
@@ -148,6 +150,7 @@ const withVideo = ref(true);
 const selectedFile = ref(null);
 const imagePreview = ref(null);
 const isDropdownOpen = ref(false);
+const isClosingNavbar = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
 
@@ -240,7 +243,8 @@ onMounted(() => {
       state.value = "error";
     });
 
-  document.addEventListener("click", handleClickOutside);
+    //handle click outside tag dropdown
+    document.addEventListener("click", handleClickOutside);
 });
 
 onBeforeUnmount(() => {
@@ -252,6 +256,22 @@ const handleClickOutside = (event) => {
     isDropdownOpen.value = false;
   }
 };
+
+const handleClickOutsideNavbar = (event) => {
+    if (navbarStore.isMenuOpen) {      
+      event.preventDefault();
+      event.stopPropagation();
+
+      isClosingNavbar.value = true;
+      navbarStore.closeMenu();
+
+      setTimeout(() => {
+        isClosingNavbar.value = false;
+      }, 200);
+    } else {
+      return true;
+    }
+  };
 
 const handleSubmit = () => {
   if (!selectedFile.value && !withVideo.value) {
@@ -289,13 +309,17 @@ const handleSubmit = () => {
 };
 
 const toggleDropdown = () => {
+  if (isClosingNavbar.value) {
+    return;
+  }
+
   isDropdownOpen.value = !isDropdownOpen.value;
 };
 </script>
 
 <style scoped>
 input.switch {
-  min-width: 50px !important;
+  min-width: 30px !important;
 }
 
 .dropdown-placeholder {
@@ -311,7 +335,6 @@ input.switch {
   border: 1px solid #ccc;
   border-radius: 5px;
   transition: border-color 0.3s;
-  z-index: 1;
   max-width: 100%;
   margin-bottom: 40px;
 }

@@ -1,5 +1,7 @@
 <template>
-  <div class="player-container">
+  <div class="player-container" 
+      @click="closeNavbar"
+      :class="{ 'navbar-open': navbarStore.isMenuOpen }">
     <iframe
       class="player"
       :src="`https://www.youtube.com/embed/${videoId}`"
@@ -11,9 +13,19 @@
   </template>
   
   <script setup>
+  import { useNavbarStore } from '../stores/navbar';
   const { videoId } = defineProps({
     videoId: String
   })
+
+  const navbarStore = useNavbarStore();
+
+  const closeNavbar = () => {
+  console.log("enter");
+  if (navbarStore.isMenuOpen) {
+    navbarStore.closeMenu();
+  }
+};
   </script>
 
 <style scoped>
@@ -34,5 +46,9 @@
   width: 100%;
   height: 100%;
   border: none;
+}
+
+.player-container.navbar-open .player {
+  pointer-events: none;
 }
 </style>

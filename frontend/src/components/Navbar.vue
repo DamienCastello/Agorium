@@ -93,12 +93,10 @@
   
   const toggleMenu = (event) => {
     event.stopPropagation();
-    console.log("Toggle menu clicked");
     navbarStore.toggleMenu();
   };
   
   const closeMenu = () => {
-    console.log("Close menu clicked");
     navbarStore.closeMenu();
   };
   </script>

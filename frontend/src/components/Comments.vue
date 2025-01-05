@@ -3,7 +3,7 @@
     <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
       <p><span>{{ comment.user.name }}:</span> {{ comment.content }}</p>
     </div>
-    <div class="comment-container">
+    <div class="comment-container" @mousedown="handleClickOutsideNavbar">
       <label for="comment" class="comment-label">Laisser un commentaire :</label>
       <textarea
         id="comment"
@@ -20,7 +20,7 @@
         </p>
         <button
           @click="submitComment"
-          :disabled="!newComment || !authStore.user"
+          :disabled="!newComment || !authStore.user || navbarStore.isMenuOpen"
           class="submit-button"
         >
           Envoyer
@@ -34,10 +34,12 @@
   import axios from "axios";
   import url from "@/utils/url";
   import { useAuthStore } from "@/stores/auth";
+  import { useNavbarStore } from "@/stores/navbar";
   
   const props = defineProps(["article", "refreshComments"]);
   const newComment = ref("");
   const authStore = useAuthStore();
+  const navbarStore = useNavbarStore();
   
   const submitComment = () => {
     if (!authStore.user) {
@@ -75,6 +77,16 @@
       .catch((error) => {
         console.error("Error on commenting article:", error);
       });
+  };
+
+  const handleClickOutsideNavbar = (event) => {
+    if (navbarStore.isMenuOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      navbarStore.closeMenu();
+    } else {
+      return true;
+    }
   };
   </script>
   

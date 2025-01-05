@@ -23,7 +23,7 @@
                         </div>
                         <textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                             placeholder="Motif du refus du tag"></textarea>
-                        <button @click="updateTag(tag)">Update</button>
+                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">Update</button>
                     </div>
                 </div>
 
@@ -133,7 +133,7 @@
                         </div>
                         <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
                             placeholder="Motif du refus de l'article" class="final-textarea"></textarea>
-                        <button @click="updateArticle(article)">Update</button>
+                        <button :disabled="navbarStore.isMenuOpen" @click="updateArticle(article)">Update</button>
                     </div>
                 </div>
             </div>
@@ -169,9 +169,6 @@
                         </tr>
                     </tbody>
                 </table>
-
-
-
 
                 <h3>Validation des champs de l'article</h3>
                 <div class="field">
@@ -344,11 +341,6 @@
                     </table>
                 </div>
             </div>
-
-
-
-
-
         </div>
     </div>
 </template>
@@ -364,14 +356,16 @@ import { useAuthStore } from "@/stores/auth";
 import CheckIcon from "./icons/checkIcon.vue";
 import CrossIcon from "./icons/crossIcon.vue";
 import { useNavbarStore } from "../stores/navbar";
+import { useNavbarHandler } from "../composables/useNavbarHandler";
 
 const isMobile = ref(false);
 const article = ref(null);
 const state = ref("loading");
 const route = useRoute();
 const authStore = useAuthStore();
-const tags = ref([])
+const tags = ref([]);
 const navbarStore = useNavbarStore();
+const { handleNavbar } = useNavbarHandler();
 
 const checkWindowSize = () => {
     if (window.innerWidth <= 768) {
@@ -382,134 +376,142 @@ const checkWindowSize = () => {
 };
 
 const accept = (item, entity) => {
-    if (entity === 'tag') {
-        item.refusalReason = "";
-        item.isValid = true;
-    } else if (entity === 'title') {
-        item.refusalReasons.title.value = "";
-        item.refusalReasons.title.isValid = true;
-    } else if (entity === 'urlYoutube') {
-        item.refusalReasons.urlYoutube.value = "";
-        item.refusalReasons.urlYoutube.isValid = true;
-    } else if (entity === 'preview') {
-        item.refusalReasons.preview.value = "";
-        item.refusalReasons.preview.isValid = true;
-    } else if (entity === 'description') {
-        item.refusalReasons.description.value = "";
-        item.refusalReasons.description.isValid = true;
-    } else if (entity === 'overall') {
-        let canValidate = true;
-
-        //Verify tags validations before validate article
-        for (let i = 0; i < article.value.tags.length; i++) {
-            if (!article.value.tags[i].isValid) {
-                console.log("some tag not valid")
-                canValidate = false
-            }
-        }
-
-        //Verify fields validations before validate article
-        if (article.value.preview === null) {
-            if (
-                !item.refusalReasons.title.isValid ||
-                !item.refusalReasons.urlYoutube.isValid ||
-                !item.refusalReasons.description.isValid
-            ) {
-                console.log("some field not valid (preview article)")
-                canValidate = false
-            }
-        } else if (article.value.urlYoutube === null) {
-            if (
-                !item.refusalReasons.title.isValid ||
-                !item.refusalReasons.preview.isValid ||
-                !item.refusalReasons.description.isValid
-            ) {
-                console.log("some field not valid (vidéo article)")
-                canValidate = false
-            }
-        }
-        //Finaly can validate article if all validations are true
-        if (canValidate) {
-            console.log("final validation impossible: some validation is refused")
-            item.overallReasonForRefusal = "";
+    handleNavbar(() => {
+        if (entity === 'tag') {
+            item.refusalReason = "";
             item.isValid = true;
+        } else if (entity === 'title') {
+            item.refusalReasons.title.value = "";
+            item.refusalReasons.title.isValid = true;
+        } else if (entity === 'urlYoutube') {
+            item.refusalReasons.urlYoutube.value = "";
+            item.refusalReasons.urlYoutube.isValid = true;
+        } else if (entity === 'preview') {
+            item.refusalReasons.preview.value = "";
+            item.refusalReasons.preview.isValid = true;
+        } else if (entity === 'description') {
+            item.refusalReasons.description.value = "";
+            item.refusalReasons.description.isValid = true;
+        } else if (entity === 'overall') {
+            let canValidate = true;
+
+            //Verify tags validations before validate article
+            for (let i = 0; i < article.value.tags.length; i++) {
+                if (!article.value.tags[i].isValid) {
+                    console.log("some tag not valid")
+                    canValidate = false
+                }
+            }
+
+            //Verify fields validations before validate article
+            if (article.value.preview === null) {
+                if (
+                    !item.refusalReasons.title.isValid ||
+                    !item.refusalReasons.urlYoutube.isValid ||
+                    !item.refusalReasons.description.isValid
+                ) {
+                    console.log("some field not valid (preview article)")
+                    canValidate = false
+                }
+            } else if (article.value.urlYoutube === null) {
+                if (
+                    !item.refusalReasons.title.isValid ||
+                    !item.refusalReasons.preview.isValid ||
+                    !item.refusalReasons.description.isValid
+                ) {
+                    console.log("some field not valid (vidéo article)")
+                    canValidate = false
+                }
+            }
+            //Finaly can validate article if all validations are true
+            if (canValidate) {
+                console.log("final validation impossible: some validation is refused")
+                item.overallReasonForRefusal = "";
+                item.isValid = true;
+            }
         }
-    }
+    })
+    
 }
 
 const refuse = (item, entity) => {
-    if (entity === 'tag') {
-        item.isValid = false;
-    } else if (entity === 'title') {
-        item.refusalReasons.title.isValid = false;
-    } else if (entity === 'urlYoutube') {
-        item.refusalReasons.urlYoutube.isValid = false;
-    } else if (entity === 'preview') {
-        item.refusalReasons.preview.isValid = false;
-    } else if (entity === 'description') {
-        item.refusalReasons.description.isValid = false;
-    } else if (entity === 'overall') {
-        console.log("enter refused over")
-        item.isValid = false
-    }
-    console.log(entity, item)
+    handleNavbar(() => {
+        if (entity === 'tag') {
+            item.isValid = false;
+        } else if (entity === 'title') {
+            item.refusalReasons.title.isValid = false;
+        } else if (entity === 'urlYoutube') {
+            item.refusalReasons.urlYoutube.isValid = false;
+        } else if (entity === 'preview') {
+            item.refusalReasons.preview.isValid = false;
+        } else if (entity === 'description') {
+            item.refusalReasons.description.isValid = false;
+        } else if (entity === 'overall') {
+            console.log("enter refused over")
+            item.isValid = false
+        }
+    })
 }
 
 const updateTag = (tag) => {
-    const updatedTag = {
-        id: tag.id,
-        isValid: tag.isValid,
-        refusalReason: tag.refusalReason,
-        validatedBy: authStore.user?.id
-    };
+    handleNavbar(() => {
+        const updatedTag = {
+            id: tag.id,
+            isValid: tag.isValid,
+            refusalReason: tag.refusalReason,
+            validatedBy: authStore.user?.id
+        };
 
-    axios.put(`${url.baseUrl}:${url.portBack}/api/v1/tags/${tag.id}/validate`, updatedTag, {
-        withCredentials: true,
-    }).then(response => {
-        console.log("Tag validation updated successfully!");
-    }).catch(error => {
-        console.error("Error updating validation:", error);
-    });
+        axios.put(`${url.baseUrl}:${url.portBack}/api/v1/tags/${tag.id}/validate`, updatedTag, {
+            withCredentials: true,
+        }).then(response => {
+            console.log("Tag validation updated successfully!");
+        }).catch(error => {
+            console.error("Error updating validation:", error);
+        });
+    })  
 };
 
 const updateArticle = (article) => {
-    const updatedArticle = {
-        id: article.id,
-        tags: article.tags,
-        refusalReasons: JSON.stringify({
-            title: {
-                value: article.refusalReasons.title.value,
-                isValid: article.refusalReasons.title.isValid,
-                validatedBy: authStore.user?.id
-            },
-            description: {
-                value: article.refusalReasons.description.value,
-                isValid: article.refusalReasons.description.isValid,
-                validatedBy: authStore.user?.id
-            },
-            preview: {
-                value: article.refusalReasons.preview.value,
-                isValid: article.refusalReasons.preview.isValid,
-                validatedBy: authStore.user?.id
-            },
-            urlYoutube: {
-                value: article.refusalReasons.urlYoutube.value,
-                isValid: article.refusalReasons.urlYoutube.isValid,
-                validatedBy: authStore.user?.id
-            }
-        }),
-        overallReasonForRefusal: article.overallReasonForRefusal,
-        isValid: article.isValid,
-        validatedBy: authStore.user?.id
-    };
+    handleNavbar(() => {
+        const updatedArticle = {
+            id: article.id,
+            tags: article.tags,
+            refusalReasons: JSON.stringify({
+                title: {
+                    value: article.refusalReasons.title.value,
+                    isValid: article.refusalReasons.title.isValid,
+                    validatedBy: authStore.user?.id
+                },
+                description: {
+                    value: article.refusalReasons.description.value,
+                    isValid: article.refusalReasons.description.isValid,
+                    validatedBy: authStore.user?.id
+                },
+                preview: {
+                    value: article.refusalReasons.preview.value,
+                    isValid: article.refusalReasons.preview.isValid,
+                    validatedBy: authStore.user?.id
+                },
+                urlYoutube: {
+                    value: article.refusalReasons.urlYoutube.value,
+                    isValid: article.refusalReasons.urlYoutube.isValid,
+                    validatedBy: authStore.user?.id
+                }
+            }),
+            overallReasonForRefusal: article.overallReasonForRefusal,
+            isValid: article.isValid,
+            validatedBy: authStore.user?.id
+        };
 
-    axios.put(`${url.baseUrl}:${url.portBack}/api/v1/articles/${article.id}/validate`, updatedArticle, {
-        withCredentials: true,
-    }).then(response => {
-        console.log("Tag validation updated successfully!");
-    }).catch(error => {
-        console.error("Error updating validation:", error);
-    });
+        axios.put(`${url.baseUrl}:${url.portBack}/api/v1/articles/${article.id}/validate`, updatedArticle, {
+            withCredentials: true,
+        }).then(response => {
+            console.log("Tag validation updated successfully!");
+        }).catch(error => {
+            console.error("Error updating validation:", error);
+        });
+    })
 };
 
 onMounted(() => {
@@ -535,7 +537,6 @@ onMounted(() => {
         },
     })
         .then((response) => {
-            console.log("res : ", response)
             if (response.data && response.data.article) {
                 const fetchedArticle = response.data.article;
                 if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
@@ -739,7 +740,12 @@ textarea {
 .group-final-submit {
     display: flex;
     justify-content: center;
+    align-items: center;
     height: 100px;
+}
+
+.group-final-submit button {
+    height: 35px;
 }
 
 .final-textarea {
