@@ -29,6 +29,7 @@
       <Comments :article="article" :refreshComments="fetchArticle" />
     </div>
   </div>
+  <notifications position="bottom right" />
 </template>
 
 <script setup>
@@ -44,6 +45,8 @@ import LikedIcon from "./icons/likedIcon.vue";
 import UnlikedIcon from "./icons/unlikedIcon.vue";
 import Comments from "./Comments.vue";
 import { useNavbarHandler } from "@/composables/useNavbarHandler";
+import { useNotification } from "@kyvg/vue3-notification";
+
 
 const article = ref(null);
 const isLiked = ref(false);
@@ -51,11 +54,16 @@ const state = ref("loading");
 const route = useRoute();
 const authStore = useAuthStore();
 const { handleNavbar } = useNavbarHandler();
+const { notify } = useNotification()
 
 const toggleLike = () => {
   handleNavbar(() => {
     if (!article.value || !article.value.id) {
-    console.error("Article is not loaded or missing ID");
+      notify({
+        title: "Liking Article",
+        type: 'error',
+        text: "Article is not loaded or missing ID !",
+      });
     return;
   }
 
@@ -69,12 +77,15 @@ const toggleLike = () => {
     })
     .then((response) => {
       article.value.likes = response.data.likes;
-      console.log("check likes after: ", article.value.likes, response.data.likes)
       state.value = "idle";
       isLiked.value = response.data.isLiked;
     })
     .catch((error) => {
-      console.error("Error on liking or unliking article:", error);
+      notify({
+        title: "Liking Article",
+        type: 'error',
+        text: error.response.data.message,
+      });
       state.value = "error";
     });
   })
@@ -97,7 +108,11 @@ const fetchArticle = () => {
       }
     })
     .catch((error) => {
-      console.error("Error fetching article:", error.message);
+      notify({
+        title: "Fetching Article",
+        type: 'error',
+        text: error.response.data.message,
+      });
       state.value = "error";
     });
 };
@@ -143,7 +158,11 @@ onMounted(() => {
       }
     })
     .catch((error) => {
-      console.log("Error fetching article:", error.message);
+      notify({
+        title: "Fetching Article",
+        type: 'error',
+        text: error.response.data.message,
+      });
       state.value = "error";
     });
 });
@@ -187,10 +206,10 @@ span {
 .tags-badges {
   margin-bottom: 8px;
   display: flex;
-  flex-wrap: wrap; /* Permet de regrouper les badges serrés */
-  gap: 8px; /* Gère l'espacement uniforme entre badges */
-  justify-content: flex-start; /* Aligne les badges à gauche */
-  max-width: fit-content; /* Limite la largeur du conteneur aux badges */
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  max-width: fit-content;
 }
 
 .badge {

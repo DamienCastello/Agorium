@@ -16,7 +16,7 @@ module.exports = {
         })
         .catch((error) => {
             console.error(error);
-            res.status(500).json({ error: 'Impossible de créer le commentaire.' });
+            res.status(500).json({ message: 'Impossible de créer le commentaire.' });
         })
     },
     update: function (req, res, next) {
@@ -31,9 +31,15 @@ module.exports = {
                     userId: userId
                 })
                 .then((updatedComment) => { res.json({ updatedComment }); })
-                .catch((error) => { res.status(500).json({error}) })
+                .catch((error) => { 
+                    console.error('error: ', error.message);
+                    res.status(500).json({ message: 'Impossible de créer le commentaire.' });
+                })
              })
-            .catch((error) => { res.status(500).json({error}) })
+            .catch((error) => { 
+                console.error('error: ', error.message);
+                res.status(500).json({ message: 'Internal server error.' });
+             })
 
 
     },    
@@ -41,8 +47,11 @@ module.exports = {
         Comment.findByPk(req.body.id)
             .then((comment) => { 
                 comment.destroy()
-                res.status(200).json(`Comment ${comment.id} supprimé`); 
+                res.status(200).json(`Comment ${comment.id} supprimé.`); 
             })
-            .catch((error) => { res.status(500).json({error}) })
+            .catch((error) => { 
+                console.error('error: ', error.message);
+                res.status(500).json({ message: 'Internal server error.' });
+             })
     }
 }

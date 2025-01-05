@@ -21,7 +21,6 @@
   const navbarStore = useNavbarStore();
 
   const closeNavbar = () => {
-  console.log("enter");
   if (navbarStore.isMenuOpen) {
     navbarStore.closeMenu();
   }

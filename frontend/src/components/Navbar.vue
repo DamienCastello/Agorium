@@ -114,7 +114,6 @@
     position: relative;
   }
   
-  /* Titre */
   .navbar-title {
     list-style: none;
     margin: 0;
@@ -126,7 +125,6 @@
     font-weight: bold;
   }
   
-  /* Liens */
   .navbar-links {
     display: flex;
     justify-content: space-around;
@@ -138,25 +136,21 @@
     transition: max-height 0.3s ease-out;
   }
   
-  /* Liens de navigation */
   .navbar-links a {
     text-decoration: none;
     font-size: 1rem;
   }
   
-  /* Lien actif */
   .navbar-links a.active {
     font-weight: bold;
   }
   
-  /* Menu déroulant */
   .dropdown ul {
     list-style: none;
     margin: 0;
     padding: 0;
   }
   
-  /* Mobile : Menu burger */
   .burger-menu {
     display: none;
     background: none;
@@ -165,15 +159,13 @@
     padding: 8px;
   }
   
-  /* Bordure violette avec padding autour de l'icône burger */
   .burger-menu:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.6);  /* Bordure violette */
+    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.6);
     border-radius: 8px;
     padding: 4px;
   }
   
-  /* Animation des barres du burger */
   .burger-menu.open::before {
     transform: rotate(45deg) translate(5px, 5px);
   }
@@ -186,15 +178,12 @@
     background: transparent;
   }
   
-  /* Navbar responsive */
   .navbar-links.open {
     display: flex;
     flex-direction: column;
-    max-height: 500px; /* Dépliement fluide */
+    max-height: 500px;
   }
 
-
-  
   .navbar-links {
     display: none;
     flex-direction: column;
