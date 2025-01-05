@@ -1,62 +1,35 @@
 <template>
-  <div>
-    <h1>Poster un nouvel article</h1>
-      
-        <label>
-        <input
-        class="switch"
-          name="withVideo"
-          type="checkbox"
-          role="switch"
-          @click="toggleWithVideo"
-          checked
-        />
+  <div v-if="state === 'error'">
+    <p>Impossible de charger les données</p>
+  </div>
+  <div v-else-if="state === 'loading'">
+    <p>Chargement ...</p>
+  </div>
+  <div v-else>
+    <div @mousedown="handleClickOutsideNavbar">
+      <h1>Poster un nouvel article</h1>
+
+      <label>
+        <input class="switch" name="withVideo" type="checkbox" role="switch" @click="toggleWithVideo" checked />
         Inclure une vidéo youtube
       </label>
-      
-      
-    <form @submit.prevent="handleSubmit">
-      <fieldset>
-        <label for="title">Titre <span style="color: red">*</span></label>
-        <input
-          id="title"
-          type="text"
-          placeholder="Article de zinzin"
-          v-model="form.title"
-        />
-      </fieldset>
-      <fieldset>
-        <label for="description">Description <span style="color: red">*</span></label>
-        <textarea
-          id="description"
-          :placeholder="lorem"
-          v-model="form.description"
-          rows="5"
-          cols="33"
-        ></textarea>
-      </fieldset>
 
-      <div v-if="state === 'error'">
-        <p>Impossible de charger les tags</p>
-      </div>
-      <div v-else-if="state === 'loading'">
-        <p>Chargement des tags...</p>
-      </div>
 
-      <div v-else>
+      <form @submit.prevent="handleSubmit">
+        <fieldset>
+          <label for="title">Titre <span style="color: red">*</span></label>
+          <input id="title" type="text" placeholder="Article de zinzin" v-model="form.title" />
+        </fieldset>
+        <fieldset>
+          <label for="description">Description <span style="color: red">*</span></label>
+          <textarea id="description" :placeholder="lorem" v-model="form.description" rows="5" cols="33"></textarea>
+        </fieldset>
+
         <label>Tags <span style="color: red">*</span></label>
-        <div
-          class="dropdown"
-          :class="{ open: isDropdownOpen }"
-          ref="dropdownRef"
-        >
+        <div class="dropdown" :class="{ open: isDropdownOpen }" ref="dropdownRef">
           <div class="dropdown-toggle" @click="toggleDropdown">
             <div class="selected-tags-container">
-              <span
-                v-for="(tag, index) in selectedTags"
-                :key="index"
-                class="selected-tag"
-              >
+              <span v-for="(tag, index) in selectedTags" :key="index" class="selected-tag">
                 {{ tag.name }}
               </span>
               <span class="dropdown-placeholder" v-if="selectedTags.length === 0">
@@ -66,57 +39,35 @@
           </div>
           <div v-if="isDropdownOpen" class="dropdown-content">
             <div class="tags-list">
-              <label
-                v-for="(tag, index) in tags"
-                :key="tag.id"
-                class="tag-item"
-                :class="{ selected: selectedTags.includes(tag) }"
-              >
-                <input
-                  type="checkbox"
-                  :value="tag"
-                  v-model="selectedTags"
-                  @change="logSelectedTags"
-                />
+              <label v-for="(tag, index) in tags" :key="tag.id" class="tag-item"
+                :class="{ selected: selectedTags.includes(tag) }">
+                <input type="checkbox" :value="tag" v-model="selectedTags" @change="logSelectedTags" />
                 {{ tag.name }}
               </label>
             </div>
             <div class="add-tag-container">
               <label for="new-tag">Créer un nouveau tag</label>
               <div class="add-tag">
-                <input
-                  id="new-tag"
-                  type="text"
-                  placeholder="Ajouter un tag"
-                  v-model="newTag"
-                  @keyup.enter="addTag"
-                  class="new-tag-input"
-                />
+                <input id="new-tag" type="text" placeholder="Ajouter un tag" v-model="newTag" @keyup.enter="addTag"
+                  class="new-tag-input" />
                 <button @click="addTag" type="button" class="add-tag-button">Ajouter</button>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <FadeSlideTransition>
-        <component
-          :is="componentToShow"
-          :imagePreview="imagePreview"
-          v-model="form.urlYoutube"
-          @update:selectedFile="updateSelectedFile"
-          @update:imagePreview="updateImagePreview"
-        />
-      </FadeSlideTransition>
-      <p v-if="selectedTags.length === 0" class="comment-info">Sélectionnez au moins un tag.</p>      
-      <button 
-        type="submit" 
-        :disabled="selectedTags.length === 0"
-      >
+        <FadeSlideTransition>
+          <component :is="componentToShow" :imagePreview="imagePreview" v-model="form.urlYoutube"
+            @update:selectedFile="updateSelectedFile" @update:imagePreview="updateImagePreview" />
+        </FadeSlideTransition>
+        <p v-if="selectedTags.length === 0" class="comment-info">Sélectionnez au moins un tag.</p>
+        <button type="submit" :disabled="selectedTags.length === 0 || navbarStore.isMenuOpen">
           Poster l'article
-      </button>
-    </form>
+        </button>
+      </form>
+    </div>
   </div>
+  <notifications position="bottom right" />
 </template>
 
 <script setup>
@@ -128,6 +79,9 @@ import UrlYoutubeFieldset from "./UrlYoutubeFieldset.vue";
 import ImageSelector from "./ImageSelector.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useRouter } from "vue-router";
+import { useNavbarStore } from "../stores/navbar";
+import { useNotification } from "@kyvg/vue3-notification";
+import extractVideoId from "@/utils/extractYoutubeUrl";
 
 const lorem =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -139,7 +93,9 @@ const form = ref({
 });
 
 const authStore = useAuthStore();
+const navbarStore = useNavbarStore();
 const router = useRouter();
+const { notify } = useNotification();
 
 const state = ref("loading");
 const tags = ref([]);
@@ -148,6 +104,7 @@ const withVideo = ref(true);
 const selectedFile = ref(null);
 const imagePreview = ref(null);
 const isDropdownOpen = ref(false);
+const isClosingNavbar = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
 
@@ -156,7 +113,11 @@ const addTag = () => {
 
   const tagExists = tags.value.some((tag) => tag.name.toLowerCase() === newTag.value.toLowerCase());
   if (tagExists) {
-    alert("Ce tag existe déjà !");
+    notify({
+      title: "Tag Conflict",
+      type: 'warn',
+      text: "This tag already exists !",
+    });
     newTag.value = "";
     return;
   }
@@ -174,7 +135,11 @@ const addTag = () => {
       },
     })
     .then(() => {
-      console.log("Tag créé avec succès.", newTagObject);
+      notify({
+        title: "Tag Creation",
+        type: 'success',
+        text: "Tag created successfully !",
+      });
 
       return axios.get(`${url.baseUrl}:${url.portBack}/api/v1/tags/`, {
         withCredentials: true,
@@ -193,13 +158,13 @@ const addTag = () => {
       state.value = "idle";
     })
     .catch((error) => {
-      console.error("Erreur lors de la création du tag:", error);
+      notify({
+        title: "Error Creating Tag",
+        type: 'error',
+        text: error.response.data.message,
+      });
       state.value = "error";
     });
-};
-
-const logSelectedTags = () => {
-  console.log("Tags sélectionnés:", selectedTags.value);
 };
 
 const toggleWithVideo = () => {
@@ -236,10 +201,15 @@ onMounted(() => {
       }
     })
     .catch((error) => {
-      console.log("Erreur lors de la récupération des tags:", error.message);
+      notify({
+        title: "Error Fetching Tags",
+        type: 'error',
+        text: error.response.data.message,
+      });
       state.value = "error";
     });
 
+  //handle click outside tag dropdown
   document.addEventListener("click", handleClickOutside);
 });
 
@@ -253,55 +223,113 @@ const handleClickOutside = (event) => {
   }
 };
 
+const handleClickOutsideNavbar = (event) => {
+  if (navbarStore.isMenuOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    isClosingNavbar.value = true;
+    navbarStore.closeMenu();
+
+    setTimeout(() => {
+      isClosingNavbar.value = false;
+    }, 200);
+  } else {
+    return true;
+  }
+};
+
 const handleSubmit = () => {
-  if (!selectedFile.value && !withVideo.value) {
-    alert("Veuillez sélectionner une image ou inclure une URL YouTube !");
+  if (!selectedFile.value && !withVideo.value || !form.value.urlYoutube && withVideo.value) {
+    notify({
+      title: "Selecting Ressource",
+      type: 'warn',
+      text: 'Please select an image or include a YouTube URL!',
+    });
     return;
   }
 
   const cleanedTags = selectedTags.value.map(tag => {
-    const { createdAt, updatedAt, ...cleanTag } = tag; 
+    const { createdAt, updatedAt, ...cleanTag } = tag;
     return cleanTag;
   });
 
   const formData = new FormData();
+
+  // Verify youtube ID is valid
+  const isValidYoutubeId = extractVideoId(form.value.urlYoutube)
+
   formData.append("title", form.value.title);
   formData.append("description", form.value.description);
-  if (!withVideo.value) formData.append("preview", selectedFile.value);
-  else formData.append("urlYoutube", form.value.urlYoutube);
+  if (!withVideo.value) {
+    formData.append("preview", selectedFile.value)
+  } else {
+    if (!isValidYoutubeId) {
+      notify({
+        title: "Selecting Ressource",
+        type: 'warn',
+        text: 'Please Select a valid Youtube URL!',
+      });
+    }
+    formData.append("urlYoutube", form.value.urlYoutube);
+  }
+
 
   formData.append("userId", authStore.user.id);
   formData.append("tags", JSON.stringify(cleanedTags));
 
-  axios
-    .post(`${url.baseUrl}:${url.portBack}/api/v1/articles/`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-    .then((response) => {
-      console.log("Article créé avec succès:", response.data);
-      router.push("/articles");
-    })
-    .catch((error) => {
-      console.error("Erreur lors de la création de l'article:", error);
-    });
+  if (isValidYoutubeId) {
+    axios
+      .post(`${url.baseUrl}:${url.portBack}/api/v1/articles/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        console.log("res : ", response)
+        state.value = 'loading';
+        notify({
+          title: "Article Creation",
+          type: 'success',
+          text: 'Article created successfully !',
+        });
+        setTimeout(() => {
+          state.value = 'idle';
+          router.push("/articles");
+        }, 2000);
+      })
+      .catch((error) => {
+        console.log("error : ", error)
+        notify({
+          title: "Article Creation",
+          type: 'error',
+          text: error.response.data.message,
+        });
+        state.value = 'error';
+      });
+  }
+
+
 };
 
 const toggleDropdown = () => {
+  if (isClosingNavbar.value) {
+    return;
+  }
+
   isDropdownOpen.value = !isDropdownOpen.value;
 };
 </script>
 
 <style scoped>
 input.switch {
-  min-width: 50px !important;
+  min-width: 30px !important;
 }
 
 .dropdown-placeholder {
   font-size: 18px;
   font-weight: lighter;
-  color:#8d8d8d;
+  color: #8d8d8d;
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -311,7 +339,6 @@ input.switch {
   border: 1px solid #ccc;
   border-radius: 5px;
   transition: border-color 0.3s;
-  z-index: 1;
   max-width: 100%;
   margin-bottom: 40px;
 }
@@ -330,6 +357,7 @@ input.switch {
   gap: 8px;
   max-width: 455px;
 }
+
 @media (max-width: 768px) {
   .dropdown-toggle {
     max-width: 292px;

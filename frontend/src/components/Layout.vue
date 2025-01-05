@@ -3,7 +3,7 @@
     <header class="header">
       <slot name="header"></slot>
     </header>
-    <main class="main">
+    <main class="main" @click="closeNavbar">
       <slot name="main"></slot>
     </main>
     <footer class="footer">
@@ -11,6 +11,19 @@
     </footer>
   </div>
 </template>
+
+<script setup>
+import { useNavbarStore } from "../stores/navbar";
+
+const navbarStore = useNavbarStore();
+
+const closeNavbar = () => {
+  if (navbarStore.isMenuOpen) {
+    navbarStore.closeMenu();
+    return;
+  }
+};
+</script>
 
 <style scoped>
 .layout {
@@ -49,5 +62,4 @@ footer {
   bottom: 0;
   z-index: 1;
 }
-
 </style>

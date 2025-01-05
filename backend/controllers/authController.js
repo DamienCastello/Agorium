@@ -17,12 +17,12 @@ module.exports = {
         try {
             const user = await User.findOne({ where: { email: req.body.email } });
             if (!user) {
-                return res.status(404).json({ message: "User not found" });
+                return res.status(404).json({ message: "User not found." });
             }
     
             const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
             if (!isPasswordValid) {
-                return res.status(401).json({ success: false, message: 'Invalid password' });
+                return res.status(401).json({ success: false, message: 'Invalid password.' });
             }
     
             const userData = {
@@ -37,7 +37,7 @@ module.exports = {
             return res.json({ user: userData, token });
         } catch (error) {
             console.error("Erreur lors de la connexion :", error);
-            return res.status(500).json({ message: "Erreur interne du serveur." });
+            return res.status(500).json({ message: "Internal server error." });
         }
     },
     signUp: async function (req, res, next) {
@@ -71,10 +71,10 @@ module.exports = {
             };
     
             const token = jwt.sign(userData, secretKey, { expiresIn: '1d' });
-            return res.json({ user: userData, token });
+            return res.status(200).json({ user: userData, token });
         } catch (error) {
-            console.error("Erreur lors de la création de l'utilisateur :", error);
-            return res.status(500).json({ message: "Erreur interne du serveur.", error });
+            console.error("Erreur lors de la création de l'utilisateur: ", error.message);
+            return res.status(500).json({ message: "Internal server error."});
         }
     }
 

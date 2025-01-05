@@ -3,7 +3,7 @@
     <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
       <p><span>{{ comment.user.name }}:</span> {{ comment.content }}</p>
     </div>
-    <div class="comment-container">
+    <div class="comment-container" @mousedown="handleClickOutsideNavbar">
       <label for="comment" class="comment-label">Laisser un commentaire :</label>
       <textarea
         id="comment"
@@ -20,13 +20,14 @@
         </p>
         <button
           @click="submitComment"
-          :disabled="!newComment || !authStore.user"
+          :disabled="!newComment || !authStore.user || navbarStore.isMenuOpen"
           class="submit-button"
         >
           Envoyer
         </button>
       </div>
     </div>
+    <notifications position="bottom right" />
   </template>
   
   <script setup>
@@ -34,19 +35,32 @@
   import axios from "axios";
   import url from "@/utils/url";
   import { useAuthStore } from "@/stores/auth";
+  import { useNavbarStore } from "@/stores/navbar";
+  import { useNotification } from "@kyvg/vue3-notification";
+
   
   const props = defineProps(["article", "refreshComments"]);
   const newComment = ref("");
   const authStore = useAuthStore();
+  const navbarStore = useNavbarStore();
+  const { notify } = useNotification()
   
   const submitComment = () => {
     if (!authStore.user) {
-      console.warn("Utilisateur non connecté. Impossible d'envoyer un commentaire.");
+      notify({
+        title: "Commenting Article",
+        type: 'warn',
+        text: 'User not logged in. Unable to post comment.',
+      });
       return;
     }
   
     if (!newComment.value.trim()) {
-      console.warn("Commentaire vide.");
+      notify({
+        title: "Commenting Article",
+        type: 'warn',
+        text: 'comment can not be empty.',
+      });
       return;
     }
   
@@ -66,43 +80,61 @@
         }
       )
       .then(() => {
-        console.log("Commentaire soumis :", newComment.value);
+        notify({
+          title: "Commenting Article",
+          type: 'success',
+          text: 'comment created successfully !',
+        });
         newComment.value = "";
         if (props.refreshComments) {
           props.refreshComments();
         }
       })
       .catch((error) => {
-        console.error("Error on commenting article:", error);
+        notify({
+          title: "Commenting Article",
+          type: 'error',
+          text: error.response.data.message,
+        });
       });
+  };
+
+  const handleClickOutsideNavbar = (event) => {
+    if (navbarStore.isMenuOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      navbarStore.closeMenu();
+    } else {
+      return true;
+    }
   };
   </script>
   
   <style>
 .comments {
-  display: flex; /* Affichage flexible pour aligner les parties du commentaire */
-  flex-wrap: wrap; /* Autorise les retours à la ligne si nécessaire */
-  align-items: flex-start; /* Alignement vertical à gauche */
-  white-space: normal; /* Retour à la ligne naturel */
-  word-wrap: break-word; /* Gère les mots longs */
-  text-align: left; /* Aligne le texte à gauche */
-  margin-bottom: 8px; /* Espacement entre chaque commentaire */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  white-space: normal;
+  word-wrap: break-word;
+  text-align: left;
+  margin-bottom: 8px;
 }
 
 .comments span {
-  font-weight: bold; /* Nom de l'utilisateur en gras */
-  margin-right: 8px; /* Espacement entre le nom et le commentaire */
+  font-weight: bold;
+  margin-right: 8px;
 }
 
 @media (max-width: 768px) {
   .comments {
-    flex-direction: column; /* Affiche le contenu en colonne en vue mobile */
-    align-items: flex-start; /* Aligne correctement le contenu à gauche */
-    gap: 5px; /* Ajoute un léger espacement entre les éléments */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
   }
 
   .comments span {
-    margin-right: 4px; /* Supprime l'espacement horizontal en vue mobile */
+    margin-right: 4px;
   }
 }
 
