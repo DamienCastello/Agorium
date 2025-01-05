@@ -43,15 +43,18 @@ import { useAuthStore } from "@/stores/auth";
 import LikedIcon from "./icons/likedIcon.vue";
 import UnlikedIcon from "./icons/unlikedIcon.vue";
 import Comments from "./Comments.vue";
+import { useNavbarHandler } from "@/composables/useNavbarHandler";
 
 const article = ref(null);
 const isLiked = ref(false);
 const state = ref("loading");
 const route = useRoute();
 const authStore = useAuthStore();
+const { handleNavbar } = useNavbarHandler();
 
 const toggleLike = () => {
-  if (!article.value || !article.value.id) {
+  handleNavbar(() => {
+    if (!article.value || !article.value.id) {
     console.error("Article is not loaded or missing ID");
     return;
   }
@@ -74,6 +77,7 @@ const toggleLike = () => {
       console.error("Error on liking or unliking article:", error);
       state.value = "error";
     });
+  })
 };
 
 const fetchArticle = () => {

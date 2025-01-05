@@ -50,10 +50,12 @@
   import { useRouter } from "vue-router";
   import url from "../utils/url";
   import getYoutubeThumbnail from "../utils/getYoutubeThumbnail";
+  import { useNavbarHandler } from "../composables/useNavbarHandler";
   
   const articles = ref([]);
   const state = ref("loading");
   const router = useRouter();
+  const { handleNavbar } = useNavbarHandler();
   
   onMounted(() => {
     axios(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
@@ -74,7 +76,9 @@
   });
   
   const navigateToValidation = (id) => {
-    router.push(`/validations/${id}`);
+    handleNavbar(() => {
+      router.push(`/validations/${id}`);
+    })
   };
   </script>
   

@@ -6,6 +6,7 @@
         id="preview"
         @change="handleFileUpload"
         accept="image/*"
+        :disabled="navbarStore.isMenuOpen"
       />
       <FadeSlideTransition>
         <div v-if="imagePreview">
@@ -22,7 +23,9 @@
   
   <script setup>
   import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
+  import { useNavbarStore } from "@/stores/navbar";
 
+  const navbarStore = useNavbarStore();
   const props = defineProps(["imagePreview"]);
   const emit = defineEmits(["update:selectedFile", "update:imagePreview"]);
   

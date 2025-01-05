@@ -1,5 +1,5 @@
 <template>
-    <div class="signup-container">
+    <div class="signup-container" @mousedown="handleClickOutsideNavbar">
       <h1>Créer un compte</h1>
       <form @submit.prevent="handleSignup">
         <fieldset>
@@ -12,9 +12,9 @@
         </fieldset>
         <fieldset>
           <label for="avatar">Avatar (optionnel)</label>
-          <input id="avatar" type="file" @change="handleFileChange" />
+          <input :disabled="navbarStore.isMenuOpen" id="avatar" type="file" @change="handleFileChange" />
         </fieldset>
-        <button type="submit">S'inscrire</button>
+        <button :disabled="navbarStore.isMenuOpen" type="submit">S'inscrire</button>
       </form>
       <p v-if="error" class="error">{{ error }}</p>
     </div>
@@ -25,15 +25,16 @@
   import { ref } from "vue";
   import { useRouter } from "vue-router";
   import url from "@/utils/url";
+  import { useNavbarStore } from "@/stores/navbar";
   
   const router = useRouter();
-  
   const form = ref({
     email: "",
     password: "",
   });
   const avatarFile = ref(null);
   const error = ref("");
+  const navbarStore = useNavbarStore();
   
   const handleFileChange = (event) => {
     avatarFile.value = event.target.files[0];
@@ -60,6 +61,16 @@
     } catch (err) {
       console.error("Erreur lors de l'inscription : ", err);
       error.value = err.response?.data?.message || "Une erreur s'est produite.";
+    }
+  };
+
+  const handleClickOutsideNavbar = (event) => {
+    if (navbarStore.isMenuOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      navbarStore.closeMenu();
+    } else {
+      return true;
     }
   };
   </script>

@@ -1,16 +1,16 @@
 <template>
-    <div>
+    <div @mousedown="handleClickOutsideNavbar">
       <h1>Login</h1>
-      <form @submit.prevent="handleLogin">
-        <div>
+      <form @submit.prevent="handleLogin" >
+        <fieldset>
           <label for="email">Email:</label>
           <input id="email" v-model="email" type="email" />
-        </div>
-        <div>
+        </fieldset>
+        <fieldset>
           <label for="password">Password:</label>
           <input id="password" v-model="password" type="password" />
-        </div>
-        <button type="submit">Login</button>
+        </fieldset>
+        <button :disabled="navbarStore.isMenuOpen" type="submit">Login</button>
         <p v-if="error">{{ error }}</p>
       </form>
     </div>
@@ -20,12 +20,14 @@
   import { ref } from 'vue';
   import { useAuthStore } from '../stores/auth';
   import { useRouter } from 'vue-router';
+  import { useNavbarStore } from '../stores/navbar';
   
   const email = ref('');
   const password = ref('');
   const error = ref(null);
   const authStore = useAuthStore();
   const router = useRouter();
+  const navbarStore = useNavbarStore();
   
   const handleLogin = async () => {
     try {
@@ -33,6 +35,16 @@
       router.push('/articles');
     } catch (err) {
       error.value = 'Invalid email or password.';
+    }
+  };
+
+  const handleClickOutsideNavbar = (event) => {
+    if (navbarStore.isMenuOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      navbarStore.closeMenu();
+    } else {
+      return true;
     }
   };
   </script>

@@ -7,14 +7,12 @@ export const useNavbarStore = defineStore('navbar', {
   actions: {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
-      
     },
     closeMenu() {
       this.isMenuOpen = false;
-      console.log("check in store: ", this.isMenuOpen)
     },
     openMenu() {
       this.isMenuOpen = true;
     }
-  },
+  }
 });
