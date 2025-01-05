@@ -16,8 +16,8 @@
         </fieldset>
         <button :disabled="navbarStore.isMenuOpen" type="submit">S'inscrire</button>
       </form>
-      <p v-if="error" class="error">{{ error }}</p>
     </div>
+    <notifications position="bottom right" />
   </template>
   
   <script setup>
@@ -26,6 +26,8 @@
   import { useRouter } from "vue-router";
   import url from "@/utils/url";
   import { useNavbarStore } from "@/stores/navbar";
+  import { useNotification } from "@kyvg/vue3-notification";
+
   
   const router = useRouter();
   const form = ref({
@@ -33,8 +35,8 @@
     password: "",
   });
   const avatarFile = ref(null);
-  const error = ref("");
   const navbarStore = useNavbarStore();
+  const { notify } = useNotification();
   
   const handleFileChange = (event) => {
     avatarFile.value = event.target.files[0];
@@ -54,13 +56,20 @@
           "Content-Type": "multipart/form-data",
         },
       });
-  
-      console.log("Inscription réussie : ", response.data);
+
+      notify({
+        title: "Sign Up",
+        type: 'success',
+        text: 'Account created successfully !',
+      });
   
       router.push("/login");
-    } catch (err) {
-      console.error("Erreur lors de l'inscription : ", err);
-      error.value = err.response?.data?.message || "Une erreur s'est produite.";
+    } catch (error) {
+      notify({
+        title: "Sign Up",
+        type: 'error',
+        text: error.response.data.message,
+      });
     }
   };
 

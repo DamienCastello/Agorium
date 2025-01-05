@@ -9,8 +9,8 @@ export default function extractVideoId(url) {
       return match[1];
     }
     
-    // If no ID is found, returns null
-    return null;
+    // If no ID is found, returns false
+    return false;
   }
   
   /*

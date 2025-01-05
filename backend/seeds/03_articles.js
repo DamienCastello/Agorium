@@ -23,7 +23,7 @@ const { Article, Like, Tag } = models;
           isValid: true,
           validatedBy: 1,
         },
-        urlYoutube: {
+        videoContent: {
           value: '',
           isValid: true,
           validatedBy: 1,
@@ -65,7 +65,7 @@ const { Article, Like, Tag } = models;
           isValid: null,
           validatedBy: null,
         },
-        urlYoutube: {
+        videoContent: {
           value: '',
           isValid: null,
           validatedBy: null,
@@ -101,7 +101,7 @@ const { Article, Like, Tag } = models;
           isValid: null,
           validatedBy: null,
         },
-        urlYoutube: {
+        videoContent: {
           value: "",
           isValid: null,
           validatedBy: null,

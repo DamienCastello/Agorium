@@ -59,17 +59,17 @@
                     </div>
                     <div class="group">
                         <div class="field-row">
-                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.urlYoutube.isValid }"
-                                @click="accept(article, 'urlYoutube')">
+                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.videoContent.isValid }"
+                                @click="accept(article, 'videoContent')">
                                 <CheckIcon />
                             </div>
                             <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.urlYoutube.isValid === false }"
-                                @click="refuse(article, 'urlYoutube')">
+                                :class="{ refused: article.refusalReasons.videoContent.isValid === false }"
+                                @click="refuse(article, 'videoContent')">
                                 <CrossIcon />
                             </div>
-                            <textarea :disabled="article.refusalReasons.urlYoutube.isValid"
-                                v-model="article.refusalReasons.urlYoutube.value"
+                            <textarea :disabled="article.refusalReasons.videoContent.isValid"
+                                v-model="article.refusalReasons.videoContent.value"
                                 placeholder="Motif du refus de la vidéo"></textarea>
                         </div>
                     </div>
@@ -185,19 +185,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <td class="icon-fields" :class="{ validated: article.refusalReasons.title.isValid }"
-                                @click="accept(article, 'title')">
-                                <CheckIcon />
-                            </td>
-                            <td class="icon-fields" :class="{ refused: article.refusalReasons.title.isValid === false }"
-                                @click="refuse(article, 'title')">
-                                <CrossIcon />
-                            </td>
-                            <td>
-                                <textarea :disabled="article.refusalReasons.title.isValid"
-                                    v-model="article.refusalReasons.title.value"
-                                    placeholder="Motif du refus du titre"></textarea>
-                            </td>
+                            <tr>
+                                <td class="icon-fields" :class="{ validated: article.refusalReasons.title.isValid }"
+                                    @click="accept(article, 'title')">
+                                    <CheckIcon />
+                                </td>
+                                <td class="icon-fields" :class="{ refused: article.refusalReasons.title.isValid === false }"
+                                    @click="refuse(article, 'title')">
+                                    <CrossIcon />
+                                </td>
+                                <td>
+                                    <textarea :disabled="article.refusalReasons.title.isValid"
+                                        v-model="article.refusalReasons.title.value"
+                                        placeholder="Motif du refus du titre"></textarea>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -221,21 +223,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <td class="icon-fields"
-                                    :class="{ validated: article.refusalReasons.urlYoutube.isValid }"
-                                    @click="accept(article, 'urlYoutube')">
-                                    <CheckIcon />
-                                </td>
-                                <td class="icon-fields"
-                                    :class="{ refused: article.refusalReasons.urlYoutube.isValid === false }"
-                                    @click="refuse(article, 'urlYoutube')">
-                                    <CrossIcon />
-                                </td>
-                                <td>
-                                    <textarea :disabled="article.refusalReasons.urlYoutube.isValid"
-                                        v-model="article.refusalReasons.urlYoutube.value"
-                                        placeholder="Motif du refus de la vidéo"></textarea>
-                                </td>
+                                <tr>
+                                    <td class="icon-fields"
+                                        :class="{ validated: article.refusalReasons.videoContent.isValid }"
+                                        @click="accept(article, 'videoContent')">
+                                        <CheckIcon />
+                                    </td>
+                                    <td class="icon-fields"
+                                        :class="{ refused: article.refusalReasons.videoContent.isValid === false }"
+                                        @click="refuse(article, 'videoContent')">
+                                        <CrossIcon />
+                                    </td>
+                                    <td>
+                                        <textarea :disabled="article.refusalReasons.videoContent.isValid"
+                                            v-model="article.refusalReasons.videoContent.value"
+                                            placeholder="Motif du refus de la vidéo"></textarea>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -255,20 +259,22 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <td class="icon-fields" :class="{ validated: article.refusalReasons.preview.isValid }"
-                                    @click="accept(article, 'preview')">
-                                    <CheckIcon />
-                                </td>
-                                <td class="icon-fields"
-                                    :class="{ refused: article.refusalReasons.preview.isValid === false }"
-                                    @click="refuse(article, 'preview')">
-                                    <CrossIcon />
-                                </td>
-                                <td>
-                                    <textarea :disabled="article.refusalReasons.preview.isValid"
-                                        v-model="article.refusalReasons.preview.value"
-                                        placeholder="Motif du refus de l'image"></textarea>
-                                </td>
+                                <tr>
+                                    <td class="icon-fields" :class="{ validated: article.refusalReasons.preview.isValid }"
+                                        @click="accept(article, 'preview')">
+                                        <CheckIcon />
+                                    </td>
+                                    <td class="icon-fields"
+                                        :class="{ refused: article.refusalReasons.preview.isValid === false }"
+                                        @click="refuse(article, 'preview')">
+                                        <CrossIcon />
+                                    </td>
+                                    <td>
+                                        <textarea :disabled="article.refusalReasons.preview.isValid"
+                                            v-model="article.refusalReasons.preview.value"
+                                            placeholder="Motif du refus de l'image"></textarea>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -290,20 +296,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <td class="icon-fields" :class="{ validated: article.refusalReasons.description.isValid }"
-                                @click="accept(article, 'description')">
-                                <CheckIcon />
-                            </td>
-                            <td class="icon-fields"
-                                :class="{ refused: article.refusalReasons.description.isValid === false }"
-                                @click="refuse(article, 'description')">
-                                <CrossIcon />
-                            </td>
-                            <td>
-                                <textarea :disabled="article.refusalReasons.description.isValid"
-                                    v-model="article.refusalReasons.description.value"
-                                    placeholder="Motif du refus de la description"></textarea>
-                            </td>
+                            <tr>
+                                <td class="icon-fields" :class="{ validated: article.refusalReasons.description.isValid }"
+                                    @click="accept(article, 'description')">
+                                    <CheckIcon />
+                                </td>
+                                <td class="icon-fields"
+                                    :class="{ refused: article.refusalReasons.description.isValid === false }"
+                                    @click="refuse(article, 'description')">
+                                    <CrossIcon />
+                                </td>
+                                <td>
+                                    <textarea :disabled="article.refusalReasons.description.isValid"
+                                        v-model="article.refusalReasons.description.value"
+                                        placeholder="Motif du refus de la description"></textarea>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -321,28 +329,31 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <td class="icon-fields" :class="{ validated: article.isValid }"
-                                @click="accept(article, 'overall')">
-                                <CheckIcon />
-                            </td>
-                            <td class="icon-fields" :class="{ refused: article.isValid === false }"
-                                @click="refuse(article, 'overall')">
-                                <CrossIcon />
-                            </td>
-                            <td>
-                                <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
-                                    placeholder="Motif du refus de l'article" class="final-textarea">
-                                </textarea>
-                            </td>
-                            <td class="group-final-submit">
-                                <button @click="updateArticle(article)">Update</button>
-                            </td>
+                            <tr>
+                                <td class="icon-fields" :class="{ validated: article.isValid }"
+                                    @click="accept(article, 'overall')">
+                                    <CheckIcon />
+                                </td>
+                                <td class="icon-fields" :class="{ refused: article.isValid === false }"
+                                    @click="refuse(article, 'overall')">
+                                    <CrossIcon />
+                                </td>
+                                <td>
+                                    <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
+                                        placeholder="Motif du refus de l'article" class="final-textarea">
+                                    </textarea>
+                                </td>
+                                <td class="group-final-submit">
+                                    <button @click="updateArticle(article)">Update</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+    <notifications position="bottom right" />
 </template>
 
 <script setup>
@@ -357,6 +368,8 @@ import CheckIcon from "./icons/checkIcon.vue";
 import CrossIcon from "./icons/crossIcon.vue";
 import { useNavbarStore } from "../stores/navbar";
 import { useNavbarHandler } from "../composables/useNavbarHandler";
+import { useNotification } from "@kyvg/vue3-notification";
+
 
 const isMobile = ref(false);
 const article = ref(null);
@@ -366,6 +379,7 @@ const authStore = useAuthStore();
 const tags = ref([]);
 const navbarStore = useNavbarStore();
 const { handleNavbar } = useNavbarHandler();
+const { notify } = useNotification();
 
 const checkWindowSize = () => {
     if (window.innerWidth <= 768) {
@@ -383,9 +397,9 @@ const accept = (item, entity) => {
         } else if (entity === 'title') {
             item.refusalReasons.title.value = "";
             item.refusalReasons.title.isValid = true;
-        } else if (entity === 'urlYoutube') {
-            item.refusalReasons.urlYoutube.value = "";
-            item.refusalReasons.urlYoutube.isValid = true;
+        } else if (entity === 'videoContent') {
+            item.refusalReasons.videoContent.value = "";
+            item.refusalReasons.videoContent.isValid = true;
         } else if (entity === 'preview') {
             item.refusalReasons.preview.value = "";
             item.refusalReasons.preview.isValid = true;
@@ -398,7 +412,11 @@ const accept = (item, entity) => {
             //Verify tags validations before validate article
             for (let i = 0; i < article.value.tags.length; i++) {
                 if (!article.value.tags[i].isValid) {
-                    console.log("some tag not valid")
+                    notify({
+                        title: "Validation",
+                        type: 'warn',
+                        text: 'Some tag(s) not validated',
+                    });
                     canValidate = false
                 }
             }
@@ -407,10 +425,14 @@ const accept = (item, entity) => {
             if (article.value.preview === null) {
                 if (
                     !item.refusalReasons.title.isValid ||
-                    !item.refusalReasons.urlYoutube.isValid ||
+                    !item.refusalReasons.videoContent.isValid ||
                     !item.refusalReasons.description.isValid
                 ) {
-                    console.log("some field not valid (preview article)")
+                    notify({
+                        title: "Validation",
+                        type: 'warn',
+                        text: 'Some field(s) not validated',
+                    });
                     canValidate = false
                 }
             } else if (article.value.urlYoutube === null) {
@@ -419,13 +441,16 @@ const accept = (item, entity) => {
                     !item.refusalReasons.preview.isValid ||
                     !item.refusalReasons.description.isValid
                 ) {
-                    console.log("some field not valid (vidéo article)")
+                    notify({
+                        title: "Validation",
+                        type: 'warn',
+                        text: 'Some field(s) not validated',
+                    });
                     canValidate = false
                 }
             }
             //Finaly can validate article if all validations are true
             if (canValidate) {
-                console.log("final validation impossible: some validation is refused")
                 item.overallReasonForRefusal = "";
                 item.isValid = true;
             }
@@ -440,14 +465,13 @@ const refuse = (item, entity) => {
             item.isValid = false;
         } else if (entity === 'title') {
             item.refusalReasons.title.isValid = false;
-        } else if (entity === 'urlYoutube') {
-            item.refusalReasons.urlYoutube.isValid = false;
+        } else if (entity === 'videoContent') {
+            item.refusalReasons.videoContent.isValid = false;
         } else if (entity === 'preview') {
             item.refusalReasons.preview.isValid = false;
         } else if (entity === 'description') {
             item.refusalReasons.description.isValid = false;
         } else if (entity === 'overall') {
-            console.log("enter refused over")
             item.isValid = false
         }
     })
@@ -465,9 +489,17 @@ const updateTag = (tag) => {
         axios.put(`${url.baseUrl}:${url.portBack}/api/v1/tags/${tag.id}/validate`, updatedTag, {
             withCredentials: true,
         }).then(response => {
-            console.log("Tag validation updated successfully!");
+            notify({
+                title: "Validation",
+                type: 'success',
+                text: 'Tag validated successfully !',
+            });
         }).catch(error => {
-            console.error("Error updating validation:", error);
+            notify({
+                title: "Validation",
+                type: 'error',
+                text: `Error updating tag validation: ${error.response.data.message}`,
+            });
         });
     })  
 };
@@ -493,9 +525,9 @@ const updateArticle = (article) => {
                     isValid: article.refusalReasons.preview.isValid,
                     validatedBy: authStore.user?.id
                 },
-                urlYoutube: {
-                    value: article.refusalReasons.urlYoutube.value,
-                    isValid: article.refusalReasons.urlYoutube.isValid,
+                videoContent: {
+                    value: article.refusalReasons.videoContent.value,
+                    isValid: article.refusalReasons.videoContent.isValid,
                     validatedBy: authStore.user?.id
                 }
             }),
@@ -507,9 +539,17 @@ const updateArticle = (article) => {
         axios.put(`${url.baseUrl}:${url.portBack}/api/v1/articles/${article.id}/validate`, updatedArticle, {
             withCredentials: true,
         }).then(response => {
-            console.log("Tag validation updated successfully!");
+            notify({
+                title: "Validation",
+                type: 'success',
+                text: 'Article validated successfully !',
+            });
         }).catch(error => {
-            console.error("Error updating validation:", error);
+            notify({
+                title: "Validation",
+                type: 'error',
+                text: `Error updating article validation: ${error.response.data.message}`,
+            });
         });
     })
 };
@@ -523,11 +563,6 @@ onMounted(() => {
 
 
     const articleId = route.params.id;
-
-    if (!articleId) {
-        state.value = "error";
-        return;
-    }
 
     axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles/${articleId}`, {
         withCredentials: true,
@@ -543,7 +578,11 @@ onMounted(() => {
                     try {
                         fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
                     } catch (e) {
-                        console.error("Erreur lors du parsing de refusalReasons :", e);
+                        notify({
+                            title: "Fetching Article",
+                            type: 'error',
+                            text: `Error parsing refusalReasons: ${e.message}`,
+                        });
                         fetchedArticle.refusalReasons = {};
                     }
                     article.value = fetchedArticle;
@@ -554,12 +593,14 @@ onMounted(() => {
                     tags.value = response.data.article.tags;
                     state.value = "idle";
                 }
-            } else {
-                state.value = "error";
             }
         })
         .catch((error) => {
-            console.log("Error fetching article:", error.message);
+            notify({
+                title: "Fetching Article Awaiting To Validation",
+                type: 'error',
+                text: `Error fetching article: ${error.response.data.message}`,
+            });
             state.value = "error";
         })
 });

@@ -41,6 +41,7 @@
       </div>
     </div>
   </div>
+  <notifications position="bottom right" />
 </template>
 
 
@@ -51,11 +52,13 @@ import { useRouter } from "vue-router";
 import url from "../utils/url";
 import getYoutubeThumbnail from "../utils/getYoutubeThumbnail";
 import { useNavbarHandler } from "@/composables/useNavbarHandler";
+import { useNotification } from "@kyvg/vue3-notification";
 
 const articles = ref([]);
 const state = ref("loading");
 const router = useRouter();
 const { handleNavbar } = useNavbarHandler();
+const { notify } = useNotification()
 
 onMounted(() => {
   axios(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
@@ -70,7 +73,11 @@ onMounted(() => {
       state.value = "idle";
     })
     .catch((error) => {
-      console.log("error : ", error);
+      notify({
+        title: "Fetching Articles",
+        type: 'error',
+        text: error.response.data.message,
+      });
       state.value = "error";
     });
 });

@@ -20,7 +20,7 @@ router.post('/', authenticateJwt, previewUploader.single("preview"), (req, res, 
       try {
         req.body.tags = JSON.parse(req.body.tags);
       } catch (error) {
-        return res.status(400).json({ error: "Invalid tags format" });
+        return res.status(400).json({ message: "Invalid tags format" });
       }
     }
     articlesController.create(req, res, next);
