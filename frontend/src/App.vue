@@ -1,7 +1,12 @@
 <template>
-  <Layout class="layout">
+  <Layout>
     <template #header>
-      <Navbar :isAdmin="authStore.isAdmin()" :isAuthenticated="authStore.isAuthenticated()" @logout="authStore.logout" />
+      <Navbar
+        :isAdmin="authStore.isAdmin()"
+        :isAuthenticated="authStore.isAuthenticated()"
+        @logout="authStore.logout"
+        class="pico"
+      />
     </template>
     <template #main>
       <div class="content">
@@ -11,7 +16,7 @@
       </div>
     </template>
     <template #footer>
-      <Footer></Footer>
+      <Footer class="pico" />
     </template>
   </Layout>
 </template>
@@ -24,4 +29,3 @@ import { useAuthStore } from './stores/auth';
 
 const authStore = useAuthStore();
 </script>
-

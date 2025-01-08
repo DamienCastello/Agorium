@@ -1,10 +1,31 @@
 # wakeup-normies Project v1.0.0
 NPM is used to manage dependencies
 
-## Philosophie du projet
-Ce projet a pour objectif de regrouper des articles illustrés par une image ou une vidéo youtube.
-Un formulaire permet aux utilisateurs d'alimenter la liste d'articles.
-Les utilisateurs peuvent commenter les articles.
+## Project Philosophy
+WakeUp Normies is a platform dedicated to empowering free expression and sharing alternative perspectives on vital societal issues. It enables users to post articles, images, videos, and more, fostering dialogue on topics often censored or ignored by mainstream narratives. While encouraging open discussion, the platform uses moderation to block illegal content, offering a space for independent voices to question mainstream views and inform others.
+
+## Next Planned Developments:
+# CORE v1:
+- A form allows users to feed the list of articles.
+- Users can comment on articles, like and associate tags.
+- Admin users can validate articles and associated tags.
+- Sort articles by date, tags, pertinence (and maybe more).
+- Filter articles by date, tags, pertinence (and maybe more).
+- Add i18n to all displayed strings to translate into multiple languages.
+- Implement article reporting.
+- Implement gamification.
+- Improve general style (border hover and more).
+# CORE v2:
+- Deploy on a server and make it privately accessible.
+- Implement the video streaming system (upload, conversion HLS encoding, secure streaming).
+- Optimize file storage (avatars, preview, video, and maybe more).
+- Develop a DevOps pipeline (CI/CD with Docker).
+# CORE V3:
+- Implementing SSR to solve SEO issues.
+- Implement an accessibility system (screen readers, keyboard navigation).
+- Strengthen security (strong authentication, backups, protection against attacks).
+- Improve performance (caching, CDN).
+- Buy a domain, setup SSL/TLS, and make the project public.
 
 # Backend Node.js
 *requirements :*

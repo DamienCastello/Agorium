@@ -1,5 +1,5 @@
 <template>
-    <div class="container">
+    <div class="container pico">
         <div v-if="state === 'error'">
             <p>Impossible de charger cet article</p>
         </div>
