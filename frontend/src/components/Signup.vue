@@ -1,5 +1,5 @@
 <template>
-    <div class="signup-container" @mousedown="handleClickOutsideNavbar">
+    <div class="signup-container pico" @mousedown="handleClickOutsideNavbar">
       <h1>Créer un compte</h1>
       <form @submit.prevent="handleSignup">
         <fieldset>

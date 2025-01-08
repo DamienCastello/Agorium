@@ -1,8 +1,10 @@
 <template>
-    <h1>{{ props.article.title }}</h1>
-    <Player :videoId="extractYoutubeUrl(props.article.urlYoutube)" />
-    <p>{{ props.article.description }}</p>
-    <hr />
+    <div class="pico">
+        <h1>{{ props.article.title }}</h1>
+        <Player :videoId="extractYoutubeUrl(props.article.urlYoutube)" />
+        <p>{{ props.article.description }}</p>
+        <hr />
+    </div>
 </template>
 
 <script setup>

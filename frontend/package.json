@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@kyvg/vue3-notification": "^3.4.1",
+    "@vuepic/vue-datepicker": "^10.0.0",
     "axios": "^1.7.9",
     "pinia": "^2.3.0",
     "vue": "^3.5.13",

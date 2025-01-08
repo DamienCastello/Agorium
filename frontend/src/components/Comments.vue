@@ -1,116 +1,108 @@
 <template>
+  <div class="pico">
     <h3>Commentaires</h3>
     <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
       <p><span>{{ comment.user.name }}:</span> {{ comment.content }}</p>
     </div>
     <div class="comment-container" @mousedown="handleClickOutsideNavbar">
       <label for="comment" class="comment-label">Laisser un commentaire :</label>
-      <textarea
-        id="comment"
-        name="comment"
-        v-model="newComment"
-        placeholder="Mon commentaire de zinzin..."
-        aria-label="Zone de saisie pour commenter"
-        :disabled="!authStore.user"
-        class="comment-textarea"
-      ></textarea>
+      <textarea id="comment" name="comment" v-model="newComment" placeholder="Mon commentaire de zinzin..."
+        aria-label="Zone de saisie pour commenter" :disabled="!authStore.user" class="comment-textarea"></textarea>
       <div class="submit-zone">
         <p v-if="!authStore.user" class="comment-info">
           Connectez-vous pour laisser un commentaire.
         </p>
-        <button
-          @click="submitComment"
-          :disabled="!newComment || !authStore.user || navbarStore.isMenuOpen"
-          class="submit-button"
-        >
+        <button @click="submitComment" :disabled="!newComment || !authStore.user || navbarStore.isMenuOpen"
+          class="submit-button">
           Envoyer
         </button>
       </div>
     </div>
     <notifications position="bottom right" />
-  </template>
-  
-  <script setup>
-  import { ref } from "vue";
-  import axios from "axios";
-  import url from "@/utils/url";
-  import { useAuthStore } from "@/stores/auth";
-  import { useNavbarStore } from "@/stores/navbar";
-  import { useNotification } from "@kyvg/vue3-notification";
+  </div>
+</template>
 
-  
-  const props = defineProps(["article", "refreshComments"]);
-  const newComment = ref("");
-  const authStore = useAuthStore();
-  const navbarStore = useNavbarStore();
-  const { notify } = useNotification()
-  
-  const submitComment = () => {
-    if (!authStore.user) {
-      notify({
-        title: "Commenting Article",
-        type: 'warn',
-        text: 'User not logged in. Unable to post comment.',
-      });
-      return;
-    }
-  
-    if (!newComment.value.trim()) {
-      notify({
-        title: "Commenting Article",
-        type: 'warn',
-        text: 'comment can not be empty.',
-      });
-      return;
-    }
-  
-    axios
-      .post(
-        `${url.baseUrl}:${url.portBack}/api/v1/comments/`,
-        {
-          articleId: props.article.id,
-          content: newComment.value,
+<script setup>
+import { ref } from "vue";
+import axios from "axios";
+import url from "@/utils/url";
+import { useAuthStore } from "@/stores/auth";
+import { useNavbarStore } from "@/stores/navbar";
+import { useNotification } from "@kyvg/vue3-notification";
+
+
+const props = defineProps(["article", "refreshComments"]);
+const newComment = ref("");
+const authStore = useAuthStore();
+const navbarStore = useNavbarStore();
+const { notify } = useNotification()
+
+const submitComment = () => {
+  if (!authStore.user) {
+    notify({
+      title: "Commenting Article",
+      type: 'warn',
+      text: 'User not logged in. Unable to post comment.',
+    });
+    return;
+  }
+
+  if (!newComment.value.trim()) {
+    notify({
+      title: "Commenting Article",
+      type: 'warn',
+      text: 'comment can not be empty.',
+    });
+    return;
+  }
+
+  axios
+    .post(
+      `${url.baseUrl}:${url.portBack}/api/v1/comments/`,
+      {
+        articleId: props.article.id,
+        content: newComment.value,
+      },
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${authStore.token}`,
+          "Content-Type": "application/json",
         },
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${authStore.token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then(() => {
-        notify({
-          title: "Commenting Article",
-          type: 'success',
-          text: 'comment created successfully !',
-        });
-        newComment.value = "";
-        if (props.refreshComments) {
-          props.refreshComments();
-        }
-      })
-      .catch((error) => {
-        notify({
-          title: "Commenting Article",
-          type: 'error',
-          text: error.response.data.message,
-        });
+      }
+    )
+    .then(() => {
+      notify({
+        title: "Commenting Article",
+        type: 'success',
+        text: 'comment created successfully !',
       });
-  };
+      newComment.value = "";
+      if (props.refreshComments) {
+        props.refreshComments();
+      }
+    })
+    .catch((error) => {
+      notify({
+        title: "Commenting Article",
+        type: 'error',
+        text: error.response.data.message,
+      });
+    });
+};
 
-  const handleClickOutsideNavbar = (event) => {
-    if (navbarStore.isMenuOpen) {
-      event.preventDefault();
-      event.stopPropagation();
-      navbarStore.closeMenu();
-    } else {
-      return true;
-    }
-  };
-  </script>
-  
-  <style>
+const handleClickOutsideNavbar = (event) => {
+  if (navbarStore.isMenuOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+    navbarStore.closeMenu();
+  } else {
+    return true;
+  }
+};
+</script>
+
+<style>
 .comments {
   display: flex;
   flex-wrap: wrap;
@@ -179,19 +171,18 @@
 }
 
 .submit-button {
-  padding: 10px 20px;
+  padding: 8px 14px;
   background-color: rgb(64, 64, 191);
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
-  max-width: 100px;
+  max-width: 150px;
 }
 
 .submit-button:disabled {
   background-color: #d3d3d3;
   cursor: not-allowed;
 }
-  </style>
-  
+</style>
