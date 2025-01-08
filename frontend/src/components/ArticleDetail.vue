@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container pico">
     <div v-if="state === 'error'">
       <p>Impossible de charger cet article</p>
     </div>
@@ -214,7 +214,7 @@ span {
 
 .badge {
   background-color: rgb(64, 64, 191);
-  color: #ffffff;
+  color: #ffffff !important;
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 12px !important;

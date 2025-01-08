@@ -5,7 +5,7 @@
   <div v-else-if="state === 'loading'">
     <p>Chargement ...</p>
   </div>
-  <div v-else>
+  <div v-else class="pico">
     <div @mousedown="handleClickOutsideNavbar">
       <h1>Poster un nouvel article</h1>
 
@@ -57,11 +57,16 @@
         </div>
 
         <FadeSlideTransition>
-          <component :is="componentToShow" :imagePreview="imagePreview" v-model="form.urlYoutube"
-            @update:selectedFile="updateSelectedFile" @update:imagePreview="updateImagePreview" />
+          <component 
+            :is="componentToShow"
+            v-model="form.urlYoutube"
+            :imagePreview="imagePreview"
+            @update:selectedFile="updateSelectedFile"
+            @update:imagePreview="updateImagePreview"
+          />
         </FadeSlideTransition>
         <p v-if="selectedTags.length === 0" class="comment-info">Sélectionnez au moins un tag.</p>
-        <button type="submit" :disabled="selectedTags.length === 0 || navbarStore.isMenuOpen">
+        <button type="submit" :disabled=" !isFormValid || selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
           Poster l'article
         </button>
       </form>
@@ -107,6 +112,16 @@ const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
+
+const isFormValid = computed(() => {
+  console.log("check : ", 
+  form.value.title,
+  form.value.description,
+  withVideo.value,
+  form.value.urlYoutube
+  )
+  return form.value.title && form.value.description && (withVideo.value ? form.value.urlYoutube : selectedFile.value);
+});
 
 const addTag = () => {
   if (!newTag.value.trim()) return;
@@ -169,6 +184,13 @@ const addTag = () => {
 
 const toggleWithVideo = () => {
   withVideo.value = !withVideo.value;
+
+  if (withVideo.value) {
+    selectedFile.value = null;
+    imagePreview.value = null;
+  } else {
+    form.value.urlYoutube = "";
+  }
 };
 
 const componentToShow = computed(() => {

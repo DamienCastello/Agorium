@@ -1,5 +1,5 @@
 <template>
-  <div class="player-container" 
+  <div class="player-container pico" 
       @click="closeNavbar"
       :class="{ 'navbar-open': navbarStore.isMenuOpen }">
     <iframe
