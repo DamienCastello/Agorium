@@ -4,21 +4,47 @@
       <!-- Barre de filtres -->
       <div class="filters">
         <!-- Filtre par tags -->
-        <div class="filter pico">
-          <label for="tagFilter">Filtrer par tags :</label>
-          <select id="tagFilter" v-model="selectedTag" @change="applyFilters">
-            <option value="">Tous les tags</option>
-            <option v-for="tag in allTags" :key="tag.id" :value="tag.name">
-              {{ tag.name }}
-            </option>
-          </select>
+        <div>
+          <div class="label-filter">
+            <TagIcon />
+            <label for="tagFilter">Filtrer par tags :</label>
+          </div>
+          <div class="pico">
+            <select id="tagFilter" v-model="selectedTag" @change="applyFilters" class="tag-slector">
+              <option value="">Tous les tags</option>
+              <option v-for="tag in allTags" :key="tag.id" :value="tag.name">
+                {{ tag.name }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Filtre par nom -->
-        <div class="filter pico">
-          <label for="nameFilter">Filtrer par nom :</label>
-          <input type="text" id="nameFilter" v-model="nameFilter" @input="applyFilters"
+        <div>
+          <div class="label-filter">
+            <SearchIcon />
+            <label for="nameFilter">Filtrer par nom :</label>
+          </div>
+          <div class="pico">
+            <input type="text" id="nameFilter" v-model="nameFilter" @input="applyFilters"
             placeholder="Rechercher par nom" />
+          </div>
+        </div>
+
+        <!-- Tri par date -->
+        <div>
+          <div class="label-filter">
+            <FadeSlideTransition>
+              <SortIcon :isDown="dateSort === 'desc'" />
+            </FadeSlideTransition>
+            <label class="pico">Tri par date :</label>
+          </div>
+          <div class="pico">
+            <select v-model="dateSort" @change="applyFilters" class="sort-selector">
+              <option value="desc">Les plus anciens</option>
+              <option value="asc">Les plus récents</option>
+            </select>
+          </div>
         </div>
 
         <!-- Filtre par intervalle de dates -->
@@ -28,14 +54,7 @@
             @update:model-value="applyFilters" :input-class="'custom-datepicker-input'" />
         </div>
       </div>
-      <!-- Tri par date -->
-      <div class="sort pico">
-        <label>Tri par date :</label>
-        <select v-model="dateSort" @change="applyFilters">
-          <option value="desc">Du plus récent au plus ancien</option>
-          <option value="asc">Du plus ancien au plus récent</option>
-        </select>
-      </div>
+
     </div>
 
 
@@ -83,6 +102,10 @@ import { useNavbarHandler } from "@/composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
+import TagIcon from "./icons/TagIcon.vue"
+import SearchIcon from "./icons/SearchIcon.vue"
+import SortIcon from "./icons/SortIcon.vue";
+import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 
 const articles = ref([]);
 const filteredArticles = ref([]);
@@ -109,7 +132,7 @@ onMounted(() => {
       const validArticles = response.data.articles.filter(
         (article) => article.isValid
       );
-      
+
       articles.value = validArticles;
 
       allTags.value = Array.from(
@@ -146,12 +169,10 @@ const applyFilters = () => {
   }
 
   // Filtrer par intervalle de dates
-  if(dateRange.value) {
+  if (dateRange.value) {
     if (dateRange.value[0] || dateRange.value[1]) {
       const start = dateRange.value[0] ? new Date(dateRange.value[0]) : null;
       const end = dateRange.value[1] ? new Date(dateRange.value[1]) : null;
-      console.log("start: ", start)
-      console.log("end: ", end)
       filtered = filtered.filter((article) => {
         const articleDate = new Date(article.createdAt);
         return (
@@ -181,7 +202,7 @@ const navigateToArticle = (id) => {
 <style scoped>
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 860px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -249,12 +270,17 @@ const navigateToArticle = (id) => {
   padding: 4px 8px;
   border-radius: 12px;
   display: inline-block;
-  margin: 0px 3px !important;
+  margin: 3px 3px !important;
 }
 
 .filter-sort-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 860px;
+}
+
+.sort-selector {
+  width: 100%;
+  max-width: 250px;
 }
 
 .filters {
@@ -270,8 +296,27 @@ const navigateToArticle = (id) => {
   margin-bottom: 8px;
 }
 
+.tag-selector {
+  width: 100%;
+  min-width: 500px;
+}
+
+.label-filter {
+  margin-bottom: 4px;
+  color: #5e5e5e;
+}
+
+.label-filter i {
+  margin-right: 8px
+}
+
 .filter label {
   margin-bottom: 4px;
+}
+
+.icon {
+  display: flex;
+  flex-direction: row;
 }
 
 vue-datepicker {
@@ -280,7 +325,6 @@ vue-datepicker {
 
 /* Bordure autour du champ d'entrée */
 .dp__theme_light {
-    --dp-border-color-focus: #6400e4;
+  --dp-border-color-focus: #6400e4;
 }
-
 </style>

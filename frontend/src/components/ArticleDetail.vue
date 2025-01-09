@@ -41,8 +41,8 @@ import Player from "./Player.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import url from "../utils/url";
 import { useAuthStore } from "@/stores/auth";
-import LikedIcon from "./icons/likedIcon.vue";
-import UnlikedIcon from "./icons/unlikedIcon.vue";
+import LikedIcon from "./icons/LikedIcon.vue";
+import UnLikedIcon from "./icons/UnlikedIcon.vue";
 import Comments from "./Comments.vue";
 import { useNavbarHandler } from "@/composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
@@ -119,7 +119,7 @@ const fetchArticle = () => {
 
 // Dynamically select component
 const componentToShow = computed(() => {
-  return isLiked.value ? LikedIcon : UnlikedIcon;
+  return isLiked.value ? LikedIcon : UnLikedIcon;
 });
 
 onMounted(() => {

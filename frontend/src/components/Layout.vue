@@ -77,8 +77,8 @@ footer {
 .pico input[type="button"],
 .pico input[type="submit"] {
   background-color: rgb(64, 64, 191);
-  color: var(--muted);
-  border: 1px solid rgb(64, 64, 191);
+  color: white;
+  border: 1px solid rgb(69, 50, 175);
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
 }
@@ -86,27 +86,28 @@ footer {
 .pico button:hover,
 .pico input[type="button"]:hover,
 .pico input[type="submit"]:hover {
-  background-color: #520dc2; /* Une version plus foncée de #6610f2 */
-  border-color: #520dc2;
+  background-color: rgb(87, 64, 191); /* Une version plus foncée de #6610f2 */
+  border-color: rgb(69, 50, 175);
+  color: white;
 }
 
 .pico form button {
-  background-color: rgb(64, 64, 191);
-  color: white;
-  border: 1px solid rgb(64, 64, 191);
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  background-color: rgb(64, 64, 191) !important;
+  color: white !important;
+  border: 1px solid rgb(69, 50, 175) !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s, border-color 0.2s !important;
 }
 
 .pico form button:hover {
-  background-color: #520dc2;
-  border-color: #520dc2;
+  background-color: rgb(87, 64, 191) !important;
+  border-color: rgb(69, 50, 175) !important;
 }
 
 .pico form button:disabled {
   background-color: #9980f2;
   border-color: #9980f2;
-  color: var(--muted);
+  color: white;
   cursor: not-allowed;
 }
 
@@ -115,7 +116,7 @@ footer {
 .pico input[type="submit"]:disabled {
   background-color: #9980f2; /* Une version plus claire de #6610f2 */
   border-color: #9980f2;
-  color: var(--muted);
+  color: white;
   cursor: not-allowed;
 }
 
@@ -123,7 +124,7 @@ footer {
 .pico input:focus,
 .pico textarea:focus,
 .pico select:focus {
-  border: 2px solid rgb(64, 64, 191);
+  border: 2px solid rgb(59, 50, 175);
   outline: none;
   box-shadow: 0 0 4px rgb(64, 64, 191);
 }
