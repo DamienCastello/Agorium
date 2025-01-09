@@ -154,10 +154,10 @@
                     <tbody>
                         <tr v-for="tag in article.tags" :key="tag.id">
                             <th scope="row">{{ tag.name }}</th>
-                            <td :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')">
+                            <td class="icon-tag" :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')">
                                 <CheckIcon class="icon-check" />
                             </td>
-                            <td :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')">
+                            <td class="icon-tag" :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')">
                                 <CrossIcon class="icon-cross" />
                             </td>
 
@@ -165,7 +165,7 @@
                             <td><textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                                     placeholder="Motif du refus du tag"></textarea>
                             </td>
-                            <td><button @click="updateTag(tag)">Update</button></td>
+                            <td class="tag-submit"><button @click="updateTag(tag)">Update</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -343,7 +343,7 @@
                                         placeholder="Motif du refus de l'article" class="final-textarea">
                                     </textarea>
                                 </td>
-                                <td class="group-final-submit">
+                                <td class="final-submit">
                                     <button @click="updateArticle(article)">Update</button>
                                 </td>
                             </tr>
@@ -364,8 +364,8 @@ import extractYoutubeUrl from "../utils/extractYoutubeUrl";
 import Player from "./Player.vue";
 import url from "../utils/url";
 import { useAuthStore } from "@/stores/auth";
-import CheckIcon from "./icons/checkIcon.vue";
-import CrossIcon from "./icons/crossIcon.vue";
+import CheckIcon from "./icons/CheckIcon.vue";
+import CrossIcon from "./icons/CrossIcon.vue";
 import { useNavbarStore } from "../stores/navbar";
 import { useNavbarHandler } from "../composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
@@ -650,6 +650,10 @@ label {
     font-size: 48px;
 }
 
+td.icon-tag {
+    text-align: center;
+}
+
 .group {
     display: flex;
     justify-content: center;
@@ -665,6 +669,10 @@ label {
     cursor: pointer;
     width: 60px !important;
     font-size: 40px;
+}
+
+td.icon-fields {
+    text-align: center;
 }
 
 table {
@@ -685,8 +693,9 @@ th,
 td {
     text-align: center;
     vertical-align: middle;
-    padding: 6px;
+    padding: 6px !important;
     border: 1px solid #ddd;
+    height: 115px !important;
 }
 
 thead th {
@@ -704,8 +713,8 @@ fieldset input,
 fieldset textarea {
     width: 100%;
     min-width: 200px;
-    padding: 8px;
-    font-size: 14px;
+    padding: 8px !important;
+    font-size: 14px !important;
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -725,9 +734,10 @@ td.refused {
     background-color: crimson;
 }
 
-button {
-    font-size: 14px;
-    padding: 6px;
+td button {
+    font-size: 14px !important;
+    padding: 6px !important;
+    color: white !important;
 }
 
 
@@ -769,8 +779,8 @@ button {
 textarea {
     width: 100%;
     min-width: 180px;
-    padding: 8px;
-    font-size: 14px;
+    padding: 8px !important;
+    font-size: 14px !important;
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -778,14 +788,14 @@ textarea {
     margin-bottom: 10px;
 }
 
-.group-final-submit {
+.final-submit, .tag-submit {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100px;
+    height: 115px !important;
 }
 
-.group-final-submit button {
+.final-submit button {
     height: 35px;
 }
 

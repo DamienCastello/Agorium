@@ -172,8 +172,6 @@ const handleClickOutsideNavbar = (event) => {
 
 .submit-button {
   padding: 8px 14px;
-  background-color: rgb(64, 64, 191);
-  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
