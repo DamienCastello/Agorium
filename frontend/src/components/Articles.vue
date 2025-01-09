@@ -130,7 +130,6 @@ onMounted(() => {
 });
 
 const applyFilters = () => {
-  console.log("enter apply", dateRange.value)
   // Filtrer par tag
   let filtered = articles.value;
   if (selectedTag.value) {
@@ -147,19 +146,19 @@ const applyFilters = () => {
   }
 
   // Filtrer par intervalle de dates
-
-
-  if (dateRange.value[0] || dateRange.value[1]) {
-    const start = dateRange.value[0] ? new Date(dateRange.value[0]) : null;
-    const end = dateRange.value[1] ? new Date(dateRange.value[1]) : null;
-    console.log("start: ", start)
-    console.log("end: ", end)
-    filtered = filtered.filter((article) => {
-      const articleDate = new Date(article.createdAt);
-      return (
-        (!start || articleDate >= start) && (!end || articleDate <= end)
-      );
-    });
+  if(dateRange.value) {
+    if (dateRange.value[0] || dateRange.value[1]) {
+      const start = dateRange.value[0] ? new Date(dateRange.value[0]) : null;
+      const end = dateRange.value[1] ? new Date(dateRange.value[1]) : null;
+      console.log("start: ", start)
+      console.log("end: ", end)
+      filtered = filtered.filter((article) => {
+        const articleDate = new Date(article.createdAt);
+        return (
+          (!start || articleDate >= start) && (!end || articleDate <= end)
+        );
+      });
+    }
   }
 
   // Trier les articles par date selon la sélection
