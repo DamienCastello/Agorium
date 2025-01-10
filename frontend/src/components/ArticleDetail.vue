@@ -18,13 +18,18 @@
       <div v-else-if="article.preview">
         <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
       </div>
-      <div class="content">
-        <p>{{ article.description }}</p>
-
-        <FadeSlideTransition>
-          <component :is="componentToShow" @click="toggleLike" />
-        </FadeSlideTransition>
+      <div class="actions">
+        <div class="action-like">
+          {{ likeNumber }} <FadeSlideTransition>
+            <component :is="componentToShow" @click="toggleLike" />
+          </FadeSlideTransition>
+        </div>
+        <div class="action-report">
+          <ReportIcon class="icon" @click="navigateToReport(article.id)"/>
+          Signaler l'article
+        </div>
       </div>
+        <p>{{ article.description }}</p>
       <hr />
       <Comments :article="article" :refreshComments="fetchArticle" />
     </div>
@@ -43,14 +48,17 @@ import url from "../utils/url";
 import { useAuthStore } from "@/stores/auth";
 import LikedIcon from "./icons/LikedIcon.vue";
 import UnLikedIcon from "./icons/UnlikedIcon.vue";
+import ReportIcon from "./icons/ReportIcon.vue";
 import Comments from "./Comments.vue";
 import { useNavbarHandler } from "@/composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
-
+import { useRouter } from "vue-router";
 
 const article = ref(null);
 const isLiked = ref(false);
+const likeNumber = ref(0);
 const state = ref("loading");
+const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { handleNavbar } = useNavbarHandler();
@@ -79,6 +87,8 @@ const toggleLike = () => {
       article.value.likes = response.data.likes;
       state.value = "idle";
       isLiked.value = response.data.isLiked;
+      if(isLiked.value === true) likeNumber.value++
+      else if(isLiked.value === false) likeNumber.value--
     })
     .catch((error) => {
       notify({
@@ -140,6 +150,7 @@ onMounted(() => {
     .then((response) => {
       if (response.data && response.data.article) {
         article.value = response.data.article;
+        likeNumber.value = article.value.likes.length;
         //Set isLiked to dynamic display icon
         if(!authStore.user) {
           isLiked.value = false
@@ -166,6 +177,12 @@ onMounted(() => {
       state.value = "error";
     });
 });
+
+const navigateToReport = (id) => {
+  handleNavbar(() => {
+    router.push({ name: 'ReportArticle', params: { id }});
+  });
+};
 </script>
 
 <style>
@@ -224,18 +241,54 @@ span {
   text-align: center;
 }
 
-.content {
+.actions {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   margin-top: 15px;
+}
+
+.action-report {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid rgb(70, 70, 70);
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #e7e7e7;
+  cursor: pointer;
+}
+
+.action-like {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 35px;
+  border: 2px solid rgb(70, 70, 70);
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #e7e7e7;
+  cursor: pointer;
+}
+
+.action-report:hover {
+  background-color: #d1d1d1;
+  transform: scale(1.05);
+}
+
+.action-like:hover {
+  background-color: #d1d1d1;
+  transform: scale(1.05);
 }
 
 .content p {
   margin: 0 auto;
   text-align: center;
   font-size: 16px;
+  margin-top: 15px;
 }
 
 .icon {

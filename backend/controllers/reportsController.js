@@ -1,18 +1,19 @@
 const models = require('../models');
-const Comment = models.Comment;
+const Report = models.Report;
 
 module.exports = {
     create: function (req, res, next) {
-        const { content, articleId } = req.body;
+        const { reason, details, articleId } = req.body;
         const userId = req.user.id;
     
-        Comment.create({
-            content,
+        Report.create({
+            reason,
+            details,
             articleId,
             userId
         })
-        .then((comment) => {
-            res.status(201).json(comment);
+        .then((report) => {
+            res.status(201).json(report);
         })
         .catch((error) => {
             console.error(error);
@@ -20,20 +21,21 @@ module.exports = {
         })
     },
     update: function (req, res, next) {
-        const { content, articleId } = req.body;
+        const { reason, details, articleId } = req.body;
         const userId = req.user.id;
 
-        Comment.findByPk(req.body.id)
-            .then((comment) => { 
-                comment.update({
-                    content: content,
+        Report.findByPk(req.body.id)
+            .then((report) => { 
+                report.update({
+                    reason: reason,
+                    details: details,
                     articleId: articleId,
                     userId: userId
                 })
-                .then((updatedComment) => { res.json({ updatedComment }); })
+                .then((updatedReport) => { res.json({ updatedReport }); })
                 .catch((error) => { 
                     console.error('error: ', error.message);
-                    res.status(500).json({ message: 'An error occurred while updating the report.' });
+                    res.status(500).json({ message: 'Unable to update report.' });
                 })
              })
             .catch((error) => { 
@@ -44,10 +46,10 @@ module.exports = {
 
     },    
     delete: function(req, res, next) {
-        Comment.findByPk(req.body.id)
-            .then((comment) => { 
-                comment.destroy()
-                res.status(200).json(`Comment ${comment.id} deleted.`); 
+        Report.findByPk(req.body.id)
+            .then((report) => { 
+                report.destroy()
+                res.status(200).json(`Report ${report.id} deleted.`); 
             })
             .catch((error) => { 
                 console.error('error: ', error.message);
