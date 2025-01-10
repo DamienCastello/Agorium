@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 var articlesRouter = require('./routes/articles');
 var tagsRouter = require('./routes/tags');
 var commentsRouter = require('./routes/comments');
+var reportsRouter = require('./routes/reports');
 var authRouter = require('./routes/auth');
 
 require('dotenv').config();
@@ -49,6 +50,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/articles', articlesRouter);
 app.use('/api/v1/comments', commentsRouter);
+app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/tags', tagsRouter);
 
 module.exports = app;

@@ -25,7 +25,8 @@ router.post('/', authenticateJwt, previewUploader.single("preview"), (req, res, 
     }
     articlesController.create(req, res, next);
   });
-  
+//report
+router.post('/:id/report', articlesController.report);
 //update
 router.put('/:id', authenticateJwt, articlesController.update);
 //validate

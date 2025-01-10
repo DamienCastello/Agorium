@@ -87,6 +87,7 @@
           </div>
         </div>
       </div>
+      <p v-if="filteredArticles.length === 0">Aucun article trouvé</p>
     </div>
   </div>
   <notifications position="bottom right" />

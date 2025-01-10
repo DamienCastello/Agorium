@@ -83,6 +83,12 @@ footer {
   transition: background-color 0.2s, border-color 0.2s;
 }
 
+input[type="checkbox"].switch:checked {
+  background-color: rgb(64, 64, 191);
+  border-color: #3e0ca3;
+}
+
+
 .pico button:hover,
 .pico input[type="button"]:hover,
 .pico input[type="submit"]:hover {

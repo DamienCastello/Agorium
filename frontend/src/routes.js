@@ -5,16 +5,18 @@ import Validations from "./components/Validations.vue";
 import Validate from "./components/Validate.vue";
 import PostArticle from "./components/PostArticle.vue";
 import ArticleDetail from "./components/ArticleDetail.vue";
+import Report from './components/Report.vue';
 import NotFound from "./components/NotFound.vue";
 
 export const routes = [
-    { path: '/', component: Articles, meta: { public: true } },
-    { path: '/signup', component: Signup },
-    { path: '/login', component: Login, meta: { public: true } },
-    { path: '/articles', component: Articles, meta: { public: true } },
-    { path: '/validations', component: Validations, meta: { requiresAuth: true, requiresAdmin: true } },
-    { path: '/articles/:id(\\d+)', component: ArticleDetail, meta: { public: true } },
-    { path: '/validations/:id(\\d+)', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
-    { path: '/new-article', component: PostArticle, meta: { requiresAuth: true } },
-    { path: "/:pathMatch(.*)*", component: NotFound }
-]
+    { path: '/', name: 'Home', component: Articles, meta: { public: true } },
+    { path: '/articles/:id(\\d+)/report', name: 'ReportArticle', component: Report, meta: { public: true } },
+    { path: '/signup', name: 'Signup', component: Signup },
+    { path: '/login', name: 'Login', component: Login, meta: { public: true } },
+    { path: '/articles', name: 'Articles', component: Articles, meta: { public: true } },
+    { path: '/validations', name: 'Validations', component: Validations, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/articles/:id(\\d+)', name: 'ArticleDetail', component: ArticleDetail, meta: { public: true } },
+    { path: '/validations/:id(\\d+)', name: 'Validate', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
+    { path: '/new-article', name: 'PostArticle', component: PostArticle, meta: { requiresAuth: true } },
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
+];
