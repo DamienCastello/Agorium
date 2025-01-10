@@ -114,12 +114,6 @@ const dropdownRef = ref(null);
 const newTag = ref("");
 
 const isFormValid = computed(() => {
-  console.log("check : ", 
-  form.value.title,
-  form.value.description,
-  withVideo.value,
-  form.value.urlYoutube
-  )
   return form.value.title && form.value.description && (withVideo.value ? form.value.urlYoutube : selectedFile.value);
 });
 
@@ -316,6 +310,7 @@ const handleSubmit = () => {
           text: 'Article created successfully !',
         });
         setTimeout(() => {
+          // Have to delete timeout in V2
           state.value = 'idle';
           router.push("/articles");
         }, 2000);

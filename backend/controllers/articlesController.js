@@ -192,10 +192,12 @@ module.exports = {
             } else {
               models.Like.create({ userId: user.id, articleId: req.params.id })
                 .then(() => {
-                  console.log("error: ", error.message);
                   res.status(200).json({ message: "Article liked", isLiked: true });
                 })
-                .catch((error) => res.status(500).json({ message: "Error while liking article." }));
+                .catch((error) => {
+                  console.log("error: ", error.message);
+                  res.status(500).json({ message: "Error while liking article." })
+                });
             }
           })
           .catch((error) => {
@@ -206,6 +208,37 @@ module.exports = {
       .catch((error) => {
         console.log("error: ", error.message);
         res.status(500).json({ message: "Error fetching article." })
+      });
+  },
+  report: function (req, res, next) {
+    const { articleId, reason, details, userId } = req.body;
+
+    Article.findByPk(req.params.id)
+      .then((article) => {
+        if (!article) {
+          return res.status(404).json({ message: "Article not found." });
+        }
+
+        return article.update({
+          isValid: false,
+        })
+          .then(() => {
+            models.Report.create({
+              articleId: articleId,
+              userId: userId,
+              reason: reason,
+              details: details,
+            })
+            .then(() => res.status(200).json({ message: "Article reported."}))
+            .catch((error) => {
+              console.error("Error reporting article:", error.message);
+              res.status(500).json({ message: 'Internal server error.' });
+            })
+          });
+      })
+      .catch((error) => {
+        console.error("Error reporting article:", error.message);
+        res.status(500).json({ message: 'Internal server error.' });
       });
   },
   update: function (req, res, next) {
