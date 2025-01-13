@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articlesRouter = require('./routes/articles');
 var tagsRouter = require('./routes/tags');
+var achievementsRouter = require('./routes/achievements');
 var commentsRouter = require('./routes/comments');
 var reportsRouter = require('./routes/reports');
 var authRouter = require('./routes/auth');
@@ -52,5 +53,6 @@ app.use('/api/v1/articles', articlesRouter);
 app.use('/api/v1/comments', commentsRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/tags', tagsRouter);
+app.use('/api/v1/achievements', achievementsRouter);
 
 module.exports = app;
