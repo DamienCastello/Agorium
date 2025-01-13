@@ -6,6 +6,7 @@ import Validate from "./components/Validate.vue";
 import PostArticle from "./components/PostArticle.vue";
 import ArticleDetail from "./components/ArticleDetail.vue";
 import Report from './components/Report.vue';
+import Profile from './components/Profile.vue';
 import NotFound from "./components/NotFound.vue";
 
 export const routes = [
@@ -18,5 +19,6 @@ export const routes = [
     { path: '/articles/:id(\\d+)', name: 'ArticleDetail', component: ArticleDetail, meta: { public: true } },
     { path: '/validations/:id(\\d+)', name: 'Validate', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/new-article', name: 'PostArticle', component: PostArticle, meta: { requiresAuth: true } },
+    { path: '/profile', component: Profile, meta: { requiresAuth: true } },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ];

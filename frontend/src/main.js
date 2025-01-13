@@ -18,7 +18,7 @@ router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth && !authStore.isAuthenticated()) {
       next('/login');
     }
-    if (to.meta.requiresAdmin && !authStore.isAdmin()) {
+    else if (to.meta.requiresAdmin && !authStore.isAdmin()) {
       next('/login');
     }
     else {

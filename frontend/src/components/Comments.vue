@@ -71,12 +71,20 @@ const submitComment = () => {
         },
       }
     )
-    .then(() => {
+    .then((response) => {
       notify({
         title: "Commenting Article",
         type: 'success',
         text: 'comment created successfully !',
       });
+
+      if(response.data.achievement) {
+        notify({
+          title: 'New Badge Obtained',
+          text: `You have won the badge ${response.data.achievement.name} !`,
+        });
+      }
+      
       newComment.value = "";
       if (props.refreshComments) {
         props.refreshComments();
