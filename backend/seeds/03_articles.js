@@ -361,7 +361,7 @@ const { Article, Like, Tag } = models;
       description: 'Notre cause commune: Instituer nous-mêmes la puissance politique qui nous manque.',
       urlYoutube: 'https://www.youtube.com/watch?v=pNhjfgD0_m8',
       preview: null,
-      userId: null,
+      userId: 2,
       isValid: null,
       refusalReasons: null,
       validatedBy: null,
