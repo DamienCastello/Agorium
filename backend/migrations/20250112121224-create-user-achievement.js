@@ -34,9 +34,10 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
-      progress: {
-        allowNull: true,
-        type: Sequelize.DECIMAL
+      iteration: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        defaultValue: 1
       },
       createdAt: {
         type: Sequelize.DATE,

@@ -11,11 +11,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Report.belongsTo(models.Article, { foreignKey: 'articleId' });
+      Report.belongsTo(models.Comment, { foreignKey: 'commentId' });
     }
   }
   Report.init({
     userId: DataTypes.NUMBER,
-    articleId: DataTypes.NUMBER,
+    articleId: {
+      type: DataTypes.NUMBER,
+      allowNull: true
+    },
+    commentId: {
+      type: DataTypes.NUMBER,
+      allowNull: true
+    },
     reason: DataTypes.STRING,
     details: DataTypes.STRING
   }, {

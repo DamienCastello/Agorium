@@ -19,13 +19,13 @@
         <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
       </div>
       <div class="actions">
-        <div class="action-like">
+        <div class="action-like" @click="toggleLike">
           {{ likeNumber }} <FadeSlideTransition>
-            <component :is="componentToShow" @click="toggleLike" />
+            <component :is="componentToShow"  />
           </FadeSlideTransition>
         </div>
-        <div class="action-report">
-          <ReportIcon class="icon" @click="navigateToReport(article.id)"/>
+        <div class="action-report" @click="navigateToReport(article.id)">
+          <ReportIcon class="icon"/>
           Signaler l'article
         </div>
       </div>
@@ -62,7 +62,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { handleNavbar } = useNavbarHandler();
-const { notify } = useNotification()
+const { notify } = useNotification();
 
 const toggleLike = () => {
   handleNavbar(() => {
@@ -71,6 +71,15 @@ const toggleLike = () => {
         title: "Liking Article",
         type: 'error',
         text: "Article is not loaded or missing ID !",
+      });
+    return;
+  }
+
+  if (!authStore.user) {
+      notify({
+        title: "Liking Article",
+        type: 'error',
+        text: "You must be authenticated to like an article.",
       });
     return;
   }
@@ -180,7 +189,10 @@ onMounted(() => {
 
 const navigateToReport = (id) => {
   handleNavbar(() => {
-    router.push({ name: 'ReportArticle', params: { id }});
+    router.push({ 
+          name: 'ReportArticle', 
+          params: { articleId: id, entity: 'articles' } 
+      });
   });
 };
 </script>

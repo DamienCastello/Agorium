@@ -11,7 +11,20 @@ import NotFound from "./components/NotFound.vue";
 
 export const routes = [
     { path: '/', name: 'Home', component: Articles, meta: { public: true } },
-    { path: '/articles/:id(\\d+)/report', name: 'ReportArticle', component: Report, meta: { public: true } },
+    {
+        path: '/:entity/:articleId/report',
+        name: 'ReportArticle',
+        component: Report,
+        props: true,
+        meta: { public: true },
+    },
+    {
+        path: '/:entity/:commentId(\\d+)/report',
+        name: 'ReportComment',
+        component: Report,
+        props: true,
+        meta: { public: true },
+    },
     { path: '/signup', name: 'Signup', component: Signup },
     { path: '/login', name: 'Login', component: Login, meta: { public: true } },
     { path: '/articles', name: 'Articles', component: Articles, meta: { public: true } },

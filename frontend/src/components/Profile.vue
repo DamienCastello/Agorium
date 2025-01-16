@@ -40,6 +40,14 @@ const getIconClass = (iconCategory) => {
     switch (iconCategory) {
         case 'comment':
             return 'fa-solid fa-comment';
+        case 'article':
+            return 'fa-solid fa-file';
+        case 'celandar':
+            return 'fa-solid fa-calendar';
+        case 'star':
+            return 'fa-solid fa-star';
+        case 'flag':
+            return 'fa-solid fa-flag'
     }
 }
 

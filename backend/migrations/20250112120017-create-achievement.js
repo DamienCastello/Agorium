@@ -31,9 +31,9 @@ module.exports = {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: true
       },
-      isEventBased: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false
+      iconCategory: {
+        allowNull: false,
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -42,10 +42,6 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
-      },
-      iconCategory: {
-        allowNull: false,
-        type: Sequelize.STRING
       }
     });
   },
