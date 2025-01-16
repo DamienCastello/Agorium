@@ -218,7 +218,6 @@ module.exports = {
 
     },
       report: function (req, res, next) {
-        console.log("check back : ", req.body)
         const { commentId, reason, details, userId } = req.body;
     
         Comment.findByPk(req.params.id)

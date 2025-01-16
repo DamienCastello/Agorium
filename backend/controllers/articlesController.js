@@ -335,11 +335,7 @@ module.exports = {
       });
   },
   update: function (req, res, next) {
-    const { title, description, urlYoutube, tags } = req.body;
-
-    if (!tags || !Array.isArray(tags) || tags.length === 0) {
-      return res.status(400).json({ message: "At least one tag is required." });
-    }
+    const { title, description, urlYoutube, tags, overallReasonForRefusal, refusalReasons } = req.body;
 
     Article.findByPk(req.params.id)
       .then((article) => {
@@ -351,6 +347,8 @@ module.exports = {
           title: title || article.title,
           description: description || article.description,
           urlYoutube: urlYoutube || article.urlYoutube,
+          overallReasonForRefusal: overallReasonForRefusal || article.overallReasonForRefusal,
+          refusalReasons: refusalReasons || article.refusalReasons
         })
           .then((updatedArticle) => {
             if (tags && Array.isArray(tags)) {
@@ -362,6 +360,8 @@ module.exports = {
                 .then(() => {
                   res.json({ updatedArticle });
                 });
+            } else {
+              res.json({ updatedArticle });
             }
           });
       })

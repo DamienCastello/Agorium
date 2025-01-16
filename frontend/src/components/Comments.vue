@@ -4,7 +4,7 @@
     <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
       <Comment :comment="comment"/>
     </div>
-    <div class="comment-container" @mousedown="handleClickOutsideNavbar">
+    <div class="comments-container" @mousedown="handleClickOutsideNavbar">
       <label for="comment" class="comment-label">Laisser un commentaire :</label>
       <textarea id="comment" name="comment" v-model="newComment" placeholder="Mon commentaire de zinzin..."
         aria-label="Zone de saisie pour commenter" :disabled="!authStore.user" class="comment-textarea"></textarea>
@@ -130,7 +130,7 @@ const handleClickOutsideNavbar = (event) => {
   }
 }
 
-.comment-container {
+.comments-container {
   margin-top: 40px;
   display: flex;
   flex-direction: column;
