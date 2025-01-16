@@ -18,7 +18,7 @@
       <div v-else-if="article.preview">
         <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
       </div>
-      <div class="actions">
+      <div class="comment-container">
         <div class="action-like" @click="toggleLike">
           {{ likeNumber }} <FadeSlideTransition>
             <component :is="componentToShow"  />
@@ -53,6 +53,7 @@ import Comments from "./Comments.vue";
 import { useNavbarHandler } from "@/composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
 import { useRouter } from "vue-router";
+import { useGlobalStore } from '@/stores/global';
 
 const article = ref(null);
 const isLiked = ref(false);
@@ -61,6 +62,7 @@ const state = ref("loading");
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const globalStore = useGlobalStore();
 const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
 
@@ -189,6 +191,17 @@ onMounted(() => {
 
 const navigateToReport = (id) => {
   handleNavbar(() => {
+    if (!authStore.user) {
+      notify({
+        title: "Liking Article",
+        type: 'error',
+        text: "You must be authenticated to like an article.",
+      });
+    return;
+  }
+  
+    const articleType = article.value.urlYoutube ? 'youtube' : 'preview'
+    globalStore.setReportType(articleType);
     router.push({ 
           name: 'ReportArticle', 
           params: { articleId: id, entity: 'articles' } 
@@ -211,16 +224,6 @@ const navigateToReport = (id) => {
   width: 100%;
   min-width: 750px;
   margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .article-container {
-    max-width: 300px;
-    min-width: 300px;
-  }
-  h1 {
-    font-size: 20px;
-  }
 }
 
 p {
@@ -253,7 +256,7 @@ span {
   text-align: center;
 }
 
-.actions {
+.comment-container {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -306,6 +309,21 @@ span {
 .icon {
   cursor: pointer;
   font-size: 50px;
-  margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0px;
+  }
+  .article-container {
+    max-width: 300px;
+    min-width: 300px;
+  }
+  .action-report {
+    margin-top: 5px;
+  }
+  h1 {
+    font-size: 20px;
+  }
 }
 </style>
