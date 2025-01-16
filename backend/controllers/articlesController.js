@@ -32,7 +32,11 @@ module.exports = {
               model: models.User,
               as: 'user',
               attributes: ['id', 'name', 'email'],
-            }
+            },
+            {
+              model: models.Like,
+              as: 'likes',
+            },
           ]
         },
       ]
@@ -69,7 +73,11 @@ module.exports = {
               model: models.User,
               as: 'user',
               attributes: ['id', 'name', 'email'],
-            }
+            },
+            {
+              model: models.Like,
+              as: 'likes',
+            },
           ]
         },
       ]
@@ -92,7 +100,7 @@ module.exports = {
     if (title.length < 3) {
       return res.status(400).json({ message: "Title must be at least 3 characters long." });
     }
-    
+
     if (typeof tags === 'string') {
       try {
         req.body.tags = JSON.parse(tags);
@@ -127,7 +135,54 @@ module.exports = {
               return article.setTags(tagsToAssociate);
             })
             .then(() => {
-              res.json({ article });
+              // Vérify & unloack simple game success
+              Article.count({ where: { userId } })
+                .then((articleCount) => {
+                  (async () => {
+                    try {
+                      const user = await models.User.findByPk(userId);
+                      if (articleCount === 1) {
+                        // (unique)
+                        const achievement = await models.Achievement.findByPk(1);
+                        await achievement.addUsers(user);
+                        user.points += achievement.points;
+                        await user.save();
+                        res.status(200).json({ article, achievement, user });
+                      } else if (articleCount === 5) {
+                        const achievement = await models.Achievement.findByPk(2);
+                        await achievement.addUsers(user);
+                        user.points += achievement.points;
+                        await user.save();
+                        res.status(200).json({ article, achievement, user });
+                      } else if (articleCount % 20 === 0) {
+                        const achievement = await models.Achievement.findByPk(3);
+
+                        const [userAchievement, created] = await models.UserAchievement.findOrCreate({
+                          where: { userId, achievementId: achievement.id },
+                          defaults: {
+                            dateEarned: new Date(),
+                            iteration: 1,
+                          },
+                        });
+
+                        if (!created) {
+                          // If entry exists, increment iteration
+                          userAchievement.iteration += 1;
+                          userAchievement.dateEarned = new Date();
+                          await userAchievement.save();
+                        }
+
+                        user.points += achievement.points;
+                        await user.save();
+
+                        res.status(200).json({ article, achievement, userAchievement, user });
+                      }
+                    } catch (error) {
+                      console.error(error);
+                    }
+                  })()
+                })
+
             });
         }
       })
@@ -186,30 +241,64 @@ module.exports = {
               return models.Like.destroy({ where: { userId: user.id, articleId: req.params.id } })
                 .then(() => res.status(200).json({ message: "Article unliked", isLiked: false }))
                 .catch((error) => {
-                  console.log("error: ", error.message);
+                  console.error("Error while unliking article:", error.message);
                   res.status(500).json({ message: "Error while unliking article." });
                 });
             } else {
               models.Like.create({ userId: user.id, articleId: req.params.id })
                 .then(() => {
-                  res.status(200).json({ message: "Article liked", isLiked: true });
+                  (async () => {
+                    try {
+                      const achievement = await models.Achievement.findByPk(11);
+
+                      const [userAchievement, created] = await models.UserAchievement.findOrCreate({
+                        where: { userId: user.id, achievementId: achievement.id },
+                        defaults: {
+                          dateEarned: new Date(),
+                          iteration: 1,
+                        },
+                      });
+
+                      if (!created) {
+                        // Si l'entrée existe déjà, incrémentez l'itération
+                        userAchievement.iteration += 1;
+                        await userAchievement.save();
+                      }
+
+                      user.points += achievement.points;
+                      await user.save();
+
+                      // Envoi d'une seule réponse après toutes les opérations
+                      res.status(200).json({
+                        message: "Article liked",
+                        isLiked: true,
+                        achievement,
+                        userAchievement,
+                        user,
+                      });
+                    } catch (error) {
+                      console.error("Error processing achievement:", error.message);
+                      res.status(500).json({ message: "Error processing achievement." });
+                    }
+                  })();
                 })
                 .catch((error) => {
-                  console.log("error: ", error.message);
-                  res.status(500).json({ message: "Error while liking article." })
+                  console.error("Error while liking article:", error.message);
+                  res.status(500).json({ message: "Error while liking article." });
                 });
             }
           })
           .catch((error) => {
-            console.log("error: ", error.message);
-            res.status(500).json({ message: "Error checking like status."});
+            console.error("Error checking like status:", error.message);
+            res.status(500).json({ message: "Error checking like status." });
           });
       })
       .catch((error) => {
-        console.log("error: ", error.message);
-        res.status(500).json({ message: "Error fetching article." })
+        console.error("Error fetching article:", error.message);
+        res.status(500).json({ message: "Error fetching article." });
       });
   },
+
   report: function (req, res, next) {
     const { articleId, reason, details, userId } = req.body;
 
@@ -229,15 +318,19 @@ module.exports = {
               reason: reason,
               details: details,
             })
-            .then(() => res.status(200).json({ message: "Article reported."}))
-            .catch((error) => {
-              console.error("Error reporting article:", error.message);
-              res.status(500).json({ message: 'Internal server error.' });
-            })
+              .then(() => res.status(200).json({ message: "Article reported." }))
+              .catch((error) => {
+                console.error("Error reporting article:", error.message);
+                res.status(500).json({ message: 'Internal server error.' });
+              })
+          })
+          .catch((error) => {
+            console.error("Error invalidating article:", error.message);
+            res.status(500).json({ message: 'Internal server error.' });
           });
       })
       .catch((error) => {
-        console.error("Error reporting article:", error.message);
+        console.error("Error fetching article:", error.message);
         res.status(500).json({ message: 'Internal server error.' });
       });
   },
@@ -286,20 +379,20 @@ module.exports = {
       try {
         // Verify to not refuse article without reasons
         const parsedRefusalReasons = JSON.parse(refusalReasons);
-    
-        if(!parsedRefusalReasons.title.isValid && parsedRefusalReasons.title.value === '') {
+
+        if (!parsedRefusalReasons.title.isValid && parsedRefusalReasons.title.value === '') {
           return res.status(403).json({ message: 'Title refusal reason must have a value.' });
         }
-        if(!parsedRefusalReasons.description.isValid && parsedRefusalReasons.description.value === '') {
+        if (!parsedRefusalReasons.description.isValid && parsedRefusalReasons.description.value === '') {
           return res.status(403).json({ message: 'Description refusal reason must have a value.' });
         }
-        if(parsedRefusalReasons.preview.isValid === false && parsedRefusalReasons.preview.value === '') {
+        if (parsedRefusalReasons.preview.isValid === false && parsedRefusalReasons.preview.value === '') {
           return res.status(403).json({ message: 'Preview refusal reason must have a value.' });
         }
-        if(parsedRefusalReasons.videoContent.isValid === false && parsedRefusalReasons.videoContent.value === '') {
+        if (parsedRefusalReasons.videoContent.isValid === false && parsedRefusalReasons.videoContent.value === '') {
           return res.status(403).json({ message: 'Youtube vidéo content refusal reason must have a value.' });
         }
-        if(!isValid && overallReasonForRefusal === '') {
+        if (!isValid && overallReasonForRefusal === '') {
           return res.status(403).json({ message: 'Article overall refusal reason must have a value.' });
         }
       } catch (error) {
@@ -307,7 +400,7 @@ module.exports = {
         return res.status(400).json({ message: "Internal error server." });
       }
     }
-    
+
     if (!user.isAdmin) {
       return res.status(403).json({ message: "You are not authorized to validate this article." });
     }
@@ -318,14 +411,13 @@ module.exports = {
           return res.status(404).json({ message: "Article not found." });
         }
 
-        article.update({ 
-          isValid: isValid, 
-          refusalReasons: refusalReasons, 
-          overallReasonForRefusal: overallReasonForRefusal, 
-          validatedBy: user.id 
+        article.update({
+          isValid: isValid,
+          refusalReasons: refusalReasons,
+          overallReasonForRefusal: overallReasonForRefusal,
+          validatedBy: user.id
         })
           .then((validatedArticle) => {
-            console.log("error: ", error.message);
             res.json({ validatedArticle })
           })
           .catch((error) => {

@@ -21,9 +21,19 @@ module.exports = {
       },
       articleId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'Articles',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      },
+      commentId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'Comments',
           key: 'id',
         },
         onDelete: 'CASCADE',

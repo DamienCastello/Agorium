@@ -50,7 +50,6 @@ module.exports = {
             points: req.body.points,
             threshold: req.body.threshold,
             isReusable: req.body.isReusable,
-            isEventBased: req.body.isEventBased,
         })
             .then((achievement) => {
                 res.status(201).json({ achievement });
@@ -69,7 +68,6 @@ module.exports = {
                 points: req.params.points,
                 threshold: req.params.threshold,
                 isReusable: req.params.isReusable,
-                isEventBased: req.params.isEventBased,
             })
                 .then((updatedAchievement) => { res.json({ updatedAchievement }); })
                 .catch((error) => { 

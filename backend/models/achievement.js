@@ -41,10 +41,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.NUMBER,
       allowNull: true
     },
-    isEventBased: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
-    },
     iconCategory: {
       type: DataTypes.STRING,
       allowNull: false

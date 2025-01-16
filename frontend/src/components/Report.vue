@@ -1,15 +1,16 @@
 <template>
     <div class="report-container pico">
-        
-        <h1>Signaler un article</h1>
+
+        <h1>Signaler un {{ props.entity === 'articles' ? 'article' : 'commentaire' }}</h1>
         <div v-if="state === 'error'">
-            <p>Impossible de signaler l'article</p>
+            <p>Impossible de signaler {{ props.entity === 'articles' ? 'l\'article' : 'le commentaire' }}</p>
         </div>
         <div v-else-if="state === 'loading'">
             <p>Chargement ...</p>
         </div>
         <p v-else-if="state === 'idle'">
-            Si vous pensez que cet article enfreint les règles ou contient des informations inappropriées, vous pouvez
+            Si vous pensez que {{ props.entity === 'articles' ? 'cet article' : 'ce commentaire' }} enfreint les règles
+            ou contient des informations inappropriées, vous pouvez
             le signaler ici.
         </p>
 
@@ -21,7 +22,7 @@
                     <option value="" disabled selected>Choisissez une raison</option>
                     <option value="spam">Spam</option>
                     <option value="inappropriate">Contenu inapproprié</option>
-                    <option value="copyright">Infraction de droits d'auteur</option>
+                    <option v-if="props.entity === 'articles'" value="copyright">Infraction de droits d'auteur</option>
                     <option value="other">Autre</option>
                 </select>
             </div>
@@ -45,24 +46,24 @@
 <script setup>
 import { ref } from "vue";
 import axios from "axios";
-import { useRoute } from 'vue-router';
 import { useNotification } from "@kyvg/vue3-notification";
 import url from "@/utils/url";
 import { useAuthStore } from "@/stores/auth";
+import { useRouter } from "vue-router";
 
-const route = useRoute();
 const report = ref({
     reason: "",
     details: "",
 });
 const authStore = useAuthStore();
+const router = useRouter();
 const { notify } = useNotification();
 
 // Variables d'état
 const isSubmitting = ref(false);
 const state = ref("idle");
 
-const articleId = route.params.id;
+const props = defineProps(['entity', 'articleId', 'commentId']);
 
 const submitReport = async () => {
     if (!report.value.reason) {
@@ -79,32 +80,64 @@ const submitReport = async () => {
         state.value = 'loading';
         const userId = authStore.user?.id ?? null
 
-        const response = await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/articles/${articleId}/report`,
-            {
-                articleId,
-                userId,
-                reason: report.value.reason,
-                details: report.value.details
-            },
-            {
-                withCredentials: true,
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
+        if (props.entity === 'articles') {
+            const response = await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/articles/${props.articleId}/report`,
+                {
+                    articleId: props.articleId,
+                    userId,
+                    reason: report.value.reason,
+                    details: report.value.details
                 },
-            });
+                {
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                });
 
-        notify({
-            title: "Report",
-            type: "success",
-            text: "Article reported successfully !",
-        });
-        setTimeout(() => {
-            // Have to delete timeout in V2
-            state.value = 'idle';
-        }, 2000);
-        report.value.reason = "";
-        report.value.details = "";
+            notify({
+                title: "Report",
+                type: "success",
+                text: "Article reported successfully !",
+            });
+            setTimeout(() => {
+                // Have to delete timeout in V2
+                state.value = 'idle';
+                router.push(`/articles`);
+            }, 2000);
+            report.value.reason = "";
+            report.value.details = "";
+        } else {
+            console.log("check comment id : ", props.commentId)
+            const response = await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/comments/${props.commentId}/report`,
+                {
+                    commentId: props.commentId,
+                    userId,
+                    reason: report.value.reason,
+                    details: report.value.details
+                },
+                {
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                });
+
+            notify({
+                title: "Report",
+                type: "success",
+                text: "Comment reported successfully !",
+            });
+            setTimeout(() => {
+                // Have to delete timeout in V2
+                state.value = 'idle';
+                router.push(`/articles`);
+            }, 2000);
+            report.value.reason = "";
+            report.value.details = ""; 
+        }
     } catch (error) {
         console.log("check e : ", error, error.message)
         state.value = 'error';
