@@ -48,7 +48,7 @@
         </div>
 
         <!-- Filtre par intervalle de dates -->
-        <div class="filter">
+        <div class="filter date-filter">
           <label>Filtrer par intervalle de dates :</label>
           <VueDatePicker v-model="dateRange" :placeholder="'plage de dates'" range is-range
             @update:model-value="applyFilters" :input-class="'custom-datepicker-input'" />
@@ -297,6 +297,10 @@ const navigateToArticle = (id) => {
   margin-bottom: 8px;
 }
 
+.date-filter {
+  min-width: 200px !important;
+}
+
 .tag-selector {
   width: 100%;
   min-width: 500px;
@@ -305,6 +309,10 @@ const navigateToArticle = (id) => {
 .label-filter {
   margin-bottom: 4px;
   color: #5e5e5e;
+}
+
+.dp-input {
+  min-width: 350px !important;
 }
 
 .label-filter i {

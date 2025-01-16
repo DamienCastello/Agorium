@@ -2,9 +2,9 @@
   <div class="pico">
     <h3>Commentaires</h3>
     <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
-      <p><span>{{ comment.user.name }}:</span> {{ comment.content }}</p>
+      <Comment :comment="comment"/>
     </div>
-    <div class="comment-container" @mousedown="handleClickOutsideNavbar">
+    <div class="comments-container" @mousedown="handleClickOutsideNavbar">
       <label for="comment" class="comment-label">Laisser un commentaire :</label>
       <textarea id="comment" name="comment" v-model="newComment" placeholder="Mon commentaire de zinzin..."
         aria-label="Zone de saisie pour commenter" :disabled="!authStore.user" class="comment-textarea"></textarea>
@@ -26,6 +26,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import url from "@/utils/url";
+import Comment from "./Comment.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNavbarStore } from "@/stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
@@ -121,24 +122,15 @@ const handleClickOutsideNavbar = (event) => {
   margin-bottom: 8px;
 }
 
-.comments span {
-  font-weight: bold;
-  margin-right: 8px;
-}
-
 @media (max-width: 768px) {
   .comments {
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
   }
-
-  .comments span {
-    margin-right: 4px;
-  }
 }
 
-.comment-container {
+.comments-container {
   margin-top: 40px;
   display: flex;
   flex-direction: column;

@@ -14,6 +14,7 @@ WakeUp Normies is a platform dedicated to empowering free expression and sharing
 - Implement article reporting.
 - Implement gamification.
 - Add i18n to all displayed strings to translate into multiple languages.
+- Add infinite load on fetch articles.
 - Improve general style (border hover and more).
 ### CORE v2:
 - Deploy on a server and make it privately accessible.

@@ -12,12 +12,20 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Associer User ↔ Like ↔ Article
       Like.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE', as: 'user' });
-      Like.belongsTo(models.Article, { foreignKey: 'articleId', onDelete: 'CASCADE' });
+      Like.belongsTo(models.Article, { foreignKey: 'articleId', onDelete: 'CASCADE', allowNull: true });
+      Like.belongsTo(models.Comment, { foreignKey: 'commentId', onDelete: 'CASCADE', allowNull: true });
     }
   }
   Like.init({
     userId: DataTypes.INTEGER,
-    articleId: DataTypes.INTEGER
+    articleId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    commentId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    }
   }, {
     sequelize,
     modelName: 'Like',

@@ -22,10 +22,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'user',
       });
 
-      // Ajout direct de l'association
       Article.hasMany(models.Like, {
         foreignKey: 'articleId',
         as: 'likes',
+        allowNull: true
       });
 
       Article.belongsToMany(models.Tag, {
@@ -35,7 +35,10 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       Article.hasMany(models.Comment, { foreignKey: 'articleId', onDelete: 'CASCADE', as: 'comments' });
-      Article.hasMany(models.Report, { foreignKey: 'articleId', onDelete: 'CASCADE', as: 'reports' });
+      Article.hasMany(models.Report, {
+        foreignKey: 'articleId', onDelete: 'CASCADE', as: 'reports',
+        allowNull: true
+      });
     }
   }
 

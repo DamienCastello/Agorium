@@ -7,7 +7,8 @@ User.create({
     email: 'gamma@gmail.com',
     password: '$2b$10$XSGruLpgrpym2uuEqfQNw.GfhRVnjPpw4cYxfPVlBZvdXtnL8ZKOG',
     isAdmin: true,
-    avatar:  null
+    avatar:  null,
+    points: 20
 })
 .then((user) => { console.log(user); })
 .catch((error) => { console.log(error); })
@@ -18,7 +19,8 @@ User.create({
     email: 'zanma@gmail.com',
     password: '$2b$10$XSGruLpgrpym2uuEqfQNw.GfhRVnjPpw4cYxfPVlBZvdXtnL8ZKOG',
     isAdmin: false,
-    avatar:  null
+    avatar:  null,
+    points: 40
 })
 .then((user) => { console.log(user); })
 .catch((error) => { console.log(error); })
@@ -29,7 +31,8 @@ User.create({
     email: 'tsuk@gmail.com',
     password: '$2b$10$XSGruLpgrpym2uuEqfQNw.GfhRVnjPpw4cYxfPVlBZvdXtnL8ZKOG',
     isAdmin: false,
-    avatar:  null
+    avatar:  null,
+    points: 10
 })
 .then((user) => { console.log(user); })
 .catch((error) => { console.log(error); })
@@ -40,7 +43,8 @@ User.create({
     email: 'john@gmail.com',
     password: '$2b$10$XSGruLpgrpym2uuEqfQNw.GfhRVnjPpw4cYxfPVlBZvdXtnL8ZKOG',
     isAdmin: false,
-    avatar:  null
+    avatar:  null,
+    points: 10
 })
 .then((user) => { console.log(user); })
 .catch((error) => { console.log(error); })

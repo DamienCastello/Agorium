@@ -16,8 +16,14 @@ module.exports = (sequelize, DataTypes) => {
   UserAchievement.init({
     userId: DataTypes.INTEGER,
     achievementId: DataTypes.INTEGER,
-    dateEarned: DataTypes.DATE,
-    progress: DataTypes.DECIMAL
+    dateEarned: {
+      type: DataTypes.DATE,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+    iteration: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1
+    }
   }, {
     sequelize,
     timestamps: true,
