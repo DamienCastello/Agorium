@@ -1,7 +1,20 @@
 <template>
-  <nav class="navbar">
+  <nav class="navbar" @mousedown="handleClickOutsideNavbar">
     <ul class="navbar-title">
       <li><strong>Wake Up Normies</strong></li>
+      <div class="language-selector">
+        <div class="dropdown-translation" @click="toggleTranslation">
+          <i class="fa-solid fa-language"></i>
+          <ul v-if="navbarStore.isTranslationOpen" :class="{ open: navbarStore.isTranslationOpen }">
+            <li @click.stop="changeLanguage('en')">
+              <img src="/flag_us.png" alt="US-flag" />{{ $t('navigation.language_en') }}
+            </li>
+            <li @click.stop="changeLanguage('fr')">
+              <img src="/flag_fr.png" alt="French-flag" />{{ $t('navigation.language_fr') }}
+            </li>
+          </ul>
+        </div>
+      </div>
     </ul>
 
     <!-- Burger menu button (visible only on mobile view) -->
@@ -11,40 +24,40 @@
     <ul :class="['navbar-links', { open: navbarStore.isMenuOpen }]">
       <li v-if="isAdmin">
         <RouterLink to="/validations" :class="{ 'active': isActiveRoute('/validations') }" @click="closeMenu">
-          Validations
+          {{ $t('navigation.validations') }}
         </RouterLink>
       </li>
       <li>
         <RouterLink to="/articles" :class="{ 'active': isActiveRoute('/articles') }" @click="closeMenu">
-          Articles
+          {{ $t('navigation.articles') }}
         </RouterLink>
       </li>
       <li v-if="isAuthenticated">
         <RouterLink to="/new-article" :class="{ 'active': isActiveRoute('/new-article') }" @click="closeMenu">
-          New Article
+          {{ $t('navigation.publish') }}
         </RouterLink>
       </li>
       <li v-if="!isAuthenticated">
         <RouterLink to="/login" :class="{ 'active': isActiveRoute('/login') }" @click="closeMenu">
-          Login
+          {{ $t('navigation.login') }}
         </RouterLink>
       </li>
       <li v-if="!isAuthenticated">
         <RouterLink to="/signup" :class="{ 'active': isActiveRoute('/signup') }" @click="closeMenu">
-          Signup
+          {{ $t('navigation.signup') }}
         </RouterLink>
       </li>
       <li v-if="isAuthenticated">
         <details role="menu" class="dropdown">
-          <summary><span>Account</span></summary>
+          <summary @click="closeTranslation"><span>{{ $t('navigation.account') }}</span></summary>
           <ul>
             <li>
               <RouterLink to="/profile" :class="{ 'active': isActiveRoute('/profile') }" @click="handleClick($event)">
-                My Profile
+                {{ $t('navigation.profile') }}
               </RouterLink>
             </li>
             <li>
-              <button @click="logout">Logout</button>
+              <button @click="logout">{{ $t('navigation.logout') }}</button>
             </li>
           </ul>
         </details>
@@ -57,15 +70,34 @@
 import { useNavbarStore } from '../stores/navbar';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { locale } = useI18n();
 
 defineProps(['isAuthenticated', 'isAdmin']);
 const navbarStore = useNavbarStore();
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const selectedLanguage = ref('fr');
+
+const changeLanguage = (lang) => {
+  if (lang === 'en') {
+    selectedLanguage.value = 'English';
+    locale.value = 'en';
+  } else if (lang === 'fr') {
+    selectedLanguage.value = 'Français';
+    locale.value = 'fr';
+  }
+
+  localStorage.setItem('selectedLanguage', locale.value);
+
+  navbarStore.closeTranslation();
+};
 
 const handleClick = (event) => {
-  closeMenu();
+  closeMenu();  
   closeDropdown(event);
 };
 
@@ -82,14 +114,43 @@ const toggleMenu = (event) => {
   navbarStore.toggleMenu();
 };
 
+const toggleTranslation = (event) => {
+  event.stopPropagation();
+  navbarStore.toggleTranslation();
+};
+
 const closeMenu = () => {
   navbarStore.closeMenu();
+  navbarStore.closeTranslation();
+};
+
+const closeTranslation = () => {
+  navbarStore.closeTranslation();
 };
 
 const closeDropdown = (event) => {
   const dropdown = event.target.closest('details');
   if (dropdown && dropdown.hasAttribute('open')) {
     dropdown.removeAttribute('open');
+  }
+};
+
+const handleClickOutsideNavbar = (event) => {
+  const isInsideDropdown = event.target.closest('.dropdown-translation') || event.target.closest('.navbar-links');
+
+  if (!isInsideDropdown) {
+    if (navbarStore.isMenuOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      navbarStore.closeMenu();
+    }
+    if (navbarStore.isTranslationOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      navbarStore.closeTranslation();
+    } else {
+      return true;
+    }
   }
 };
 </script>
@@ -211,5 +272,53 @@ const closeDropdown = (event) => {
   .burger-menu {
     display: block;
   }
+}
+
+.dropdown-translation {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 50px;
+  height: 40px;
+  font-size: 30px;
+  border: 2px solid rgb(70, 70, 70);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 5px 5px 0px 5px;
+  background-color: #e7e7e7;
+  cursor: pointer;
+}
+
+.dropdown-translation:hover {
+  background-color: #d1d1d1;
+  transform: scale(1.05);
+}
+
+.dropdown-translation ul {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  list-style: none;
+  top: 38px;
+  left: 3px;
+  margin: 0;
+  padding: 0;
+  background: white;
+  border: 1px solid #ccc;
+  min-height: 160px;
+}
+
+.dropdown-translation ul li {
+  font-size: 14px;
+  padding: 3px !important;
+  margin: 0px !important;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-height: 70px;
 }
 </style>

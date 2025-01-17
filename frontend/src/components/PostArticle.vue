@@ -250,6 +250,17 @@ const handleClickOutsideNavbar = (event) => {
     setTimeout(() => {
       isClosingNavbar.value = false;
     }, 200);
+  } 
+  if (navbarStore.isTranslationOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    isClosingNavbar.value = true;
+    navbarStore.closeTranslation();
+
+    setTimeout(() => {
+      isClosingNavbar.value = false;
+    }, 200);
   } else {
     return true;
   }
