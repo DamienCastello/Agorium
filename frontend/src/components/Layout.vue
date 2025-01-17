@@ -26,6 +26,10 @@ const closeNavbar = () => {
     navbarStore.closeMenu();
     return;
   }
+  if (navbarStore.isTranslationOpen) {
+    navbarStore.closeTranslation();
+    return;
+  }
 };
 </script>
 

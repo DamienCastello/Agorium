@@ -24,6 +24,9 @@
   if (navbarStore.isMenuOpen) {
     navbarStore.closeMenu();
   }
+  if (navbarStore.isTranslationOpen) {
+    navbarStore.closeTranslation();
+  }
 };
   </script>
 
