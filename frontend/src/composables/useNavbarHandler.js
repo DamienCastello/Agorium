@@ -8,6 +8,11 @@ export const useNavbarHandler = () => {
       navbarStore.closeMenu();
       return;
     }
+    
+    if (navbarStore.isTranslationOpen) {
+      navbarStore.closeTranslation();
+      return;
+    }
 
     if (callback) callback();
   };

@@ -105,6 +105,11 @@ const handleClickOutsideNavbar = (event) => {
     event.preventDefault();
     event.stopPropagation();
     navbarStore.closeMenu();
+  }
+  if (navbarStore.isTranslationOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+    navbarStore.closeTranslation();
   } else {
     return true;
   }

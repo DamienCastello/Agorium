@@ -4,7 +4,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { routes } from './routes';
 import { useAuthStore } from './stores/auth';
 import { createPinia } from 'pinia';
-import Notifications from '@kyvg/vue3-notification'
+import Notifications from '@kyvg/vue3-notification';
+import i18n from './i18n/translations'
+
 
 const router = createRouter({
     history: createWebHistory(),
@@ -30,4 +32,5 @@ const app = createApp(App);
 app.use(router);
 app.use(pinia);
 app.use(Notifications);
+app.use(i18n);
 app.mount('#app');
