@@ -29,6 +29,7 @@ import ReportIcon from './icons/ReportIcon.vue';
 import { useNotification } from "@kyvg/vue3-notification";
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     comment: Object,
@@ -40,6 +41,7 @@ const authStore = useAuthStore();
 const likeNumber = ref(0);
 const { notify } = useNotification();
 const router = useRouter();
+const { t } = useI18n();
 
 // Dynamically select component
 const componentToShow = computed(() => {
@@ -54,18 +56,18 @@ const toggleLike = () => {
     handleNavbar(() => {
         if (!props.comment || !props.comment.id) {
             notify({
-                title: "Liking Comment",
+                title: t('notification.title.like_comment'),
                 type: 'error',
-                text: "Comment is not loaded or missing ID !",
+                text: t('notification.text.like_comment_error_load'),
             });
             return;
         }
 
         if (!authStore.user) {
             notify({
-                title: "Liking Comment",
+                title: t('notification.title.like_comment'),
                 type: 'error',
-                text: "You must be authenticated to like a comment.",
+                text: t('notification.text.like_comment_error_auth'),
             });
             return;
         }
@@ -85,7 +87,7 @@ const toggleLike = () => {
             })
             .catch((error) => {
                 notify({
-                    title: "Liking Comment",
+                    title: t('notification.title.like_comment'),
                     type: 'error',
                     text: error.response.data.message,
                 });
@@ -96,9 +98,9 @@ const toggleLike = () => {
 const navigateToReport = (id) => {
     if (!authStore.user) {
       notify({
-        title: "Liking Article",
+        title: t('notification.title.like_article'),
         type: 'error',
-        text: "You must be authenticated to like an article.",
+        text: t('notification.text.like_article_error_auth'),
       });
     return;
   }
