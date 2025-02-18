@@ -9,7 +9,7 @@ module.exports = {
             })
             .catch((error) => {
                 console.error('Error fetching tags:', error.message);
-                res.status(500).json({ message: 'An error occurred while fetching tags.' });
+                res.status(500).json({ message: req.t('tag.error_fetch_all') });
             });
     },
 
@@ -17,19 +17,19 @@ module.exports = {
         Tag.findByPk(req.params.id)
             .then((tag) => {
                 if (!tag) {
-                    return res.status(404).json({ message: 'Tag not found.' });
+                    return res.status(404).json({ message: req.t('tag.not_found') });
                 }
                 res.status(200).json({ tag });
             })
             .catch((error) => {
                 console.error('Error fetching tag:', error.message);
-                res.status(500).json({ message: 'An error occurred while fetching the tag.' });
+                res.status(500).json({ message: req.t('tag.error_fetch') });
             });
     },
 
     create: function (req, res, next) {
         if (!req.body.name) {
-            return res.status(400).json({ message: 'The "name" field is required.' });
+            return res.status(400).json({ message: req.t('tag.name_required') });
         }
 
         Tag.create({ name: req.body.name, isValid: false })
@@ -38,7 +38,7 @@ module.exports = {
             })
             .catch((error) => {
                 console.error('Error creating tag: ', error.message);
-                res.status(500).json({ message: 'An error occurred while creating the tag.' });
+                res.status(500).json({ message: req.t('tag.error_create') });
             });
     },
 
@@ -62,21 +62,21 @@ module.exports = {
         })
             .then((tag) => {
                 if (!tag) {
-                    return res.status(404).json({ message: 'Tag not found.' });
+                    return res.status(404).json({ message: req.t('tag.not_found') });
                 }
 
                 if (tag.articles.length === 0) {
-                    return res.status(403).json({ message: 'Tag cannot be updated as it has no associated articles.' });
+                    return res.status(403).json({ message: req.t('tag.error_associate') });
                 }
 
                 const canUpdate = tag.articles.some((article) => article.user.id === user.id) || user.isAdmin;
 
                 if (!canUpdate) {
-                    return res.status(403).json({ message: 'Only the tag creator or an admin can update the tag.' });
+                    return res.status(403).json({ message: req.t('tag.authorized') });
                 }
 
                 if (!req.body.name) {
-                    return res.status(400).json({ message: 'The "name" field is required.' });
+                    return res.status(400).json({ message: req.t('tag.name_required') });
                 }
 
                 tag.update({ name: req.body.name })
@@ -85,12 +85,12 @@ module.exports = {
                     })
                     .catch((error) => {
                         console.error('Error updating tag:', error);
-                        res.status(500).json({ message: 'An error occurred while updating the tag.' });
+                        res.status(500).json({ message: req.t('tag.error_update') });
                     });
             })
             .catch((error) => {
                 console.error('Error finding tag:', error);
-                res.status(500).json({ message: 'An error occurred while finding the tag.' });
+                res.status(500).json({ message: req.t('tag.error_find') });
             });
     },
     validate: function (req, res, next) {
@@ -99,21 +99,21 @@ module.exports = {
         const { id, isValid, refusalReason } = req.body
 
         if (!user.isAdmin) {
-            return res.status(403).json({ message: 'Only an admin can validate a tag.' });
+            return res.status(403).json({ message: req.t('tag.validation_admin') });
         }
 
         if (refusalReason === '' && !isValid) {
-            return res.status(403).json({ message: 'Tag refusal reason must have a value.' });
+            return res.status(403).json({ message: req.t('tag.refusal_reason') });
         }
 
         if (isValid === null || isValid === undefined) {
-            return res.status(403).json({ message: 'Tag validation must have a value.' });
+            return res.status(403).json({ message: req.t('tag.validation_required') });
         }
 
         Tag.findByPk(id)
             .then((tag) => {
                 if (!tag) {
-                    return res.status(404).json({ message: 'Tag not found.' });
+                    return res.status(404).json({ message: req.t('tag.not_found') });
                 }
 
                 tag.update({
@@ -126,12 +126,12 @@ module.exports = {
                     })
                     .catch((error) => {
                         console.error(error);
-                        res.status(500).json({ message: 'An error occurred while validating the tag.' });
+                        res.status(500).json({ message: req.t('tag.error_validation') });
                     });
             })
             .catch((error) => {
                 console.error('Error on finding tag:', error.message);
-                res.status(500).json({ message: 'An error occurred while updating the tag.' });
+                res.status(500).json({ message: req.t('tag.error_update') });
             });
     },
     delete: function (req, res, next) {
@@ -154,13 +154,13 @@ module.exports = {
         })
             .then((tag) => {
                 if (!tag) {
-                    return res.status(404).json({ message: 'Tag not found.' });
+                    return res.status(404).json({ message: req.t('tag.not_found') });
                 }
 
                 const canDelete = user.isAdmin || tag.articles.some((article) => article.user.id === user.id);
 
                 if (!canDelete) {
-                    return res.status(403).json({ message: 'Only the admin or the tag creator can delete the tag.' });
+                    return res.status(403).json({ message: req.t('tag.authorized') });
                 }
 
                 return tag.destroy();
@@ -170,7 +170,7 @@ module.exports = {
             })
             .catch((error) => {
                 console.error('Error deleting tag: ', error.message);
-                res.status(500).json({ message: 'An error occurred while deleting the tag.' });
+                res.status(500).json({ message: req.t('tag.error_delete') });
             });
     },
 };

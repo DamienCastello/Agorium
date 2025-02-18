@@ -14,46 +14,6 @@ const messages = {
             profile: "My profile",
             logout: "Logout",
         },
-        article_detail: {
-            state_loading: "Loading article ...",
-            state_error: "Unable to load this article",
-            report: "Report article"
-        },
-        articles: {
-            tag_filter: "Filter by tags",
-            all_tags: "All tags",
-            name_filter: "Filter by name",
-            name_placeholder: "Search by name",
-            date_sort: "Sort by date",
-            sort_near: "The closest",
-            sort_old: "The oldest",
-            date_filter: "Filter by date range",
-            date_placeholder: "Date range",
-            state_error: "Unable to load articles",
-            empty_list: "No articles found"
-        },
-        validate: {
-            title: "Validation of tags",
-            save_button: "Update",
-            sub_title: "Validation of article fields",
-            label_title: "Title",
-            placeholder_title: "Reason for refusal of title",
-            label_video: "Vidéo",
-            placeholder_video: "Reason for refusal of vidéo",
-            label_preview: "Preview",
-            placeholder_preview: "Reason for refusal of preview",
-            label_description: "Description",
-            placeholder_description: "Reason for refusal of description",
-            sub_title_final: "General validation of the article",
-            placeholder_final: "Overall reasons for refusal of article",
-            tags_title: "Tags validation",
-            th_tag: "Tag",
-            th_validate: "Validate",
-            th_refuse: "Refuse",
-            th_reason: "Reason",
-            th_save: "Save",
-            placeholder_tags: "Reason for refusal of tags"
-        },
         auth: {
             login: {
                 title: "Login",
@@ -118,7 +78,48 @@ const messages = {
                 report_article_create: "Article reported successfully !",
                 report_comment_create: "Comment reported successfully !",
                 report_error: "An error occurs, please retry.",
+                log_error_language: "Error back side when changing language: "
             }
+        },
+        article_detail: {
+            state_loading: "Loading article ...",
+            state_error: "Unable to load this article",
+            report: "Report article"
+        },
+        articles: {
+            tag_filter: "Filter by tags",
+            all_tags: "All tags",
+            name_filter: "Filter by name",
+            name_placeholder: "Search by name",
+            date_sort: "Sort by date",
+            sort_near: "The closest",
+            sort_old: "The oldest",
+            date_filter: "Filter by date range",
+            date_placeholder: "Date range",
+            state_error: "Unable to load articles",
+            empty_list: "No articles found"
+        },
+        validate: {
+            title: "Validation of tags",
+            save_button: "Update",
+            sub_title: "Validation of article fields",
+            label_title: "Title",
+            placeholder_title: "Reason for refusal of title",
+            label_video: "Vidéo",
+            placeholder_video: "Reason for refusal of vidéo",
+            label_preview: "Preview",
+            placeholder_preview: "Reason for refusal of preview",
+            label_description: "Description",
+            placeholder_description: "Reason for refusal of description",
+            sub_title_final: "General validation of the article",
+            placeholder_final: "Overall reasons for refusal of article",
+            tags_title: "Tags validation",
+            th_tag: "Tag",
+            th_validate: "Validate",
+            th_refuse: "Refuse",
+            th_reason: "Reason",
+            th_save: "Save",
+            placeholder_tags: "Reason for refusal of tags"
         },
         publish: {
             placeholder_file: "No file selected",
@@ -185,7 +186,7 @@ const messages = {
     fr: {
         navigation: {
             language_en: "Anglais",
-            language_fr: "French",
+            language_fr: "Français",
             validations: "Validations",
             articles: "Articles",
             publish: "Publier",
@@ -194,6 +195,73 @@ const messages = {
             account: "Compte",
             profile: "Mon profil",
             logout: "Se déconnecter",
+        },
+        auth: {
+            login: {
+                title: "Se connecter",
+                field_email: "Email",
+                field_password: "Mot de passe"
+            },
+            signup: {
+                title: "Créer un compte",
+                field_email: "Email",
+                field_password: "Mot de passe",
+                field_avatar: "Avatar (optionnel)",
+                button: "S'inscrire",
+                placeholder_file: "Aucun fichier choisi",
+            }
+        },
+        notification: {
+            title: {
+                login: "Connexion",
+                signup: "Inscription",
+                article_fetch: "Récupération de l'article",
+                articles_fetch: "Récupération des articles",
+                validations_fetch: "Récupération des articles en attente de validation",
+                validation: "Validation",
+                validation_fetch: "Récupération de l'article en attente de validation",
+                tag_exists: "Conflit de tag",
+                tag_create: "Création d'un tag",
+                error_tag_create: "Erreur lors de la création du tag",
+                error_tags_fetch: "Erreur lors de la récupération des tags",
+                field_media_required: "Sélection d'une ressource",
+                article_create: "Création d'un article",
+                like_comment: "J'aime un commentaire",
+                like_article: "J'aime un article",
+                comment_create: "Commentaire sur un article",
+                new_badge: "Nouveau badge obtenu",
+                profil_error_user_fetch: "Erreur lors de la récupération de l'utilisateur",
+                profil_error_avatar_update: "Erreur lors de la mise à jour de l'avatar",
+                report_reason: "Motif du signalement",
+                report_create: "Signalement"
+            },
+            text: {
+                invalid_tags: "Certains tag(s) ne sont pas validés",
+                invalid_fields: "Certains champ(s) ne sont pas validés",
+                valid_tags: "Tags validés avec succès !",
+                error_tags_validation: "Erreur lors de la mise à jour de la validation des tags",
+                valid_article: "Article validé avec succès !",
+                error_article_validation: "Erreur lors de la mise à jour de la validation de l'article",
+                error_parse_refusalReasons: "Erreur lors de l'analyse des motifs de refus",
+                error_article_fetch: "Erreur lors de la récupération de l'article",
+                tag_exists: "Ce tag existe déjà !",
+                tag_create: "Tag créé avec succès !",
+                field_media_required: "Veuillez sélectionner une image ou inclure une URL YouTube !",
+                field_media_url: "Veuillez sélectionner une URL YouTube valide !",
+                article_create: "Article créé avec succès !",
+                like_comment_error_load: "Le commentaire n'est pas chargé ou l'ID est manquant !",
+                like_comment_error_auth: "Vous devez être authentifié pour aimer un commentaire.",
+                like_article_error_auth: "Vous devez être authentifié pour aimer un article.",
+                comment_error_auth: "Utilisateur non connecté. Impossible de publier un commentaire.",
+                comment_error_content_required: "Le commentaire ne peut pas être vide.",
+                comment_create: "Commentaire créé avec succès !",
+                new_badge: "Vous avez remporté le badge",
+                report_reason: "Veuillez sélectionner un motif.",
+                report_article_create: "Article signalé avec succès !",
+                report_comment_create: "Commentaire signalé avec succès !",
+                report_error: "Une erreur s'est produite, veuillez réessayer.",
+                log_error_language: "Erreur lors du changement de langue côté serveur"
+            }
         },
         article_detail: {
             state_loading: "Chargement de l'article ...",
@@ -234,72 +302,6 @@ const messages = {
             th_reason: "Raison",
             th_save: "Enregistrer",
             placeholder_tags: "Motif du refus des tags"
-        },
-        auth: {
-            login: {
-                title: "Se connecter",
-                field_email: "Email",
-                field_password: "Mot de passe"
-            },
-            signup: {
-                title: "Créer un compte",
-                field_email: "Email",
-                field_password: "Mot de passe",
-                field_avatar: "Avatar (optionnel)",
-                button: "S'inscrire",
-                placeholder_file: "Aucun fichier choisi",
-            }
-        },
-        notification: {
-            title: {
-                login: "Log In",
-                signup: "Sign Up",
-                article_fetch: "Fetching Article",
-                articles_fetch: "Fetching Articles",
-                validations_fetch: "Fetching Articles Awaiting To Validation",
-                validation: "Validation",
-                validation_fetch: "Fetching Article Awaiting To Validation",
-                tag_exists: "Tag Conflict",
-                tag_create: "Tag Create",
-                error_tag_create: "Error Creating Tag",
-                error_tags_fetch: "Error Fetching Tags",
-                field_media_required: "Selecting Resource",
-                article_create: "Article Create",
-                like_comment: "Liking Comment",
-                like_article: "Liking Article",
-                comment_create: "Commenting Article",
-                new_badge: "New Badge Obtained",
-                profil_error_user_fetch: "Error Fetching User",
-                profil_error_avatar_update: "Error Updating Avatar",
-                report_reason: "Report Reason",
-                report_create: "Report",
-            },
-            text: {
-                invalid_tags: "Some tag(s) not validated",
-                invalid_fields: "Some field(s) not validated",
-                valid_tags: "Tags validated successfully !",
-                error_tags_validation: "Error updating tags validation",
-                valid_article: "Article validated successfully !",
-                error_article_validation: "Error updating article validation",
-                error_parse_refusalReasons: "Error parsing refusalReasons",
-                error_article_fetch: "Error fetching article",
-                tag_exists: "This tag already exists !",
-                tag_create: "Tag created successfully !",
-                field_media_required: "Please select an image or include a YouTube URL !",
-                field_media_url: "Please Select a valid Youtube URL !",
-                article_create: "Article created successfully !",
-                like_comment_error_load: "Comment is not loaded or missing ID !",
-                like_comment_error_auth: "You must be authenticated to like a comment.",
-                like_article_error_auth: "You must be authenticated to like an article.",
-                comment_error_auth: "User not logged in. Unable to post comment.",
-                comment_error_content_required: "Comment can not be empty.",
-                comment_create: "Comment created successfully !",
-                new_badge: "You have won the badge",
-                report_reason: "Please select a reason.",
-                report_article_create: "Article reported successfully !",
-                report_comment_create: "Comment reported successfully !",
-                report_error: "An error occurs, please retry.",
-            }
         },
         publish: {
             placeholder_file: "Aucun fichier choisi",
@@ -366,8 +368,8 @@ const messages = {
 };
 
 const i18n = createI18n({
-    locale: "en",
-    fallbackLocale: "fr",
+    locale: "fr",
+    fallbackLocale: "en",
     messages,
 });
 

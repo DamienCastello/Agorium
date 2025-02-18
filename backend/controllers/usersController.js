@@ -7,7 +7,7 @@ module.exports = {
             .then((users) => { res.json({ users }); })
             .catch((error) => {
                 console.log('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     },
     show: function (req, res, next) {
@@ -22,7 +22,7 @@ module.exports = {
             .then((user) => { res.json({ user }); })
             .catch((error) => {
                 console.log('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     },
     create: function (req, res, next) {
@@ -36,7 +36,7 @@ module.exports = {
             .then((user) => { res.json({ user }); })
             .catch((error) => {
                 console.log('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     },
     update: function (req, res, next) {
@@ -51,12 +51,12 @@ module.exports = {
                 .then((updatedUser) => { res.json({ updatedUser }); })
                 .catch((error) => {
                     console.log('error: ', error.message);
-                    res.status(500).json({ message: 'Error while updating user.' });
+                    res.status(500).json({ message: req.t('user.error_label') });
                 })
             })
             .catch((error) => {
                 console.log('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     },
     delete: function (req, res, next) {
@@ -64,7 +64,7 @@ module.exports = {
             .then((user) => { user.destroy() })
             .catch((error) => {
                 console.log('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     }
 }

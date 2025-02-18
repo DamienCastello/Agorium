@@ -72,8 +72,10 @@ import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import url from '@/utils/url';
+import axios from 'axios';
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 defineProps(['isAuthenticated', 'isAdmin']);
 const navbarStore = useNavbarStore();
@@ -82,7 +84,7 @@ const router = useRouter();
 const route = useRoute();
 const selectedLanguage = ref('fr');
 
-const changeLanguage = (lang) => {
+const changeLanguage = async (lang) => {
   if (lang === 'en') {
     selectedLanguage.value = 'English';
     locale.value = 'en';
@@ -92,6 +94,12 @@ const changeLanguage = (lang) => {
   }
 
   localStorage.setItem('selectedLanguage', locale.value);
+
+  try {
+    await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/set-language`, { language: locale.value }, { withCredentials: true });
+  } catch (error) {
+    console.error(t('notification.text.log_error_language'), error);
+  }
 
   navbarStore.closeTranslation();
 };

@@ -9,7 +9,7 @@ module.exports = {
             })
             .catch((error) => {
                 console.error('Error fetching achievements:', error.message);
-                res.status(500).json({ message: 'An error occurred while fetching achievements.' });
+                res.status(500).json({ message: req.t('achievement.error_fetch_all') });
             });
     },
 
@@ -17,31 +17,31 @@ module.exports = {
         Achievement.findByPk(req.params.id)
             .then((achievement) => {
                 if (!achievement) {
-                    return res.status(404).json({ message: 'Achievement not found.' });
+                    return res.status(404).json({ message: req.t('achievement.not_found') });
                 }
                 res.status(200).json({ achievement });
             })
             .catch((error) => {
                 console.error('Error fetching achievement:', error.message);
-                res.status(500).json({ message: 'An error occurred while fetching the achievement.' });
+                res.status(500).json({ message: req.t('achievement.error_fetch') });
             });
     },
 
     create: function (req, res, next) {
         if (!req.body.name) {
-            return res.status(400).json({ message: 'The "name" field is required.' });
+            return res.status(400).json({ message: req.t('achievement.name_required') });
         }
         if (!req.body.description) {
-            return res.status(400).json({ message: 'The "description" field is required.' });
+            return res.status(400).json({ message: req.t('achievement.description_required') });
         }
         if (!req.body.points) {
-            return res.status(400).json({ message: 'The "points" field is required.' });
+            return res.status(400).json({ message: req.t('achievement.points_required') });
         }
         if (!req.body.isReusable) {
-            return res.status(400).json({ message: 'The "isReusable" field is required.' });
+            return res.status(400).json({ message: req.t('achievement.isReusable_required') });
         }
         if (!req.body.isEventBased) {
-            return res.status(400).json({ message: 'The "isEventBased" field is required.' });
+            return res.status(400).json({ message: req.t('achievement.isEventBased_required') });
         }
 
         Achievement.create({
@@ -56,7 +56,7 @@ module.exports = {
             })
             .catch((error) => {
                 console.error('Error creating achievement: ', error.message);
-                res.status(500).json({ message: 'An error occurred while creating the achievement.' });
+                res.status(500).json({ message: req.t('achievement.error_create') });
             });
     },
 
@@ -72,12 +72,12 @@ module.exports = {
                 .then((updatedAchievement) => { res.json({ updatedAchievement }); })
                 .catch((error) => { 
                     console.log('error: ', error.message);
-                    res.status(500).json({message: 'Error while updating achivement.'});
+                    res.status(500).json({message: req.t('achievement.error_update') });
                  })
              })
             .catch((error) => { 
                 console.log('error: ', error.message);
-                res.status(500).json({message: 'Internal server error.'});
+                res.status(500).json({message: req.t('error') });
              })
     },
     delete: function (req, res, next) {
@@ -85,7 +85,7 @@ module.exports = {
             .then((achievement) => { achievement.destroy() })
             .catch((error) => { 
                 console.log('error: ', error.message);
-                res.status(500).json({message: 'Internal server error.'});
+                res.status(500).json({message: req.t('error') });
              })
     },
 };

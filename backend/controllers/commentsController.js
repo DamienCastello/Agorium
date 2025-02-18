@@ -25,7 +25,7 @@ module.exports = {
             .then((comments) => { res.json({ comments }); })
             .catch((error) => {
                 console.log("error: ", error)
-                res.status(500).json({ message: 'Internal server error.' })
+                res.status(500).json({ message: req.t('error') })
             })
     },
     create: function (req, res, next) {
@@ -84,7 +84,7 @@ module.exports = {
             })
             .catch((error) => {
                 console.error(error);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     },
     like: function (req, res, next) {
@@ -92,14 +92,14 @@ module.exports = {
       
         // Vérifiez que les informations nécessaires sont présentes
         if (!userId) {
-          return res.status(401).json({ message: "User not authenticated." });
+          return res.status(401).json({ message: req.t('comment.not_authenticated') });
         }
       
         // Chargez l'utilisateur depuis Sequelize
         models.User.findByPk(userId)
           .then((user) => {
             if (!user) {
-              return res.status(404).json({ message: "User not found." });
+              return res.status(404).json({ message: req.t("comment.user_not_found") });
             }
       
             // Trouvez le commentaire associé
@@ -114,7 +114,7 @@ module.exports = {
             })
               .then((comment) => {
                 if (!comment) {
-                  return res.status(404).json({ message: "Comment not found." });
+                  return res.status(404).json({ message: req.t('comment.not_found') });
                 }
       
                 // Vérifiez si l'utilisateur a déjà liké ce commentaire
@@ -130,7 +130,7 @@ module.exports = {
                         })
                         .catch((error) => {
                           console.error("Error while unliking comment:", error.message);
-                          return res.status(500).json({ message: "Error while unliking comment." });
+                          return res.status(500).json({ message: req.t('comment.error_unliking') });
                         });
                     } else {
                       // Si aucun like n'existe, en créer un
@@ -168,29 +168,29 @@ module.exports = {
                               });
                             } catch (error) {
                               console.error("Error processing achievement:", error.message);
-                              return res.status(500).json({ message: "Internal server error." });
+                              return res.status(500).json({ message: req.t('comment.error_achievements') });
                             }
                           })();
                         })
                         .catch((error) => {
                           console.error("Error while liking comment:", error.message);
-                          return res.status(500).json({ message: "Error while liking comment." });
+                          return res.status(500).json({ message: req.t('comment.error_liking') });
                         });
                     }
                   })
                   .catch((error) => {
                     console.error("Error checking like status:", error.message);
-                    return res.status(500).json({ message: "Error checking like status." });
+                    return res.status(500).json({ message: req.t('comment.error_likes') });
                   });
               })
               .catch((error) => {
                 console.error("Error fetching comment:", error.message);
-                return res.status(500).json({ message: "Error fetching comment." });
+                return res.status(500).json({ message: req.t('comment.error_fetch') });
               });
           })
           .catch((error) => {
             console.error("Error fetching user:", error.message);
-            return res.status(500).json({ message: "Error fetching user." });
+            return res.status(500).json({ message: req.t('comment.error_user') });
           });
       },      
     update: function (req, res, next) {
@@ -207,12 +207,12 @@ module.exports = {
                     .then((updatedComment) => { res.json({ updatedComment }); })
                     .catch((error) => {
                         console.error('error: ', error.message);
-                        res.status(500).json({ message: 'An error occurred while updating the report.' });
+                        res.status(500).json({ message: req.t('comment.error_update') });
                     })
             })
             .catch((error) => {
                 console.error('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
 
 
@@ -223,7 +223,7 @@ module.exports = {
         Comment.findByPk(req.params.id)
           .then((comment) => {
             if (!comment) {
-              return res.status(404).json({ message: "Comment not found." });
+              return res.status(404).json({ message: req.t('comment.not_found') });
             }
             
             // Maybe invalid comment ?
@@ -234,26 +234,26 @@ module.exports = {
               reason: reason,
               details: details,
             })
-              .then(() => res.status(200).json({ message: "Comment reported." }))
+              .then(() => res.status(200).json({ message: req.t('comment.reported') }))
               .catch((error) => {
                 console.error("Error reporting comment:", error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
               })
           })
           .catch((error) => {
             console.error("Error fetching comment:", error.message);
-            res.status(500).json({ message: 'Internal server error.' });
+            res.status(500).json({ message: req.t('error') });
           });
       },
     delete: function (req, res, next) {
         Comment.findByPk(req.body.id)
             .then((comment) => {
                 comment.destroy()
-                res.status(200).json(`Comment ${comment.id} deleted.`);
+                res.status(200).json(`${req.t('comment.subject_delete')} ${comment.id} ${req.t('comment.deleted')}.`);
             })
             .catch((error) => {
                 console.error('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
             })
     }
 }
