@@ -7,11 +7,11 @@
         <div>
           <div class="label-filter">
             <TagIcon />
-            <label for="tagFilter">Filtrer par tags :</label>
+            <label for="tagFilter">{{ $t('articles.tag_filter') }} :</label>
           </div>
           <div class="pico">
             <select id="tagFilter" v-model="selectedTag" @change="applyFilters" class="tag-slector">
-              <option value="">Tous les tags</option>
+              <option value="">{{ $t('articles.all_tags') }}</option>
               <option v-for="tag in allTags" :key="tag.id" :value="tag.name">
                 {{ tag.name }}
               </option>
@@ -23,11 +23,11 @@
         <div>
           <div class="label-filter">
             <SearchIcon />
-            <label for="nameFilter">Filtrer par nom :</label>
+            <label for="nameFilter">{{ $t('articles.name_filter') }} :</label>
           </div>
           <div class="pico">
             <input type="text" id="nameFilter" v-model="nameFilter" @input="applyFilters"
-            placeholder="Rechercher par nom" />
+            :placeholder='$t("articles.name_placeholder")' />
           </div>
         </div>
 
@@ -37,20 +37,20 @@
             <FadeSlideTransition>
               <SortIcon :isDown="dateSort === 'desc'" />
             </FadeSlideTransition>
-            <label class="pico">Tri par date :</label>
+            <label class="pico">{{ $t('articles.date_sort') }} :</label>
           </div>
           <div class="pico">
             <select v-model="dateSort" @change="applyFilters" class="sort-selector">
-              <option value="desc">Les plus anciens</option>
-              <option value="asc">Les plus récents</option>
+              <option value="desc">{{ $t('articles.sort_near') }}</option>
+              <option value="asc">{{ $t('articles.sort_old') }}</option>
             </select>
           </div>
         </div>
 
         <!-- Filtre par intervalle de dates -->
         <div class="filter date-filter">
-          <label>Filtrer par intervalle de dates :</label>
-          <VueDatePicker v-model="dateRange" :placeholder="'plage de dates'" range is-range
+          <label>{{ $t('articles.date_filter') }} :</label>
+          <VueDatePicker v-model="dateRange" :placeholder="$t('articles.date_placeholder')" range is-range
             @update:model-value="applyFilters" :input-class="'custom-datepicker-input'" />
         </div>
       </div>
@@ -62,7 +62,7 @@
 
     <!-- Grille des articles -->
     <div v-if="state === 'error'">
-      <p>Impossible de charger les articles</p>
+      <p>{{ $t('articles.state_error') }}</p>
     </div>
     <div v-else class="articles-grid pico" :aria-busy="state === 'loading'">
       <div v-for="(article, index) in filteredArticles" :key="index" class="card"
@@ -87,7 +87,7 @@
           </div>
         </div>
       </div>
-      <p v-if="filteredArticles.length === 0">Aucun article trouvé</p>
+      <p v-if="filteredArticles.length === 0">{{ $t('articles.empty_list') }}</p>
     </div>
   </div>
   <notifications position="bottom right" />
@@ -107,6 +107,7 @@ import TagIcon from "./icons/TagIcon.vue"
 import SearchIcon from "./icons/SearchIcon.vue"
 import SortIcon from "./icons/SortIcon.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
+import { useI18n } from "vue-i18n";
 
 const articles = ref([]);
 const filteredArticles = ref([]);
@@ -119,6 +120,7 @@ const router = useRouter();
 const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
 const allTags = ref([]);
+const { t } = useI18n();
 
 onMounted(() => {
   axios(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
@@ -145,7 +147,7 @@ onMounted(() => {
     })
     .catch((error) => {
       notify({
-        title: "Fetching Articles",
+        title: t('notification.title.articles_fetch'),
         type: "error",
         text: error.response.data.message,
       });

@@ -1,66 +1,64 @@
 <template>
     <div class="report-container pico">
 
-        <h1>Signaler un {{ props.entity === 'articles' ? 'article' : 'commentaire' }}</h1>
+        <h1>{{ $t('report.title') }} {{ props.entity === 'articles' ? $t('report.title_subject_article') : $t('report.title_subject_comment') }}</h1>
         <div v-if="state === 'error'">
-            <p>Impossible de signaler {{ props.entity === 'articles' ? 'l\'article' : 'le commentaire' }}</p>
+            <p>{{ $t('report.state_error') }} {{ props.entity === 'articles' ? $t('report.error_subject_article') : $t('report.error_subject_comment') }}</p>
         </div>
         <div v-else-if="state === 'loading'">
-            <p>Chargement ...</p>
+            <p>{{ $t('report.state_loading') }}</p>
         </div>
         <p v-else-if="state === 'idle'">
-            Si vous pensez que {{ props.entity === 'articles' ? 'cet article' : 'ce commentaire' }} enfreint les règles
-            ou contient des informations inappropriées, vous pouvez
-            le signaler ici.
+            {{ $t('report.pre_content') }} {{ props.entity === 'articles' ? $t('report.content_subject_article') : $t('report.content_subject_comment') }} {{ $t('report.post_content') }}
         </p>
 
         <form @submit.prevent="submitReport">
             <div class="form-group">
-                <label for="reason">Raison du signalement :</label>
+                <label for="reason">{{ $t('report.label_reason_select') }} :</label>
                 <select id="reason" v-model="report.reason" required>
-                    <option value="" disabled selected>Choisissez une raison</option>
-                    <option value="spam">Spam</option>
-                    <option value="inappropriate">Contenu inapproprié</option>
-                    <option v-if="props.entity === 'article'" value="copyright">Infraction de droits d'auteur</option>
-                    <option value="other">Autre</option>
+                    <option value="" disabled selected>{{ $t('report.option_default') }}</option>
+                    <option value="spam">{{ $t('report.option_spam') }}</option>
+                    <option value="inappropriate">{{ $t('report.option_content') }}</option>
+                    <option v-if="props.entity === 'article'" value="copyright">{{ $t('report.option_copyright') }}</option>
+                    <option value="other">{{ $t('report.option_other') }}</option>
                 </select>
             </div>
 
             <div v-if="props.entity === 'articles' && report.reason === 'inappropriate' || report.reason === 'other'"
                 class="form-group">
-                <label>Champs posant problème :</label>
+                <label>{{ $t('report.label_fields_select') }} :</label>
                 <div class="checkbox-fields">
                     <div>
                         <label>
-                            <input type="checkbox" v-model="fieldsToCheck.title" /> Titre
+                            <input type="checkbox" v-model="fieldsToCheck.title" /> {{ $t('report.option_title') }}
                         </label>
                     </div>
                     <div>
                         <label>
-                            <input type="checkbox" v-model="fieldsToCheck.description" /> Description
+                            <input type="checkbox" v-model="fieldsToCheck.description" /> {{ $t('report.option_description') }}
                         </label>
                     </div>
                     <div v-if="globalStore.reportType === 'youtube'">
                         <label>
-                            <input type="checkbox" v-model="fieldsToCheck.videoContent" /> Contenu vidéo
+                            <input type="checkbox" v-model="fieldsToCheck.videoContent" /> {{ $t('report.option_video') }}
                         </label>
                     </div>
                     <div v-if="globalStore.reportType === 'preview'">
                         <label>
-                            <input type="checkbox" v-model="fieldsToCheck.preview" /> Image d'illustration
+                            <input type="checkbox" v-model="fieldsToCheck.preview" /> {{ $t('report.option_preview') }}
                         </label>
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="details">Détails (optionnel) :</label>
+                <label for="details">{{ $t('report.label_textarea') }} :</label>
                 <textarea id="details" v-model="report.details"
-                    placeholder="Expliquez pourquoi vous signalez cet article..."></textarea>
+                    :placeholder="$t('report.placeholder_textarea')"></textarea>
             </div>
 
             <button type="submit" :disabled="isSubmitting || report.reason === ''" class="submit-button">
-                {{ isSubmitting ? "Envoi en cours..." : "Signaler" }}
+                {{ isSubmitting ? $t('report.submitting') : $t('report.submit_button') }}
             </button>
         </form>
     </div>
@@ -75,6 +73,7 @@ import url from "@/utils/url";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 import { useGlobalStore } from "@/stores/global";
+import { useI18n } from "vue-i18n";
 
 const report = ref({
     reason: "",
@@ -90,6 +89,7 @@ const authStore = useAuthStore();
 const globalStore = useGlobalStore();
 const router = useRouter();
 const { notify } = useNotification();
+const { t } = useI18n();
 
 const isSubmitting = ref(false);
 const state = ref("idle");
@@ -99,22 +99,22 @@ const props = defineProps(['entity', 'articleId', 'commentId']);
 const buildRefusalReasons = () => {
     return {
         title: {
-            value: fieldsToCheck.value.title ? "Problème détecté dans le titre." : "",
+            value: fieldsToCheck.value.title ? t('report.reason_title') : "",
             isValid: !fieldsToCheck.value.title,
             validatedBy: null
         },
         description: {
-            value: fieldsToCheck.value.description ? "Problème détecté dans la description." : "",
+            value: fieldsToCheck.value.description ? t('report.reason_description') : "",
             isValid: !fieldsToCheck.value.description,
             validatedBy: null
         },
         videoContent: {
-            value: fieldsToCheck.value.videoContent ? "Problème détecté dans le contenu vidéo." : "",
+            value: fieldsToCheck.value.videoContent ? t('report.reason_video') : "",
             isValid: !fieldsToCheck.value.videoContent,
             validatedBy: null
         },
         preview: {
-            value: fieldsToCheck.value.preview ? "Problème détecté dans l'image d'illustration." : "",
+            value: fieldsToCheck.value.preview ? t('report.reason_preview') : "",
             isValid: !fieldsToCheck.value.preview,
             validatedBy: null
         },
@@ -124,9 +124,9 @@ const buildRefusalReasons = () => {
 const submitReport = async () => {
     if (!report.value.reason) {
         notify({
-            title: "Report Reason",
+            title: t('notification.title.report_reason'),
             type: "warn",
-            text: "Please select a reason.",
+            text: t('notification.text.report_reason'),
         });
         return;
     }
@@ -166,9 +166,9 @@ const submitReport = async () => {
             });
 
             notify({
-                title: "Report",
+                title: t('notification.title.report_create'),
                 type: "success",
-                text: "Article reported successfully!",
+                text: t('notification.text.report_article_create'),
             });
 
             setTimeout(() => {
@@ -200,9 +200,9 @@ const submitReport = async () => {
             });
 
             notify({
-                title: "Report",
+                title: t('notification.title.report_create'),
                 type: "success",
-                text: "Comment reported successfully!",
+                text: t('notification.text.report_comment_create'),
             });
 
             setTimeout(() => {
@@ -216,9 +216,9 @@ const submitReport = async () => {
         console.error("Error:", error);
         state.value = 'error';
         notify({
-            title: "Report",
+            title: t('notification.title.report_create'),
             type: "error",
-            text: "An error occurs, please retry.",
+            text: t('notification.text.report_error'),
         });
     } finally {
         isSubmitting.value = false;

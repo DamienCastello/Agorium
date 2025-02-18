@@ -1,10 +1,10 @@
 <template>
   <div class="container pico">
     <div v-if="state === 'error'">
-      <p>Impossible de charger cet article</p>
+      <p>{{ $t('article_detail.state_error') }}</p>
     </div>
     <div v-else-if="state === 'loading'">
-      <p>Chargement de l'article...</p>
+      <p>{{ $t('article_detail.state_loading') }}</p>
     </div>
     <div v-else class="article-container">
       <div class="tags-badges">
@@ -26,7 +26,7 @@
         </div>
         <div class="action-report" @click="navigateToReport(article.id)">
           <ReportIcon class="icon"/>
-          Signaler l'article
+          {{ $t('article_detail.report') }}
         </div>
       </div>
         <p>{{ article.description }}</p>

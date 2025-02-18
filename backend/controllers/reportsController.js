@@ -17,7 +17,7 @@ module.exports = {
         })
         .catch((error) => {
             console.error(error);
-            res.status(500).json({ message: 'Internal server error.' });
+            res.status(500).json({ message: req.t('error') });
         })
     },
     update: function (req, res, next) {
@@ -40,7 +40,7 @@ module.exports = {
              })
             .catch((error) => { 
                 console.error('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
              })
 
 
@@ -49,11 +49,11 @@ module.exports = {
         Report.findByPk(req.body.id)
             .then((report) => { 
                 report.destroy()
-                res.status(200).json(`Report ${report.id} deleted.`); 
+                res.status(200).json(`${req.t('report.subject_delete')} ${report.id} ${req.t('report.deleted')}.`); 
             })
             .catch((error) => { 
                 console.error('error: ', error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
              })
     }
 }

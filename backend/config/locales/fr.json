@@ -1,0 +1,89 @@
+{   
+    "user": {
+        "error_label": "Erreur lors de la mise à jour de l'utilisateur."
+    },
+    "auth": {
+        "error_fields_required": "Email & mot de passe requis.",
+        "login": {
+            "success": "Vous vous êtes connecté avec succès.",
+            "not_found": "Utilisateur introuvable.",
+            "error_label": "Erreur lors de la connexion:",
+            "error_field_password": "Mot de passe invalide."
+        },
+        "signup": {
+            "error_label": "Erreur lors de la création de l'utilisateur:",
+            "error_email_format": "Format de l'email invalide."
+        }
+    },
+    "article": {
+        "fields_required": "Le titre et la description sont requis.",
+        "title_length": "Le titre doit faire au moins 3 caractères.",
+        "invalid_tags": "Format des tags invalide.",
+        "tag_required": "Au moins 1 tag est requis.",
+        "user_required": "Utilisateur requis.",
+        "user_not_logged": "Utilisateur non authentifié.",
+        "not_found": "Article introuvable.",
+        "error_unliking": "Erreur lors de la suppression du like de l'article.",
+        "error_achievements": "Erreur lors du traitement des succès.",
+        "error_liking": "Erreur lors de l'ajout du like de l'article.",
+        "error_likes": "Error lors de la vérification des likes.",
+        "error_fetch": "Erreur lors de la récupération de l'article.",
+        "reported": "Article signalé.",
+        "reason_title": "Le motif de refus du titre doit avoir une valeur.",
+        "reason_description": "Le motif de refus de la description doit avoir une valeur.",
+        "reason_preview": "Le motif de refus de l'image d'illustration doit avoir une valeur.",
+        "reason_youtube": "Le motif de refus du contenu de la vidéo doit avoir une valeur.",
+        "reason_overall": "Le motif global de refus de l'article doit avoir une valeur.",
+        "not_authorized": "Vous n'êtes pas autorisé à valider cet article.",
+        "error_validation": "Erreur lors de la validation de l'article.",
+        "deleted": "supprimé"
+    },
+    "comment": {
+        "not_authenticated": "Utilisateur non authentifié.",
+        "user_not_found": "Utilisateur introuvable.",
+        "not_found": "Commentaire introuvable.",
+        "error_unliking": "Erreur lors de la suppression du like du commentaire.",
+        "error_achievements": "Erreur lors du traitement des succès.",
+        "error_liking": "Erreur lors de l'ajout du like du commentaire.",
+        "error_likes": "Erreur lors de la vérification des likes.",
+        "error_fetch": "Erreur lors de la récupération du commentaire.",
+        "error_user": "Erreur lors de la récupération de l'utilisateur.",
+        "error_update": "Erreur lors de la mise à jour du commentaire.",
+        "reported": "Commentaire signalé.",
+        "subject_delete": "Commentaire",
+        "deleted": "supprimé"
+    },
+    "achievement": {
+        "error_fetch_all": "Erreur lors de la récupération des succès.",
+        "not_found": "Succès introuvable.",
+        "error_fetch": "Erreur lors de la récupération du succès.",
+        "name_required": "L'information 'name' est requise.",
+        "description_required": "L'information 'description' est requise.",
+        "points_required": "L'information 'points' est requise.",
+        "isReusable_required": "L'information 'isReusable' est requise.",
+        "isEventBased_required": "L'information 'isEventBased' est requise.",
+        "error_create": "Erreur lors de la création du succès.",
+        "error_update": "Erreur lors de la mise à jour du succès."
+    },
+    "report": {
+        "subject_delete": "Signelement",
+        "deleted": "supprimé"
+    },
+    "tag": {
+        "error_fetch_all": "Erreur lors de la récupération des tags.",
+        "not_found": "Tag introuvable.",
+        "error_fetch": "Erreur lors de la récupération du tag.",
+        "name_required": "L'information 'name' est requise.",
+        "error_create": "Erreur lors de la création du tag.",
+        "error_associate": "Le tag ne peut pas être mise à jour car il n'a aucun article associé.",
+        "authorized": "Seuls le créateur du tag ou un admin peuvent metre à jour le tag.",
+        "error_update": "Erreur lors de la mise à jour du tag.",
+        "error_find": "Erreur lors de la recherche du tag.",
+        "validation_admin": "Seul un admin peut valider le tag.",
+        "refusal_reason": "Le motif de refus du tag doit avoir une valeur.",
+        "validation_required": "La validation du tag doit avoir une valeur.",
+        "error_validation": "Erreur lors de la validation du tag",
+        "error_delete": "Erreur lors de la suppression du tag."
+    },
+    "error": "Erreur serveur interne."
+}

@@ -1,7 +1,7 @@
 <template>
     <div class="container pico">
       <div v-if="state === 'error'">
-        <p>Impossible de charger les articles</p>
+        <p>{{ $t('articles.state_error') }}</p>
       </div>
       <div v-else class="articles-grid" :aria-busy="state === 'loading'">
         <div
@@ -53,13 +53,14 @@
   import getYoutubeThumbnail from "../utils/getYoutubeThumbnail";
   import { useNavbarHandler } from "../composables/useNavbarHandler";
   import { useNotification } from "@kyvg/vue3-notification";
+  import { useI18n } from "vue-i18n";
 
-  
   const articles = ref([]);
   const state = ref("loading");
   const router = useRouter();
   const { handleNavbar } = useNavbarHandler();
   const { notify } = useNotification();
+  const { t } = useI18n();
   
   onMounted(() => {
     axios(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
@@ -75,7 +76,7 @@
       })
       .catch((error) => {
         notify({
-            title: "Fetching Articles Awaiting To Validation",
+            title: t('notification.title.validations_fetch'),
             type: 'error',
             text: `Error fetching article: ${error.response.data.message}`,
         });

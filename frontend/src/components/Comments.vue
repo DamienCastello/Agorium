@@ -1,20 +1,20 @@
 <template>
   <div class="pico">
-    <h3>Commentaires</h3>
+    <h3>{{ $t('comments.title') }}</h3>
     <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
       <Comment :comment="comment"/>
     </div>
     <div class="comments-container" @mousedown="handleClickOutsideNavbar">
-      <label for="comment" class="comment-label">Laisser un commentaire :</label>
-      <textarea id="comment" name="comment" v-model="newComment" placeholder="Mon commentaire de zinzin..."
-        aria-label="Zone de saisie pour commenter" :disabled="!authStore.user" class="comment-textarea"></textarea>
+      <label for="comment" class="comment-label">{{ $t('comments.label_comment') }} :</label>
+      <textarea id="comment" name="comment" v-model="newComment" :placeholder="$t('comments.placeholder_comment')"
+        :aria-label="$t('comments.label_textarea')" :disabled="!authStore.user" class="comment-textarea"></textarea>
       <div class="submit-zone">
         <p v-if="!authStore.user" class="comment-info">
-          Connectez-vous pour laisser un commentaire.
+          {{ $t('comments.auth_required') }}
         </p>
         <button @click="submitComment" :disabled="!newComment || !authStore.user || navbarStore.isMenuOpen"
           class="submit-button">
-          Envoyer
+          {{ $t('comments.submit_button') }}
         </button>
       </div>
     </div>
@@ -30,29 +30,30 @@ import Comment from "./Comment.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useNavbarStore } from "@/stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
-
+import { useI18n } from "vue-i18n";
 
 const props = defineProps(["article", "refreshComments"]);
 const newComment = ref("");
 const authStore = useAuthStore();
 const navbarStore = useNavbarStore();
 const { notify } = useNotification()
+const { t } = useI18n();
 
 const submitComment = () => {
   if (!authStore.user) {
     notify({
-      title: "Commenting Article",
+      title: t('notification.title.comment_create'),
       type: 'warn',
-      text: 'User not logged in. Unable to post comment.',
+      text: t('notification.text.comment_error_auth'),
     });
     return;
   }
 
   if (!newComment.value.trim()) {
     notify({
-      title: "Commenting Article",
+      title: t('notification.title.comment_create'),
       type: 'warn',
-      text: 'comment can not be empty.',
+      text: t('notification.text.comment_error_content_required'),
     });
     return;
   }
@@ -74,15 +75,15 @@ const submitComment = () => {
     )
     .then((response) => {
       notify({
-        title: "Commenting Article",
+        title: t('notification.title.comment_create'),
         type: 'success',
-        text: 'comment created successfully !',
+        text: t('notification.text.comment_create'),
       });
 
       if(response.data.achievement) {
         notify({
-          title: 'New Badge Obtained',
-          text: `You have won the badge ${response.data.achievement.name} !`,
+          title: t('notification.title.new_badge'),
+          text: `${t('notification.text.new_badge')} ${response.data.achievement.name} !`,
         });
       }
       
@@ -93,7 +94,7 @@ const submitComment = () => {
     })
     .catch((error) => {
       notify({
-        title: "Commenting Article",
+        title: t('notification.title.comment_create'),
         type: 'error',
         text: error.response.data.message,
       });

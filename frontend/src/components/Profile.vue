@@ -8,7 +8,9 @@
         <input type="file" name="avatar" ref="avatarInput" @change="updateAvatar" style="display: none"
             accept="image/*" />
 
-        <h1 class="title">Profil de {{ user.name }}</h1>
+            <h1 class="title">
+                {{ computedTitle }}
+            </h1>
         <div class="achievements">
             <div v-for="(achievement, index) in user.achievements" :key="index" class="achievement">
                 <BadgeCommentIcon :id="achievement.id" :icon="getIconClass(achievement.iconCategory)" />
@@ -17,24 +19,26 @@
     </div>
 
     <div v-else>
-        <p>Chargement des données...</p>
+        <p>{{ $t('profile.state_loading') }}</p>
     </div>
 
     <notifications position="bottom right" />
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import url from '@/utils/url';
 import { useAuthStore } from '@/stores/auth';
 import { useNotification } from "@kyvg/vue3-notification";
 import BadgeCommentIcon from './icons/BadgeIcon.vue';
+import { useI18n } from 'vue-i18n';
 
 const authStore = useAuthStore();
 const { notify } = useNotification();
 const user = ref(null);
 const avatarInput = ref(null);
+const { t, locale } = useI18n();
 
 const getIconClass = (iconCategory) => {
     switch (iconCategory) {
@@ -65,7 +69,7 @@ onMounted(() => {
         })
         .catch((error) => {
             notify({
-                title: "Error Fetching User",
+                title: t('notification.title.profile_error_user_fetch'),
                 type: 'error',
                 text: error.response.data.message,
             });
@@ -75,6 +79,12 @@ onMounted(() => {
 const selectAvatar = () => {
     avatarInput.value.click();
 }
+
+const computedTitle = computed(() => {
+  return locale.value === 'en'
+    ? `${user.value?.name} ${t('profile.title')}`
+    : `${t('profile.title')} ${user.value?.name}`;
+});
 
 const updateAvatar = async (event) => {
     const file = event.target.files[0];
@@ -101,7 +111,7 @@ const updateAvatar = async (event) => {
 
         } catch (error) {
             notify({
-                title: "Error Updating Avatar",
+                title: t('notification.title.profile_error_avatar_update'),
                 type: 'error',
                 text: error.response.data.message,
             });
@@ -141,6 +151,5 @@ const updateAvatar = async (event) => {
 
 input[type="file"] {
     display: none;
-    /* Masque le input file */
 }
 </style>
