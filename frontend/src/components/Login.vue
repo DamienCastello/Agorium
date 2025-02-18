@@ -1,17 +1,17 @@
 <template>
   <div class="pico">
     <div @mousedown="handleClickOutsideNavbar">
-      <h1>Login</h1>
+      <h1>{{ $t('auth.login.title') }}</h1>
       <form @submit.prevent="handleLogin">
         <fieldset>
-          <label for="email">Email:</label>
+          <label for="email">{{ $t('auth.login.field_email') }}:</label>
           <input id="email" v-model="email" type="email" />
         </fieldset>
         <fieldset>
-          <label for="password">Password:</label>
+          <label for="password">{{ $t('auth.login.field_password') }}:</label>
           <input id="password" v-model="password" type="password" />
         </fieldset>
-        <button :disabled="navbarStore.isMenuOpen" type="submit">Login</button>
+        <button :disabled="navbarStore.isMenuOpen" type="submit">{{ $t('auth.login.title') }}</button>
       </form>
     </div>
     <notifications position="bottom right" />
@@ -24,7 +24,7 @@ import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 import { useNavbarStore } from '../stores/navbar';
 import { useNotification } from "@kyvg/vue3-notification";
-
+import { useI18n } from 'vue-i18n';
 
 const email = ref('');
 const password = ref('');
@@ -32,6 +32,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const navbarStore = useNavbarStore();
 const { notify } = useNotification();
+const { t } = useI18n();
 
 const handleLogin = async () => {
   try {
@@ -39,7 +40,7 @@ const handleLogin = async () => {
     router.push('/articles');
   } catch (error) {
     notify({
-      title: "Log In",
+      title: t('notification.title.login'),
       type: 'error',
       text: error.response.data.message,
     });

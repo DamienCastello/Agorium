@@ -1,5 +1,6 @@
 var express = require('express');
 var path = require('path');
+const i18n = require('./config/i18n-config');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 //var cors = require('cors');
@@ -39,6 +40,25 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(i18n.init);
+
+app.use((req, res, next) => {
+  let lang = req.cookies.lang;
+  if (!lang) {
+      lang = 'fr';
+      res.cookie('lang', lang, { 
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        domain: 'localhost',
+        path: '/',  
+        sameSite: 'lax' 
+      });
+  }
+
+  req.setLocale(lang);
+  i18n.setLocale(req, lang);
+  next();
+});
+  
 app.use('/uploads', express.static('uploads'));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -54,5 +74,24 @@ app.use('/api/v1/comments', commentsRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/tags', tagsRouter);
 app.use('/api/v1/achievements', achievementsRouter);
+
+app.post('/api/v1/set-language', (req, res) => {
+  const { language } = req.body;
+
+  if (!language || !['fr', 'en'].includes(language)) {
+    return res.status(400).json({ message: 'Langue invalide' });
+  }
+
+  res.cookie('lang', language, { 
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    domain: 'localhost',
+    path: '/',  
+    sameSite: 'lax' 
+  });
+
+  i18n.setLocale(req, language);
+
+  res.json({ message: `Langue changée en ${language}`, currentLang: req.getLocale() });
+});
 
 module.exports = app;

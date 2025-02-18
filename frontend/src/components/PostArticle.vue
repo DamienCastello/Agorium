@@ -1,27 +1,27 @@
 <template>
   <div v-if="state === 'error'">
-    <p>Impossible de charger les données</p>
+    <p>{{ $t('publish.state_error') }}</p>
   </div>
   <div v-else-if="state === 'loading'">
-    <p>Chargement ...</p>
+    <p>{{ $t('publish.state_loading') }}</p>
   </div>
   <div v-else class="pico">
     <div @mousedown="handleClickOutsideNavbar">
-      <h1>Poster un nouvel article</h1>
+      <h1>{{ $t('publish.title') }}</h1>
 
       <label>
         <input class="switch" name="withVideo" type="checkbox" role="switch" @click="toggleWithVideo" checked />
-        Inclure une vidéo youtube
+        {{ $t('publish.switch_video') }}
       </label>
 
 
       <form @submit.prevent="handleSubmit">
         <fieldset>
-          <label for="title">Titre <span style="color: red">*</span></label>
-          <input id="title" type="text" placeholder="Article de zinzin" v-model="form.title" />
+          <label for="title">{{ $t('publish.label_title') }}<span style="color: red">*</span></label>
+          <input id="title" type="text" :placeholder="$t('publish.placeholder_title')" v-model="form.title" />
         </fieldset>
         <fieldset>
-          <label for="description">Description <span style="color: red">*</span></label>
+          <label for="description">{{ $t('publish.label_description') }}<span style="color: red">*</span></label>
           <textarea id="description" :placeholder="lorem" v-model="form.description" rows="5" cols="33"></textarea>
         </fieldset>
 
@@ -33,7 +33,7 @@
                 {{ tag.name }}
               </span>
               <span class="dropdown-placeholder" v-if="selectedTags.length === 0">
-                Choisir un ou plusieurs tags
+                {{ $t('publish.label_tags') }}
               </span>
             </div>
           </div>
@@ -46,11 +46,11 @@
               </label>
             </div>
             <div class="add-tag-container">
-              <label for="new-tag">Créer un nouveau tag</label>
+              <label for="new-tag">{{ $t('publish.new_tag') }}</label>
               <div class="add-tag">
-                <input id="new-tag" type="text" placeholder="Ajouter un tag" v-model="newTag" @keyup.enter="addTag"
+                <input id="new-tag" type="text" :placeholder="$t('publish.placeholder_tag')" v-model="newTag" @keyup.enter="addTag"
                   class="new-tag-input" />
-                <button @click="addTag" type="button" class="add-tag-button">Ajouter</button>
+                <button @click="addTag" type="button" class="add-tag-button">{{ $t('publish.add_button') }}</button>
               </div>
             </div>
           </div>
@@ -65,9 +65,9 @@
             @update:imagePreview="updateImagePreview"
           />
         </FadeSlideTransition>
-        <p v-if="selectedTags.length === 0" class="comment-info">Sélectionnez au moins un tag.</p>
+        <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('publish.tag_required') }}</p>
         <button type="submit" :disabled=" !isFormValid || selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
-          Poster l'article
+          {{ $t('publish.submit_button') }}
         </button>
       </form>
     </div>
@@ -87,6 +87,7 @@ import { useRouter } from "vue-router";
 import { useNavbarStore } from "../stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
 import extractVideoId from "@/utils/extractYoutubeUrl";
+import { useI18n } from "vue-i18n";
 
 const lorem =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -101,6 +102,7 @@ const authStore = useAuthStore();
 const navbarStore = useNavbarStore();
 const router = useRouter();
 const { notify } = useNotification();
+const { t } = useI18n();
 
 const state = ref("loading");
 const tags = ref([]);
@@ -123,9 +125,9 @@ const addTag = () => {
   const tagExists = tags.value.some((tag) => tag.name.toLowerCase() === newTag.value.toLowerCase());
   if (tagExists) {
     notify({
-      title: "Tag Conflict",
+      title: t('notification.title.tag_exists'),
       type: 'warn',
-      text: "This tag already exists !",
+      text: t('notification.text.tag_exists'),
     });
     newTag.value = "";
     return;
@@ -145,9 +147,9 @@ const addTag = () => {
     })
     .then(() => {
       notify({
-        title: "Tag Creation",
+        title: t('notification.title.tag_create'),
         type: 'success',
-        text: "Tag created successfully !",
+        text: t('notification.text.tag_create'),
       });
 
       return axios.get(`${url.baseUrl}:${url.portBack}/api/v1/tags/`, {
@@ -168,7 +170,7 @@ const addTag = () => {
     })
     .catch((error) => {
       notify({
-        title: "Error Creating Tag",
+        title: t('notification.title.error_tag_create'),
         type: 'error',
         text: error.response.data.message,
       });
@@ -193,6 +195,8 @@ const componentToShow = computed(() => {
 
 const updateSelectedFile = (file) => {
   selectedFile.value = file;
+  const fileName = file?.name.length > 0 ? file?.name : "Aucun fichier choisi";
+  document.querySelector('.custom-label').textContent = fileName;
 };
 
 const updateImagePreview = (preview) => {
@@ -218,7 +222,7 @@ onMounted(() => {
     })
     .catch((error) => {
       notify({
-        title: "Error Fetching Tags",
+        title: t('notification.title.error_tags_fetch'),
         type: 'error',
         text: error.response.data.message,
       });
@@ -269,9 +273,9 @@ const handleClickOutsideNavbar = (event) => {
 const handleSubmit = () => {
   if (!selectedFile.value && !withVideo.value || !form.value.urlYoutube && withVideo.value) {
     notify({
-      title: "Selecting Ressource",
+      title: t('notification.title.field_media_required'),
       type: 'warn',
-      text: 'Please select an image or include a YouTube URL!',
+      text: t('notification.text.field_media_required'),
     });
     return;
   }
@@ -293,9 +297,9 @@ const handleSubmit = () => {
   } else {
     if (!isValidYoutubeId) {
       notify({
-        title: "Selecting Ressource",
+        title: t('notification.title.field_media_required'),
         type: 'warn',
-        text: 'Please Select a valid Youtube URL!',
+        text: t('notification.text.field_media_url'),
       });
     }
     formData.append("urlYoutube", form.value.urlYoutube);
@@ -316,9 +320,9 @@ const handleSubmit = () => {
         console.log("res : ", response)
         state.value = 'loading';
         notify({
-          title: "Article Creation",
+          title: t('notification.title.article_create'),
           type: 'success',
-          text: 'Article created successfully !',
+          text: t('notification.text.article_create'),
         });
         setTimeout(() => {
           // Have to delete timeout in V2
@@ -329,7 +333,7 @@ const handleSubmit = () => {
       .catch((error) => {
         console.log("error : ", error)
         notify({
-          title: "Article Creation",
+          title: t('notification.title.article_create'),
           type: 'error',
           text: error.response.data.message,
         });
@@ -411,7 +415,7 @@ input.switch {
   top: calc(100% + 2px);
   left: 0;
   z-index: 1;
-  max-height: 200px;
+  max-height: 270px;
   overflow-y: auto;
   padding: 5px;
   box-sizing: border-box;

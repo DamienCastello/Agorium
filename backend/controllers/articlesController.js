@@ -44,7 +44,7 @@ module.exports = {
       .then((articles) => { res.json({ articles }); })
       .catch((error) => {
         console.log("error: ", error)
-        res.status(500).json({ message: 'Internal server error.' })
+        res.status(500).json({ message: req.t('error') })
       })
   },
   show: function (req, res, next) {
@@ -87,37 +87,37 @@ module.exports = {
       })
       .catch((error) => {
         console.error("Message Error fetching tracks: ", error.message);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({ message: req.t('error') });
       });
   },
   create: function (req, res, next) {
     const { title, description, urlYoutube, tags } = req.body;
 
     if (!title || !description) {
-      return res.status(400).json({ message: "Title and description are required." });
+      return res.status(400).json({ message: req.t('article.fields_required') });
     }
 
     if (title.length < 3) {
-      return res.status(400).json({ message: "Title must be at least 3 characters long." });
+      return res.status(400).json({ message: req.t('article.title_length') });
     }
 
     if (typeof tags === 'string') {
       try {
         req.body.tags = JSON.parse(tags);
       } catch (error) {
-        return res.status(400).json({ message: "Invalid tags format." });
+        return res.status(400).json({ message: req.t('article.invalid_tags') });
       }
     }
 
     if (!tags || !Array.isArray(tags) || tags.length === 0) {
-      return res.status(400).json({ message: "At least one tag is required." });
+      return res.status(400).json({ message: req.t('article.tag_required') });
     }
 
     const userId = req.user.id;
     const imagePath = req.file ? req.file.path : null;
 
     if (!userId) {
-      return res.status(400).json({ message: "UserId is required." });
+      return res.status(400).json({ message: req.t('article.user_required') });
     }
 
     Article.create({
@@ -188,14 +188,14 @@ module.exports = {
       })
       .catch((error) => {
         console.error("Error creating article: ", error.message);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({ message: req.t('error') });
       });
   },
   like: function (req, res, next) {
     const user = req.user;
 
     if (!user) {
-      return res.status(401).json({ message: "User not authenticated." });
+      return res.status(401).json({ message: req.t('article.user_not_logged') });
     }
 
     Article.findByPk(req.params.id, {
@@ -230,7 +230,7 @@ module.exports = {
     })
       .then((article) => {
         if (!article) {
-          return res.status(404).json({ message: "Article not found." });
+          return res.status(404).json({ message: req.t('article.not_found') });
         }
 
         models.Like.findOne({
@@ -242,7 +242,7 @@ module.exports = {
                 .then(() => res.status(200).json({ message: "Article unliked", isLiked: false }))
                 .catch((error) => {
                   console.error("Error while unliking article:", error.message);
-                  res.status(500).json({ message: "Error while unliking article." });
+                  res.status(500).json({ message: req.t('article.error_unliking') });
                 });
             } else {
               models.Like.create({ userId: user.id, articleId: req.params.id })
@@ -278,24 +278,24 @@ module.exports = {
                       });
                     } catch (error) {
                       console.error("Error processing achievement:", error.message);
-                      res.status(500).json({ message: "Error processing achievement." });
+                      res.status(500).json({ message: req.t('article.error_achievements') });
                     }
                   })();
                 })
                 .catch((error) => {
                   console.error("Error while liking article:", error.message);
-                  res.status(500).json({ message: "Error while liking article." });
+                  res.status(500).json({ message: req.t('article.error_liking') });
                 });
             }
           })
           .catch((error) => {
             console.error("Error checking like status:", error.message);
-            res.status(500).json({ message: "Error checking like status." });
+            res.status(500).json({ message: req.t('article.error_likes') });
           });
       })
       .catch((error) => {
         console.error("Error fetching article:", error.message);
-        res.status(500).json({ message: "Error fetching article." });
+        res.status(500).json({ message: req.t('article.error_fetch') });
       });
   },
 
@@ -305,7 +305,7 @@ module.exports = {
     Article.findByPk(req.params.id)
       .then((article) => {
         if (!article) {
-          return res.status(404).json({ message: "Article not found." });
+          return res.status(404).json({ message: req.t('article.not_found') });
         }
 
         return article.update({
@@ -318,20 +318,20 @@ module.exports = {
               reason: reason,
               details: details,
             })
-              .then(() => res.status(200).json({ message: "Article reported." }))
+              .then(() => res.status(200).json({ message: req.t('article.reported') }))
               .catch((error) => {
                 console.error("Error reporting article:", error.message);
-                res.status(500).json({ message: 'Internal server error.' });
+                res.status(500).json({ message: req.t('error') });
               })
           })
           .catch((error) => {
             console.error("Error invalidating article:", error.message);
-            res.status(500).json({ message: 'Internal server error.' });
+            res.status(500).json({ message: req.t('error') });
           });
       })
       .catch((error) => {
         console.error("Error fetching article:", error.message);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({ message: req.t('error') });
       });
   },
   update: function (req, res, next) {
@@ -340,7 +340,7 @@ module.exports = {
     Article.findByPk(req.params.id)
       .then((article) => {
         if (!article) {
-          return res.status(404).json({ message: "Article not found." });
+          return res.status(404).json({ message: req.t('article.not_found') });
         }
 
         return article.update({
@@ -367,7 +367,7 @@ module.exports = {
       })
       .catch((error) => {
         console.error("Error updating article:", error.message);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({ message: req.t('error') });
       });
   },
   validate: function (req, res, next) {
@@ -381,34 +381,34 @@ module.exports = {
         const parsedRefusalReasons = JSON.parse(refusalReasons);
 
         if (!parsedRefusalReasons.title.isValid && parsedRefusalReasons.title.value === '') {
-          return res.status(403).json({ message: 'Title refusal reason must have a value.' });
+          return res.status(403).json({ message: req.t('article.reason_title') });
         }
         if (!parsedRefusalReasons.description.isValid && parsedRefusalReasons.description.value === '') {
-          return res.status(403).json({ message: 'Description refusal reason must have a value.' });
+          return res.status(403).json({ message: req.t('article.reason_description') });
         }
         if (parsedRefusalReasons.preview.isValid === false && parsedRefusalReasons.preview.value === '') {
-          return res.status(403).json({ message: 'Preview refusal reason must have a value.' });
+          return res.status(403).json({ message: req.t('article.reason_preview') });
         }
         if (parsedRefusalReasons.videoContent.isValid === false && parsedRefusalReasons.videoContent.value === '') {
-          return res.status(403).json({ message: 'Youtube vidéo content refusal reason must have a value.' });
+          return res.status(403).json({ message: req.t('article.reason_youtube') });
         }
         if (!isValid && overallReasonForRefusal === '') {
-          return res.status(403).json({ message: 'Article overall refusal reason must have a value.' });
+          return res.status(403).json({ message: req.t('article.reason_overall') });
         }
       } catch (error) {
         console.log('error: ', error.message);
-        return res.status(400).json({ message: "Internal error server." });
+        return res.status(400).json({ message: req.t('error') });
       }
     }
 
     if (!user.isAdmin) {
-      return res.status(403).json({ message: "You are not authorized to validate this article." });
+      return res.status(403).json({ message: req.t('article.not_authorized') });
     }
 
     Article.findByPk(req.params.id)
       .then((article) => {
         if (!article) {
-          return res.status(404).json({ message: "Article not found." });
+          return res.status(404).json({ message: req.t('article.not_found') });
         }
 
         article.update({
@@ -422,23 +422,23 @@ module.exports = {
           })
           .catch((error) => {
             console.log("error: ", error.message);
-            res.status(500).json({ message: "Error validating article." });
+            res.status(500).json({ message: req.t('article.error_validation') });
           });
       })
       .catch((error) => {
         console.log("error: ", error.message);
-        res.status(500).json({ message: "Error fetching article." });
+        res.status(500).json({ message: req.t('article.error_fetch') });
       });
   },
   delete: function (req, res, next) {
     Article.findByPk(req.params.id)
       .then((article) => {
         article.destroy();
-        res.status(200).json(`Article ${article.id} deleted.`);
+        res.status(200).json(`Article ${article.id} ${req.t('article.deleted')}.`);
       })
       .catch((error) => {
         console.log("error: ", error.message);
-        res.status(500).json({ message: 'Internal server error.' });
+        res.status(500).json({ message: req.t('error') });
       });
   }
 };

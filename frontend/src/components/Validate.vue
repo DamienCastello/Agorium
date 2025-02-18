@@ -1,15 +1,15 @@
 <template>
     <div class="container pico">
         <div v-if="state === 'error'">
-            <p>Impossible de charger cet article</p>
+            <p>{{ $t('article_detail.state_error') }}</p>
         </div>
         <div v-else-if="state === 'loading'">
-            <p>Chargement de l'article...</p>
+            <p>{{ $t('article_detail.state_loading') }}</p>
         </div>
         <div v-else class="article-container">
             <div v-if="isMobile">
                 <!-- Mobile View -->
-                <h3>Validation des tags</h3>
+                <h3>{{ $t('validate.title') }}</h3>
                 <div v-for="tag in article.tags" :key="tag.id" class="tag-container">
                     <div class="tag-row">
                         <span class="tag-name">{{ tag.name }}</span>
@@ -23,13 +23,13 @@
                         </div>
                         <textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                             placeholder="Motif du refus du tag"></textarea>
-                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">Update</button>
+                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{ $t('validate.save_button') }}</button>
                     </div>
                 </div>
 
-                <h3>Validation des champs de l'article</h3>
+                <h3>{{ $t('validate.sub_title') }}</h3>
                 <div class="field">
-                    <label>Titre: </label>
+                    <label>{{ $t('validate.label_title') }}: </label>
                     <span>{{ article.title }}</span>
                 </div>
                 <div class="group">
@@ -44,7 +44,7 @@
                         </div>
                         <textarea :disabled="article.refusalReasons.title.isValid"
                             v-model="article.refusalReasons.title.value"
-                            placeholder="Motif du refus du titre"></textarea>
+                            :placeholder="$t('validate.placeholder_title')"></textarea>
                     </div>
                 </div>
 
@@ -52,7 +52,7 @@
 
                 <div v-if="article.urlYoutube">
                     <div class="field">
-                        <label>Vidéo: </label>
+                        <label>{{ $t('validate.label_video') }}: </label>
                     </div>
                     <div class="player">
                         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
@@ -70,13 +70,13 @@
                             </div>
                             <textarea :disabled="article.refusalReasons.videoContent.isValid"
                                 v-model="article.refusalReasons.videoContent.value"
-                                placeholder="Motif du refus de la vidéo"></textarea>
+                                :placeholder="$t('validate.placeholder_video')"></textarea>
                         </div>
                     </div>
                 </div>
                 <div v-else-if="article.preview">
                     <div class="field">
-                        <label>Preview: </label>
+                        <label>{{ $t('validate.label_preview') }}: </label>
                     </div>
                     <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
                     <div class="group">
@@ -92,7 +92,7 @@
                             </div>
                             <textarea :disabled="article.refusalReasons.preview.isValid"
                                 v-model="article.refusalReasons.preview.value"
-                                placeholder="Motif du refus de l'image"></textarea>
+                                :placeholder="$t('validate.placeholder_preview')"></textarea>
                         </div>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                 <hr />
 
                 <div class="field">
-                    <label>Description: </label>
+                    <label>{{ $t('validate.label_description') }}: </label>
                     <span>{{ article.description }}</span>
                 </div>
                 <div class="group">
@@ -116,11 +116,11 @@
                         </div>
                         <textarea :disabled="article.refusalReasons.description.isValid"
                             v-model="article.refusalReasons.description.value"
-                            placeholder="Motif du refus de la description"></textarea>
+                            :placeholder="$t('validate.placeholder_description')"></textarea>
                     </div>
                 </div>
 
-                <h3>Validation générale de l'article</h3>
+                <h3>{{ $t('validate.sub_title_final') }}</h3>
                 <div class="group">
                     <div class="field-row">
                         <div class="icon-fields-mobile" :class="{ validated: article.isValid }"
@@ -132,23 +132,23 @@
                             <CrossIcon />
                         </div>
                         <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
-                            placeholder="Motif du refus de l'article" class="final-textarea"></textarea>
-                        <button :disabled="navbarStore.isMenuOpen" @click="updateArticle(article)">Update</button>
+                        :placeholder="$t('validate.placeholder_final')" class="final-textarea"></textarea>
+                        <button :disabled="navbarStore.isMenuOpen" @click="updateArticle(article)">{{ $t('validate.save_button') }}</button>
                     </div>
                 </div>
             </div>
 
             <div v-else>
                 <!-- PC View -->
-                <h3>Validation des tags</h3>
+                <h3>{{ $t('validate.tags_title') }}</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th scope="col">Tag</th>
-                            <th scope="col">Valider</th>
-                            <th scope="col">Refuser</th>
-                            <th scope="col">Raison</th>
-                            <th scope="col">Sauvegarder</th>
+                            <th scope="col">{{ $t('validate.th_tag') }}</th>
+                            <th scope="col">{{ $t('validate.th_validate') }}</th>
+                            <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                            <th scope="col">{{ $t('validate.th_reason') }}</th>
+                            <th scope="col">{{ $t('validate.th_save') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -163,25 +163,25 @@
 
 
                             <td><textarea :disabled="tag.isValid" v-model="tag.refusalReason"
-                                    placeholder="Motif du refus du tag"></textarea>
+                                    :placeholder="$t('validate.placeholder_tags')"></textarea>
                             </td>
-                            <td class="tag-submit"><button @click="updateTag(tag)">Update</button></td>
+                            <td class="tag-submit"><button @click="updateTag(tag)">{{ $t('validate.save_button') }}</button></td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h3>Validation des champs de l'article</h3>
+                <h3>{{ $t('validate.sub_title') }}</h3>
                 <div class="field">
-                    <label>Titre: </label>
+                    <label>{{ $t('validate.label_title') }}: </label>
                     <span>{{ article.title }}</span>
                 </div>
                 <div class="group">
                     <table class="table-fields">
                         <thead>
                             <tr>
-                                <th scope="col">Valider</th>
-                                <th scope="col">Refuser</th>
-                                <th scope="col">Raison</th>
+                                <th scope="col">{{ $t('validate.th_validate') }}</th>
+                                <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                                <th scope="col">{{ $t('validate.th_reason') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -197,7 +197,7 @@
                                 <td>
                                     <textarea :disabled="article.refusalReasons.title.isValid"
                                         v-model="article.refusalReasons.title.value"
-                                        placeholder="Motif du refus du titre"></textarea>
+                                        :placeholder="$t('validate.placeholder_title')"></textarea>
                                 </td>
                             </tr>
                         </tbody>
@@ -208,7 +208,7 @@
 
                 <div v-if="article.urlYoutube">
                     <div class="field">
-                        <label>Vidéo: </label>
+                        <label>{{ $t('validate.label_video') }}: </label>
                     </div>
                     <div class="player">
                         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
@@ -217,9 +217,9 @@
                         <table class="table-fields">
                             <thead>
                                 <tr>
-                                    <th scope="col">Valider</th>
-                                    <th scope="col">Refuser</th>
-                                    <th scope="col">Raison</th>
+                                    <th scope="col">{{ $t('validate.th_validate') }}</th>
+                                    <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                                    <th scope="col">{{ $t('validate.th_reason') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -237,7 +237,7 @@
                                     <td>
                                         <textarea :disabled="article.refusalReasons.videoContent.isValid"
                                             v-model="article.refusalReasons.videoContent.value"
-                                            placeholder="Motif du refus de la vidéo"></textarea>
+                                            :placeholder="$t('validate.placeholder_video')"></textarea>
                                     </td>
                                 </tr>
                             </tbody>
@@ -246,16 +246,16 @@
                 </div>
                 <div v-else-if="article.preview">
                     <div class="field">
-                        <label>Preview: </label>
+                        <label>{{ $t('validate.label_preview') }}: </label>
                     </div>
                     <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
                     <div class="group">
                         <table class="table-fields">
                             <thead>
                                 <tr>
-                                    <th scope="col">Valider</th>
-                                    <th scope="col">Refuser</th>
-                                    <th scope="col">Raison</th>
+                                    <th scope="col">{{ $t('validate.th_validate') }}</th>
+                                    <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                                    <th scope="col">{{ $t('validate.th_reason') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -272,7 +272,7 @@
                                     <td>
                                         <textarea :disabled="article.refusalReasons.preview.isValid"
                                             v-model="article.refusalReasons.preview.value"
-                                            placeholder="Motif du refus de l'image"></textarea>
+                                            :placeholder="$t('validate.placeholder_preview')"></textarea>
                                     </td>
                                 </tr>
                             </tbody>
@@ -283,16 +283,16 @@
                 <hr />
 
                 <div class="field">
-                    <label>Description: </label>
+                    <label>{{ $t('validate.label_description') }}: </label>
                     <span>{{ article.description }}</span>
                 </div>
                 <div class="group">
                     <table class="table-fields">
                         <thead>
                             <tr>
-                                <th scope="col">Valider</th>
-                                <th scope="col">Refuser</th>
-                                <th scope="col">Raison</th>
+                                <th scope="col">{{ $t('validate.th_validate') }}</th>
+                                <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                                <th scope="col">{{ $t('validate.th_reason') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -309,7 +309,7 @@
                                 <td>
                                     <textarea :disabled="article.refusalReasons.description.isValid"
                                         v-model="article.refusalReasons.description.value"
-                                        placeholder="Motif du refus de la description"></textarea>
+                                        :placeholder="$t('validate.placeholder_description')"></textarea>
                                 </td>
                             </tr>
                         </tbody>
@@ -317,15 +317,15 @@
                 </div>
 
 
-                <h3>Validation générale de l'article</h3>
+                <h3>{{ $t('validate.sub_title_final') }}</h3>
                 <div class="group">
                     <table class="table-fields">
                         <thead>
                             <tr>
-                                <th scope="col">Valider</th>
-                                <th scope="col">Refuser</th>
-                                <th scope="col">Raison</th>
-                                <th scope="col">Sauvegarder</th>
+                                <th scope="col">{{ $t('validate.th_validate') }}</th>
+                                <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                                <th scope="col">{{ $t('validate.th_reason') }}</th>
+                                <th scope="col">{{ $t('validate.th_save') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -340,11 +340,11 @@
                                 </td>
                                 <td>
                                     <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
-                                        placeholder="Motif du refus de l'article" class="final-textarea">
+                                    :placeholder="$t('validate.placeholder_final')" class="final-textarea">
                                     </textarea>
                                 </td>
                                 <td class="final-submit">
-                                    <button @click="updateArticle(article)">Update</button>
+                                    <button @click="updateArticle(article)">{{ $t('validate.save_button') }}</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -369,7 +369,7 @@ import CrossIcon from "./icons/CrossIcon.vue";
 import { useNavbarStore } from "../stores/navbar";
 import { useNavbarHandler } from "../composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
-
+import { useI18n } from "vue-i18n";
 
 const isMobile = ref(false);
 const article = ref(null);
@@ -380,6 +380,7 @@ const tags = ref([]);
 const navbarStore = useNavbarStore();
 const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
+const { t } = useI18n();
 
 const checkWindowSize = () => {
     if (window.innerWidth <= 768) {
@@ -413,9 +414,9 @@ const accept = (item, entity) => {
             for (let i = 0; i < article.value.tags.length; i++) {
                 if (!article.value.tags[i].isValid) {
                     notify({
-                        title: "Validation",
+                        title: t('notification.title.validation'),
                         type: 'warn',
-                        text: 'Some tag(s) not validated',
+                        text: t('notification.text.invalid_tags'),
                     });
                     canValidate = false
                 }
@@ -429,9 +430,9 @@ const accept = (item, entity) => {
                     !item.refusalReasons.description.isValid
                 ) {
                     notify({
-                        title: "Validation",
+                        title: t('notification.title.validation'),
                         type: 'warn',
-                        text: 'Some field(s) not validated',
+                        text: t('notification.text.invalid_fields'),
                     });
                     canValidate = false
                 }
@@ -442,9 +443,9 @@ const accept = (item, entity) => {
                     !item.refusalReasons.description.isValid
                 ) {
                     notify({
-                        title: "Validation",
+                        title: t('notification.title.validation'),
                         type: 'warn',
-                        text: 'Some field(s) not validated',
+                        text: t('notification.text.invalid_fields'),
                     });
                     canValidate = false
                 }
@@ -490,15 +491,15 @@ const updateTag = (tag) => {
             withCredentials: true,
         }).then(response => {
             notify({
-                title: "Validation",
+                title: t('notification.title.validation'),
                 type: 'success',
-                text: 'Tag validated successfully !',
+                text: t('notification.text.valid_tags'),
             });
         }).catch(error => {
             notify({
-                title: "Validation",
+                title: t('notification.title.validation'),
                 type: 'error',
-                text: `Error updating tag validation: ${error.response.data.message}`,
+                text: `${t('notification.text.error_tags_validation')}: ${error.response.data.message}`,
             });
         });
     })  
@@ -540,15 +541,15 @@ const updateArticle = (article) => {
             withCredentials: true,
         }).then(response => {
             notify({
-                title: "Validation",
+                title: t('notification.title.validation'),
                 type: 'success',
-                text: 'Article validated successfully !',
+                text: t('notification.text.valid_article'),
             });
         }).catch(error => {
             notify({
-                title: "Validation",
+                title: t('notification.title.validation'),
                 type: 'error',
-                text: `Error updating article validation: ${error.response.data.message}`,
+                text: `${t('notification.text.error_article_validation')}: ${error.response.data.message}`,
             });
         });
     })
@@ -579,9 +580,9 @@ onMounted(() => {
                         fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
                     } catch (e) {
                         notify({
-                            title: "Fetching Article",
+                            title: t('notification.titile.article_fetch'),
                             type: 'error',
-                            text: `Error parsing refusalReasons: ${e.message}`,
+                            text: `${t('notification.text.error_parse_refusalReasons')}: ${e.message}`,
                         });
                         fetchedArticle.refusalReasons = {};
                     }
@@ -597,9 +598,9 @@ onMounted(() => {
         })
         .catch((error) => {
             notify({
-                title: "Fetching Article Awaiting To Validation",
+                title: t('notification.titile.validation_fetch'),
                 type: 'error',
-                text: `Error fetching article: ${error.response.data.message}`,
+                text: `${t('notification.text.error_article_fetch')}: ${error.response.data.message}`,
             });
             state.value = "error";
         })
