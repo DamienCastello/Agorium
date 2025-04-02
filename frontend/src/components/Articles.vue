@@ -131,18 +131,13 @@ onMounted(() => {
     },
   })
     .then((response) => {
-      // Charger uniquement les articles valides
-      const validArticles = response.data.articles.filter(
-        (article) => article.isValid
-      );
-
-      articles.value = validArticles;
+      articles.value = response.data.articles;
 
       allTags.value = Array.from(
-        new Set(validArticles.flatMap((article) => article.tags))
+        new Set(response.data.articles.flatMap((article) => article.tags))
       );
 
-      filteredArticles.value = validArticles.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      filteredArticles.value = response.data.articles.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       state.value = "idle";
     })
     .catch((error) => {

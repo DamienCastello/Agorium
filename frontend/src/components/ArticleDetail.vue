@@ -195,7 +195,7 @@ const navigateToReport = (id) => {
       notify({
         title: "Liking Article",
         type: 'error',
-        text: "You must be authenticated to like an article.",
+        text: "You must be authenticated to report an article.",
       });
     return;
   }

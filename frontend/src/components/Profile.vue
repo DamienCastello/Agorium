@@ -13,7 +13,7 @@
             </h1>
         <div class="achievements">
             <div v-for="(achievement, index) in user.achievements" :key="index" class="achievement">
-                <BadgeCommentIcon :id="achievement.id" :icon="getIconClass(achievement.iconCategory)" />
+                <BadgeIcon :id="achievement.id" :icon="getIconClass(achievement.iconCategory)" />
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@ import axios from 'axios';
 import url from '@/utils/url';
 import { useAuthStore } from '@/stores/auth';
 import { useNotification } from "@kyvg/vue3-notification";
-import BadgeCommentIcon from './icons/BadgeIcon.vue';
+import BadgeIcon from './icons/BadgeIcon.vue';
 import { useI18n } from 'vue-i18n';
 
 const authStore = useAuthStore();
@@ -52,6 +52,8 @@ const getIconClass = (iconCategory) => {
             return 'fa-solid fa-star';
         case 'flag':
             return 'fa-solid fa-flag'
+        case 'like':
+            return 'fa-solid fa-heart'
     }
 }
 
