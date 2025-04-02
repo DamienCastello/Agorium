@@ -46,14 +46,14 @@ module.exports = {
                                 const user = await models.User.findByPk(userId);
                                 if (commentCount === 1) {
                                     // (unique)
-                                    const achievement = await models.Achievement.findByPk(6);
+                                    const achievement = await models.Achievement.findByPk(5);
                                     await achievement.addUsers(user);
                                     user.points += achievement.points;
                                     await user.save();
                                     res.status(200).json({ comment, achievement });
                                 } else if (commentCount % 10 === 0) {
                                     // (reusable)
-                                    const achievement = await models.Achievement.findByPk(7);
+                                    const achievement = await models.Achievement.findByPk(6);
 
                                     const [userAchievement, created] = await models.UserAchievement.findOrCreate({
                                         where: { userId, achievementId: achievement.id },

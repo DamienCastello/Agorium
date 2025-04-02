@@ -8,8 +8,10 @@ const articlesController = require('../controllers/articlesController')
 const { previewUploader } = require('../middlewares/uploaders');
 
 
-/* GET articles listing. */
-router.get('/', articlesController.index);
+/* GET validated articles listing. */
+router.get('/', articlesController.indexValidated);
+/* GET invalidated articles listing. */
+router.get('/invalid', articlesController.indexNotValidated);
 //show
 router.get('/:id', articlesController.show);
 //like/unlike

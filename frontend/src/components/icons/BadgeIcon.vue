@@ -144,6 +144,14 @@ i.fa-comment {
     top: 20px;
 }
 
+.fa-heart {
+    font-size: 50px;
+    color: white;
+    position: absolute;
+    left: 27px;
+    top: 25px;
+}
+
 .fa-star {
     font-size: 50px;
     color: white;

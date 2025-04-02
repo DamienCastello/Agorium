@@ -360,6 +360,7 @@
 import axios from "axios";
 import { onMounted, ref, onBeforeUnmount, nextTick } from "vue";
 import { useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import extractYoutubeUrl from "../utils/extractYoutubeUrl";
 import Player from "./Player.vue";
 import url from "../utils/url";
@@ -378,6 +379,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const tags = ref([]);
 const navbarStore = useNavbarStore();
+const router = useRouter();
 const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
 const { t } = useI18n();
@@ -545,6 +547,9 @@ const updateArticle = (article) => {
                 type: 'success',
                 text: t('notification.text.valid_article'),
             });
+            setTimeout(() => {
+                router.push(`/validations`);
+            }, 2000);
         }).catch(error => {
             notify({
                 title: t('notification.title.validation'),

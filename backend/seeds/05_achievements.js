@@ -90,7 +90,7 @@ const { Achievement, User } = models;
       iconCategory: 'comment'
     });
 
-    //Used
+    //To implement
     const achievement7 = await Achievement.create({
       id: 7,
       name: 'First comment liked',
@@ -101,7 +101,7 @@ const { Achievement, User } = models;
       iconCategory: 'like'
     });
 
-    //Used
+    //To implement
     const achievement8 = await Achievement.create({
       id: 8,
       name: 'Popular comments',
@@ -112,7 +112,7 @@ const { Achievement, User } = models;
       iconCategory: 'like'
     });
 
-    //Used
+    //To implement
     const achievement9 = await Achievement.create({
       id: 9,
       name: 'Very popular comments',
@@ -123,7 +123,7 @@ const { Achievement, User } = models;
       iconCategory: 'like'
     });
 
-    //Used
+    //To implement
     const achievement10 = await Achievement.create({
       id: 10,
       name: 'Super star of comments',
