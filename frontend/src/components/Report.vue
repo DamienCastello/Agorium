@@ -19,7 +19,7 @@
                     <option value="" disabled selected>{{ $t('report.option_default') }}</option>
                     <option value="spam">{{ $t('report.option_spam') }}</option>
                     <option value="inappropriate">{{ $t('report.option_content') }}</option>
-                    <option v-if="props.entity === 'article'" value="copyright">{{ $t('report.option_copyright') }}</option>
+                    <option v-if="props.entity === 'articles'" value="copyright">{{ $t('report.option_copyright') }}</option>
                     <option value="other">{{ $t('report.option_other') }}</option>
                 </select>
             </div>

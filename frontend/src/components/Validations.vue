@@ -63,7 +63,7 @@
   const { t } = useI18n();
   
   onMounted(() => {
-    axios(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
+    axios(`${url.baseUrl}:${url.portBack}/api/v1/articles/invalid`, {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@
       },
     })
       .then((response) => {
-        articles.value = response.data.articles.filter((article) => !article.isValid);
+        articles.value = response.data.articles;
         state.value = "idle";
       })
       .catch((error) => {

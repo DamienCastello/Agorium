@@ -1,13 +1,66 @@
 const models = require('../models');
 const Article = models.Article;
+const { Op } = require('sequelize');
 
 module.exports = {
-  index: function (req, res, next) {
+  indexValidated: function (req, res, next) {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
     Article.findAll({
       offset: offset,
       limit: limit,
+      where: {isValid: true},
+      include: [
+        {
+          model: models.Like,
+          as: 'likes',
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+              attributes: ['id', 'name', 'email'],
+            }
+          ]
+        },
+        {
+          model: models.Tag,
+          as: 'tags',
+        },
+        {
+          model: models.Comment,
+          as: 'comments',
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+              attributes: ['id', 'name', 'email'],
+            },
+            {
+              model: models.Like,
+              as: 'likes',
+            },
+          ]
+        },
+      ]
+    })
+      .then((articles) => { res.json({ articles }); })
+      .catch((error) => {
+        console.log("error: ", error)
+        res.status(500).json({ message: req.t('error') })
+      })
+  },
+  indexNotValidated: function (req, res, next) {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    Article.findAll({
+      offset: offset,
+      limit: limit,
+      where: {
+        [Op.or]: [
+            { isValid: false },
+            { isValid: null }
+        ]
+    },
       include: [
         {
           model: models.Like,
@@ -90,107 +143,98 @@ module.exports = {
         res.status(500).json({ message: req.t('error') });
       });
   },
-  create: function (req, res, next) {
-    const { title, description, urlYoutube, tags } = req.body;
+  create: async function (req, res, next) {
+    try {
+        const { title, description, urlYoutube, tags } = req.body;
 
-    if (!title || !description) {
-      return res.status(400).json({ message: req.t('article.fields_required') });
-    }
-
-    if (title.length < 3) {
-      return res.status(400).json({ message: req.t('article.title_length') });
-    }
-
-    if (typeof tags === 'string') {
-      try {
-        req.body.tags = JSON.parse(tags);
-      } catch (error) {
-        return res.status(400).json({ message: req.t('article.invalid_tags') });
-      }
-    }
-
-    if (!tags || !Array.isArray(tags) || tags.length === 0) {
-      return res.status(400).json({ message: req.t('article.tag_required') });
-    }
-
-    const userId = req.user.id;
-    const imagePath = req.file ? req.file.path : null;
-
-    if (!userId) {
-      return res.status(400).json({ message: req.t('article.user_required') });
-    }
-
-    Article.create({
-      title: title,
-      description: description,
-      preview: imagePath,
-      urlYoutube: urlYoutube || null,
-      userId: userId,
-    })
-      .then((article) => {
-        if (tags && Array.isArray(tags)) {
-          const tagIds = tags.map((tag) => tag.id);
-          return models.Tag.findAll({ where: { id: tagIds } })
-            .then((tagsToAssociate) => {
-              return article.setTags(tagsToAssociate);
-            })
-            .then(() => {
-              // Vérify & unloack simple game success
-              Article.count({ where: { userId } })
-                .then((articleCount) => {
-                  (async () => {
-                    try {
-                      const user = await models.User.findByPk(userId);
-                      if (articleCount === 1) {
-                        // (unique)
-                        const achievement = await models.Achievement.findByPk(1);
-                        await achievement.addUsers(user);
-                        user.points += achievement.points;
-                        await user.save();
-                        res.status(200).json({ article, achievement, user });
-                      } else if (articleCount === 5) {
-                        const achievement = await models.Achievement.findByPk(2);
-                        await achievement.addUsers(user);
-                        user.points += achievement.points;
-                        await user.save();
-                        res.status(200).json({ article, achievement, user });
-                      } else if (articleCount % 20 === 0) {
-                        const achievement = await models.Achievement.findByPk(3);
-
-                        const [userAchievement, created] = await models.UserAchievement.findOrCreate({
-                          where: { userId, achievementId: achievement.id },
-                          defaults: {
-                            dateEarned: new Date(),
-                            iteration: 1,
-                          },
-                        });
-
-                        if (!created) {
-                          // If entry exists, increment iteration
-                          userAchievement.iteration += 1;
-                          userAchievement.dateEarned = new Date();
-                          await userAchievement.save();
-                        }
-
-                        user.points += achievement.points;
-                        await user.save();
-
-                        res.status(200).json({ article, achievement, userAchievement, user });
-                      }
-                    } catch (error) {
-                      console.error(error);
-                    }
-                  })()
-                })
-
-            });
+        if (!title || !description) {
+            return res.status(400).json({ message: req.t('article.fields_required') });
         }
-      })
-      .catch((error) => {
+
+        if (title.length < 3) {
+            return res.status(400).json({ message: req.t('article.title_length') });
+        }
+
+        if (typeof tags === 'string') {
+            try {
+                req.body.tags = JSON.parse(tags);
+            } catch (error) {
+                return res.status(400).json({ message: req.t('article.invalid_tags') });
+            }
+        }
+
+        if (!tags || !Array.isArray(tags) || tags.length === 0) {
+            return res.status(400).json({ message: req.t('article.tag_required') });
+        }
+
+        const userId = req.user.id;
+        const imagePath = req.file ? req.file.path : null;
+
+        if (!userId) {
+            return res.status(400).json({ message: req.t('article.user_required') });
+        }
+
+        // Création de l'article
+        const article = await Article.create({
+            title,
+            description,
+            preview: imagePath,
+            urlYoutube: urlYoutube || null,
+            userId,
+        });
+
+        if (tags && Array.isArray(tags)) {
+            const tagIds = tags.map((tag) => tag.id);
+            const tagsToAssociate = await models.Tag.findAll({ where: { id: tagIds } });
+
+            await article.setTags(tagsToAssociate);
+
+            // Vérifier le nombre d'articles pour débloquer des succès
+            const articleCount = await Article.count({ where: { userId } });
+            const user = await models.User.findByPk(userId);
+
+            let achievement;
+            let userAchievement;
+
+            if (articleCount === 1) {
+                achievement = await models.Achievement.findByPk(1);
+                await achievement.addUsers(user);
+                user.points += achievement.points;
+                await user.save();
+            } else if (articleCount === 5) {
+                achievement = await models.Achievement.findByPk(2);
+                await achievement.addUsers(user);
+                user.points += achievement.points;
+                await user.save();
+            } else if (articleCount % 20 === 0) {
+                achievement = await models.Achievement.findByPk(3);
+
+                [userAchievement, created] = await models.UserAchievement.findOrCreate({
+                    where: { userId, achievementId: achievement.id },
+                    defaults: {
+                        dateEarned: new Date(),
+                        iteration: 1,
+                    },
+                });
+
+                if (!created) {
+                    userAchievement.iteration += 1;
+                    userAchievement.dateEarned = new Date();
+                    await userAchievement.save();
+                }
+
+                user.points += achievement.points;
+                await user.save();
+            }
+
+            return res.status(200).json({ article, achievement, userAchievement, user });
+        }
+
+    } catch (error) {
         console.error("Error creating article: ", error.message);
-        res.status(500).json({ message: req.t('error') });
-      });
-  },
+        return res.status(500).json({ message: req.t('error') });
+    }
+},
   like: function (req, res, next) {
     const user = req.user;
 
