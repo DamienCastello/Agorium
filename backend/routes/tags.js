@@ -7,7 +7,7 @@ const { isAdmin } = require('../middlewares/admin');
 const { authenticateJwt } = require('../middlewares/auth');
 
 /* GET resources listing. */
-router.get('/', authenticateJwt, tagsController.index);
+router.get('/', tagsController.index);
 //show
 router.get('/:id', authenticateJwt, tagsController.show);
 //create

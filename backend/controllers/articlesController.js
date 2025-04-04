@@ -1,54 +1,73 @@
 const models = require('../models');
-const Article = models.Article;
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
+const { Article, User, Like, Tag, Comment } = require('../models');
 
 module.exports = {
-  indexValidated: function (req, res, next) {
-    const offset = parseInt(req.query.offset) || 0;
-    const limit = parseInt(req.query.limit) || 10;
-    Article.findAll({
-      offset: offset,
-      limit: limit,
-      where: {isValid: true},
-      include: [
-        {
-          model: models.Like,
-          as: 'likes',
-          include: [
+  indexValidated: async function (req, res, next) {
+    try {
+        const { limit = 10, offset = 0, tag, search, dateFrom, dateTo, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+
+        const whereClause = { isValid: true };
+
+        if (search) {
+            whereClause[Op.or] = [
+                { title: { [Op.like]: `%${search}%` } },
+                { description: { [Op.like]: `%${search}%` } }
+            ];
+        }
+
+        if (dateFrom && dateTo) {
+            whereClause.createdAt = { [Op.between]: [new Date(dateFrom), new Date(dateTo)] };
+        }
+
+        const includeOptions = [
             {
-              model: models.User,
-              as: 'user',
-              attributes: ['id', 'name', 'email'],
+                model: Tag,
+                as: 'tags',
+                attributes: ['id', 'name'],
+                through: { attributes: [] } // Évite de récupérer les métadonnées de la table pivot
+            },
+            {
+                model: Comment,
+                as: 'comments',
+                attributes: ['id', 'content', 'userId', 'createdAt'],
+                include: [{ model: User, attributes: ['id', 'name'], as: 'user' }]
             }
-          ]
-        },
-        {
-          model: models.Tag,
-          as: 'tags',
-        },
-        {
-          model: models.Comment,
-          as: 'comments',
-          include: [
-            {
-              model: models.User,
-              as: 'user',
-              attributes: ['id', 'name', 'email'],
+        ];
+
+        // Filtrage par tag si un tag est sélectionné
+        if (tag) {
+            includeOptions[0].where = { name: tag };
+        }
+
+        const articles = await Article.findAll({
+            where: whereClause,
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM Likes AS likes
+                            WHERE likes.articleId = Article.id
+                        )`),
+                        'likeCount'
+                    ]
+                ]
             },
-            {
-              model: models.Like,
-              as: 'likes',
-            },
-          ]
-        },
-      ]
-    })
-      .then((articles) => { res.json({ articles }); })
-      .catch((error) => {
-        console.log("error: ", error)
-        res.status(500).json({ message: req.t('error') })
-      })
-  },
+            include: includeOptions,
+            order: [
+                sortBy === 'likes' ? [Sequelize.literal('likeCount'), sortOrder] : ['createdAt', sortOrder]
+            ],
+            limit: parseInt(limit),
+            offset: parseInt(offset)
+        });
+
+        res.status(200).json({ articles });
+    } catch (error) {
+        console.error('Error fetching articles:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+},
   indexNotValidated: function (req, res, next) {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
@@ -180,6 +199,30 @@ module.exports = {
             description,
             preview: imagePath,
             urlYoutube: urlYoutube || null,
+            refusalReasons: JSON.stringify({
+              title: {
+                value: '',
+                isValid: null,
+                validatedBy: null,
+              },
+              description: {
+                value: '',
+                isValid: null,
+                validatedBy: null,
+              },
+              videoContent: {
+                value: '',
+                isValid: null,
+                validatedBy: null,
+              },
+              preview: {
+                value: '',
+                isValid: null,
+                validatedBy: null,
+              },
+            }),
+            overallReasonForRefusal: null,
+            isValid: false,
             userId,
         });
 
