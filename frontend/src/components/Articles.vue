@@ -1,24 +1,51 @@
 <template>
   <div class="container">
     <div class="filter-sort-container">
-      <!-- Barre de filtres -->
-      <div class="filters">
-        <!-- Filtre par tags -->
-        <div>
+      <!-- Barre de filtres et tri -->
+      <div class="filters-sort-row">
+        <div class="filters">
+          <!-- Filtre par tags -->
+          <div>
+            <div class="label-filter">
+              <TagIcon />
+              <label for="tagFilter">{{ $t('articles.tag_filter') }} :</label>
+            </div>
+            <div class="pico">
+              <select id="tagFilter" v-model="selectedTag" @change="fetchArticles(true)" class="tag-selector">
+                <option value="">{{ $t('articles.all_tags') }}</option>
+                <option v-for="tag in allTags" :key="tag.id" :value="tag.name">
+                  {{ tag.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tri par date (par défaut) ou par likes -->
+        <div class="sort">
           <div class="label-filter">
-            <TagIcon />
-            <label for="tagFilter">{{ $t('articles.tag_filter') }} :</label>
+            <SortIcon />
+            <label class="pico">{{ $t('articles.sort_by') }} :</label>
           </div>
           <div class="pico">
-            <select id="tagFilter" v-model="selectedTag" @change="applyFilters" class="tag-slector">
-              <option value="">{{ $t('articles.all_tags') }}</option>
-              <option v-for="tag in allTags" :key="tag.id" :value="tag.name">
-                {{ tag.name }}
-              </option>
+            <select v-model="sortBy" @change="fetchArticles(true)" class="sort-selector">
+              <option value="createdAt">{{ $t('articles.sort_near') }}</option>
+              <option value="likes">{{ $t('articles.sort_likes') }}</option>
             </select>
           </div>
         </div>
+          
+        </div>
 
+        <!-- Filtre par intervalle de dates -->
+        <div class="filter date-filter">
+            <label>{{ $t('articles.date_filter') }} :</label>
+            <VueDatePicker v-model="dateRange" :placeholder="$t('articles.date_placeholder')" range is-range
+              @update:model-value="fetchArticles(true)" :input-class="'custom-datepicker-input'" />
+          </div>
+      </div>
+
+      <!-- Barre de recherche -->
+      <div class="search-row">
         <!-- Filtre par nom -->
         <div>
           <div class="label-filter">
@@ -26,46 +53,19 @@
             <label for="nameFilter">{{ $t('articles.name_filter') }} :</label>
           </div>
           <div class="pico">
-            <input type="text" id="nameFilter" v-model="nameFilter" @input="applyFilters"
-            :placeholder='$t("articles.name_placeholder")' />
+            <input type="text" id="nameFilter" v-model="nameFilter" @input="fetchArticles(true)"
+              :placeholder='$t("articles.name_placeholder")' />
           </div>
-        </div>
-
-        <!-- Tri par date -->
-        <div>
-          <div class="label-filter">
-            <FadeSlideTransition>
-              <SortIcon :isDown="dateSort === 'desc'" />
-            </FadeSlideTransition>
-            <label class="pico">{{ $t('articles.date_sort') }} :</label>
-          </div>
-          <div class="pico">
-            <select v-model="dateSort" @change="applyFilters" class="sort-selector">
-              <option value="desc">{{ $t('articles.sort_near') }}</option>
-              <option value="asc">{{ $t('articles.sort_old') }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Filtre par intervalle de dates -->
-        <div class="filter date-filter">
-          <label>{{ $t('articles.date_filter') }} :</label>
-          <VueDatePicker v-model="dateRange" :placeholder="$t('articles.date_placeholder')" range is-range
-            @update:model-value="applyFilters" :input-class="'custom-datepicker-input'" />
         </div>
       </div>
-
     </div>
-
-
-
 
     <!-- Grille des articles -->
     <div v-if="state === 'error'">
       <p>{{ $t('articles.state_error') }}</p>
     </div>
     <div v-else class="articles-grid pico" :aria-busy="state === 'loading'">
-      <div v-for="(article, index) in filteredArticles" :key="index" class="card"
+      <div v-for="(article, index) in articles" :key="index" class="card"
         @click="navigateToArticle(article.id)">
         <img v-if="article.urlYoutube" :src="getYoutubeThumbnail(article.urlYoutube)" alt="Preview"
           class="card-image" />
@@ -87,113 +87,132 @@
           </div>
         </div>
       </div>
-      <p v-if="filteredArticles.length === 0">{{ $t('articles.empty_list') }}</p>
+      <p v-if="articles.length === 0">{{ $t('articles.empty_list') }}</p>
     </div>
   </div>
   <notifications position="bottom right" />
 </template>
 
+
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import url from "../utils/url";
 import getYoutubeThumbnail from "../utils/getYoutubeThumbnail";
-import { useNavbarHandler } from "@/composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
 import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
-import TagIcon from "./icons/TagIcon.vue"
-import SearchIcon from "./icons/SearchIcon.vue"
+import '@vuepic/vue-datepicker/dist/main.css';
+import TagIcon from "./icons/TagIcon.vue";
+import SearchIcon from "./icons/SearchIcon.vue";
 import SortIcon from "./icons/SortIcon.vue";
-import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useI18n } from "vue-i18n";
 
 const articles = ref([]);
-const filteredArticles = ref([]);
 const state = ref("loading");
 const selectedTag = ref("");
 const nameFilter = ref("");
 const dateRange = ref(null);
+const sortBy = ref("createdAt");
 const dateSort = ref("desc");
 const router = useRouter();
-const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
 const allTags = ref([]);
 const { t } = useI18n();
 
+const limit = ref(10);
+const offset = ref(0);
+const isFetching = ref(false);
+
+const fetchArticles = async (reset = false) => {
+  if (isFetching.value) return;
+  isFetching.value = true;
+
+  if (reset) {
+    articles.value = [];
+    offset.value = 0;
+    state.value = "loading";
+  }
+
+  try {
+    const response = await axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
+      params: {
+        limit: limit.value,
+        offset: offset.value,
+        tag: selectedTag.value || null,
+        search: nameFilter.value || null,
+        dateFrom: dateRange.value?.[0] || null,
+        dateTo: dateRange.value?.[1] || null,
+        sortBy: sortBy.value,
+        sortOrder: dateSort.value,
+      },
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    if (response.data.articles.length > 0) {
+      articles.value.push(...response.data.articles);
+      offset.value += limit.value;
+    } else {
+      state.value = "end";
+    }
+  } catch (error) {
+    notify({
+      title: t('notification.title.articles_fetch'),
+      type: "error",
+      text: error.response?.data?.message || "Erreur de chargement",
+    });
+    state.value = "error";
+  } finally {
+    isFetching.value = false;
+  }
+};
+
+// Détection du scroll
+const handleScroll = () => {
+  if (isFetching.value || state.value === "end") return;
+
+  const bottomReached = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+  if (bottomReached) fetchArticles();
+};
+
 onMounted(() => {
-  axios(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
-    withCredentials: true,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-  })
+  fetchArticles();
+  axios.get(`${url.baseUrl}:${url.portBack}/api/v1/tags`, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    })
     .then((response) => {
-      articles.value = response.data.articles;
-
-      allTags.value = Array.from(
-        new Set(response.data.articles.flatMap((article) => article.tags))
-      );
-
-      filteredArticles.value = response.data.articles.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      state.value = "idle";
+      allTags.value = response.data.tags
     })
     .catch((error) => {
       notify({
-        title: t('notification.title.articles_fetch'),
-        type: "error",
-        text: error.response.data.message,
-      });
-      state.value = "error";
+      title: t('notification.title.articles_fetch'),
+      type: "error",
+      text: error.response?.data?.message || "Erreur de chargement",
     });
+    state.value = "error";
+    })
+  window.addEventListener("scroll", handleScroll);
 });
 
-const applyFilters = () => {
-  // Filtrer par tag
-  let filtered = articles.value;
-  if (selectedTag.value) {
-    filtered = filtered.filter((article) =>
-      article.tags.some((tag) => tag.name === selectedTag.value)
-    );
-  }
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
 
-  // Filtrer par nom
-  if (nameFilter.value) {
-    filtered = filtered.filter((article) =>
-      article.title.toLowerCase().includes(nameFilter.value.toLowerCase())
-    );
-  }
-
-  // Filtrer par intervalle de dates
-  if (dateRange.value) {
-    if (dateRange.value[0] || dateRange.value[1]) {
-      const start = dateRange.value[0] ? new Date(dateRange.value[0]) : null;
-      const end = dateRange.value[1] ? new Date(dateRange.value[1]) : null;
-      filtered = filtered.filter((article) => {
-        const articleDate = new Date(article.createdAt);
-        return (
-          (!start || articleDate >= start) && (!end || articleDate <= end)
-        );
-      });
-    }
-  }
-
-  // Trier les articles par date selon la sélection
-  if (dateSort.value === "desc") {
-    filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  } else {
-    filtered = filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  }
-
-  filteredArticles.value = filtered;
-};
+// Recharger les articles quand un filtre change
+watch([selectedTag, nameFilter, dateRange, sortBy], () => {
+  fetchArticles(true);
+});
 
 const navigateToArticle = (id) => {
-  handleNavbar(() => {
-    router.push(`/articles/${id}`);
-  });
+  router.push(`/articles/${id}`);
 };
 </script>
 
@@ -276,31 +295,48 @@ const navigateToArticle = (id) => {
   max-width: 860px;
 }
 
-.sort-selector {
-  width: 100%;
-  max-width: 250px;
-}
-
-.filters {
+.filters-sort-row {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 16px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
-.filter {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 8px;
+.date-filter{
+  min-height: 115px;
 }
 
-.date-filter {
-  min-width: 200px !important;
+.filters {
+  display: flex;
+  gap: 16px;
+}
+
+.sort {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.search-row {
+  margin-top: 16px;
+}
+
+.sort-selector {
+  width: 100%;
+  max-width: 250px;
+}
+
+.filters > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
 }
 
 .tag-selector {
   width: 100%;
-  min-width: 500px;
+  min-width: 200px;
 }
 
 .label-filter {
@@ -313,19 +349,14 @@ const navigateToArticle = (id) => {
 }
 
 .label-filter i {
-  margin-right: 8px
+  margin-right: 8px;
 }
 
 .filter label {
   margin-bottom: 4px;
 }
 
-.icon {
-  display: flex;
-  flex-direction: row;
-}
-
-vue-datepicker {
+.vue-datepicker {
   max-width: 200px;
 }
 
