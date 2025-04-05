@@ -1,8 +1,8 @@
-# wakeup-normies Project v1.0.0
+# Agorium Project v1.0.0
 NPM is used to manage dependencies
 
 ## Project Philosophy
-WakeUp Normies is a platform dedicated to empowering free expression and sharing alternative perspectives on vital societal issues. It enables users to post articles, images, videos, and more, fostering dialogue on topics often censored or ignored by mainstream narratives. While encouraging open discussion, the platform uses moderation to block illegal content, offering a space for independent voices to question mainstream views and inform others.
+Agorium is a platform dedicated to empowering free expression and sharing alternative perspectives on vital societal issues. It enables users to post articles, images, videos, and more, fostering dialogue on topics often censored or ignored by mainstream narratives. While encouraging open discussion, the platform uses moderation to block illegal content, offering a space for independent voices to question mainstream views and inform others.
 
 ## Road Map:
 ### CORE v1:
@@ -42,8 +42,8 @@ add `.env` file in the backend folder of project and add following lines
 ```text
 DB_USERNAME='admin'
 DB_PASSWORD='azerty'
-DB_NAME='wakeup_normies_db_dev'
-JWT_SECRET='wakeup_secret'
+DB_NAME='agorium_db_dev'
+JWT_SECRET='agorium_secret'
 DB_HOSTNAME=127.0.0.1
 HOST=127.0.0.1:5000
 ```
