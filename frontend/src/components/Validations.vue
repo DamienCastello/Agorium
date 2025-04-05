@@ -46,49 +46,79 @@
   
   
   <script setup>
-  import axios from "axios";
-  import { onMounted, ref } from "vue";
-  import { useRouter } from "vue-router";
-  import url from "../utils/url";
-  import getYoutubeThumbnail from "../utils/getYoutubeThumbnail";
-  import { useNavbarHandler } from "../composables/useNavbarHandler";
-  import { useNotification } from "@kyvg/vue3-notification";
-  import { useI18n } from "vue-i18n";
+ import axios from "axios";
+import { onMounted, ref, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import url from "../utils/url";
+import getYoutubeThumbnail from "../utils/getYoutubeThumbnail";
+import { useNavbarHandler } from "../composables/useNavbarHandler";
+import { useNotification } from "@kyvg/vue3-notification";
+import { useI18n } from "vue-i18n";
 
-  const articles = ref([]);
-  const state = ref("loading");
-  const router = useRouter();
-  const { handleNavbar } = useNavbarHandler();
-  const { notify } = useNotification();
-  const { t } = useI18n();
-  
-  onMounted(() => {
-    axios(`${url.baseUrl}:${url.portBack}/api/v1/articles/invalid`, {
+const articles = ref([]);
+const state = ref("loading");
+const isFetchingMore = ref(false);
+const offset = ref(0);
+const limit = 10;
+
+const router = useRouter();
+const { handleNavbar } = useNavbarHandler();
+const { notify } = useNotification();
+const { t } = useI18n();
+
+const fetchArticles = async () => {
+  if (isFetchingMore.value || state.value === "error") return;
+
+  isFetchingMore.value = true;
+  try {
+    const response = await axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles/invalid`, {
+      params: { offset: offset.value, limit },
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-    })
-      .then((response) => {
-        articles.value = response.data.articles;
-        state.value = "idle";
-      })
-      .catch((error) => {
-        notify({
-            title: t('notification.title.validations_fetch'),
-            type: 'error',
-            text: `Error fetching article: ${error.response.data.message}`,
-        });
-        state.value = "error";
-      });
+    });
+
+    const newArticles = response.data.articles;
+    if (newArticles.length) {
+      articles.value.push(...newArticles);
+      offset.value += limit;
+    }
+    state.value = "idle";
+  } catch (error) {
+    notify({
+      title: t("notification.title.validations_fetch"),
+      type: "error",
+      text: `Error fetching articles: ${error.response?.data?.message || error.message}`,
+    });
+    state.value = "error";
+  } finally {
+    isFetchingMore.value = false;
+  }
+};
+
+const handleScroll = () => {
+  const bottomReached =
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+
+  if (bottomReached) fetchArticles();
+};
+
+onMounted(() => {
+  fetchArticles();
+  window.addEventListener("scroll", handleScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
+
+const navigateToValidation = (id) => {
+  handleNavbar(() => {
+    router.push(`/validations/${id}`);
   });
-  
-  const navigateToValidation = (id) => {
-    handleNavbar(() => {
-      router.push(`/validations/${id}`);
-    })
-  };
+};
   </script>
   
   <style>
@@ -174,6 +204,5 @@
     display: inline-block;
     margin: 0px 3px !important;
   }
-  
   </style>
   
