@@ -1,7 +1,7 @@
 <template>
   <footer class="footer" @mousedown="handleClickOutsideNavbar">
     <div class="footer-content">
-      <p class="footer-text">2024 Wake up normies</p>
+      <p class="footer-text">2025 Agorium</p>
       <div class="social-links">
         <a @click.prevent="handleClickOutsideNavbar" href="https://www.linkedin.com/in/castello-damien/" target="_blank" aria-label="LinkedIn">
           <i class="fab fa-linkedin"></i> LinkedIn

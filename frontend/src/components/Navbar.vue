@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar" @mousedown="handleClickOutsideNavbar">
     <ul class="navbar-title">
-      <li><strong>Wake Up Normies</strong></li>
+      <li><strong>Agorium</strong></li>
       <div class="language-selector">
         <div class="dropdown-translation" @click="toggleTranslation">
           <i class="fa-solid fa-language"></i>
