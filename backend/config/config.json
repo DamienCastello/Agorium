@@ -3,21 +3,21 @@
   "development": {
     "username": "admin",
     "password": "azerty",
-    "database": "wakeup_normies_db_dev",
+    "database": "agorium_db_dev",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "test": {
     "username": "admin",
     "password": "azerty",
-    "database": "wakeup_normies_db_test",
+    "database": "agorium_db_test",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "production": {
     "username": "admin",
     "password": "azerty",
-    "database": "wakeup_normies_db_prod",
+    "database": "agorium_db_prod",
     "host": "127.0.0.1",
     "dialect": "mysql"
   }
