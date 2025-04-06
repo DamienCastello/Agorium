@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 const models = require('../models');
 const app = require('../app');
 const debug = require('debug')('backend:server');
@@ -15,29 +14,21 @@ var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
- * Sync models with database
+ * Start the server without syncing models.
  */
-models.sequelize.sync({ force: false })
-  .then(() => {
-    console.log("Synchronisation des modèles réussie");
+var server = http.createServer(app);
 
-    var server = http.createServer(app);
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
 
-    server.listen(port);
-    server.on('error', onError);
-    server.on('listening', onListening);
-
-    function onListening() {
-      var addr = server.address();
-      var bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-      debug('Listening on ' + bind);
-    }
-  })
-  .catch(err => {
-    console.error("Erreur de synchronisation des modèles : ", err);
-  });
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
 
 /**
  * Normalize a port into a number, string, or false.

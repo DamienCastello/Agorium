@@ -15,13 +15,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Report.init({
-    userId: DataTypes.NUMBER,
+    userId: DataTypes.INTEGER,
     articleId: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     commentId: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     reason: DataTypes.STRING,

@@ -1,0 +1,47 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: agorium-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: agorium_db_dev
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: azerty
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
+  backend:
+    build: ./backend
+    container_name: agorium-backend
+    depends_on:
+      - mysql
+    environment:
+      DB_USERNAME: admin
+      DB_PASSWORD: azerty
+      DB_NAME: agorium_db_dev
+      DB_HOSTNAME: mysql
+      JWT_SECRET: agorium_secret
+      HOST: backend:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+    # add this to sh for seed: node seeds/all.js &&
+    command: >
+      sh -c "
+        dockerize -wait tcp://mysql:3306 -timeout 60s &&
+        npx sequelize-cli db:migrate &&
+        node ./bin/www"
+
+  frontend:
+    build: ./frontend
+    container_name: agorium-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  mysql-data:
