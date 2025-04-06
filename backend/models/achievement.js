@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     points: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     isReusable: {
@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     threshold: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     iconCategory: {
