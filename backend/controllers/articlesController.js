@@ -64,7 +64,7 @@ module.exports = {
 
         res.status(200).json({ articles });
     } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error('Error fetching articles:', error.message);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 },

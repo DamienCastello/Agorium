@@ -1,7 +1,7 @@
 const models = require('../models');
 const { Achievement, User } = models;
 
-(async () => {
+module.exports = async function() {
   try {
     //Used
     const achievement1 = await Achievement.create({
@@ -344,4 +344,4 @@ const { Achievement, User } = models;
   } catch (error) {
     console.error(error);
   }
-})();
+};

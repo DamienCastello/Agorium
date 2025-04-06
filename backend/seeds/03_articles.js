@@ -1,7 +1,7 @@
 const models = require('../models');
 const { Article, Like, Tag } = models;
 
-(async () => {
+module.exports = async function() {
   try {
     const article1 = await Article.create({
       id: 10,
@@ -436,4 +436,4 @@ const { Article, Like, Tag } = models;
   } catch (error) {
     console.error(error);
   }
-})();
+};
