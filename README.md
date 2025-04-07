@@ -44,15 +44,64 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
    ```
 
 3. **Configure the environment**:
-   Create a `.env` file in the `backend/` folder with the following parameters:
+   Create a `.env` file in the root folder with the following parameters:
    ```env
-    DB_USERNAME='admin'
-    DB_PASSWORD='azerty'
-    DB_PORT=3306
-    DB_NAME='agorium_db_dev'
     JWT_SECRET=agorium_secret
+    ```
+
+    Create a `.env.dev` file in the root folder with the following parameters:
+   ```env
+    NODE_ENV=development
+
+    # Backend
+    DB_USERNAME=admin
+    DB_PASSWORD=azerty
+    DB_PORT=3306
+    DB_NAME=agorium_db_dev
     DB_HOSTNAME=mysql
     HOST=backend:3000
+
+    # Frontend
+    VITE_BASE_URL=http://localhost
+    VITE_PORT_BACK=3000
+    VITE_PORT_FRONT=8080
+    ```
+
+    Create a `.env.pre-prod` file in the root folder with the following parameters:
+   ```env
+    NODE_ENV=pre-prod
+
+    # Backend
+    DB_USERNAME=admin
+    DB_PASSWORD=azerty
+    DB_PORT=3306
+    DB_NAME=agorium_db_preprod
+    DB_HOSTNAME=mysql
+    HOST=backend:3000
+
+    # Frontend
+    VITE_BASE_URL=http://preprod.castello.ovh
+    VITE_PORT_BACK=3000
+    VITE_PORT_FRONT=8080
+
+    ```
+
+    Create a `.env.prod` file in the root folder with the following parameters:
+   ```env
+    NODE_ENV=production
+
+    # Backend
+    DB_USERNAME=admin
+    DB_PASSWORD=secure_password_here
+    DB_PORT=3306
+    DB_NAME=agorium_db_prod
+    DB_HOSTNAME=mysql
+    HOST=backend:3000
+
+    # Frontend
+    VITE_BASE_URL=https://agorium.castello.ovh
+    VITE_PORT_BACK=3000
+    VITE_PORT_FRONT=8080
     ```
 
 4. **Start with Docker**: 
@@ -88,15 +137,6 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 
 first run `npm install`
 
-add `.env` file in the backend folder of project and add following lines
-```text
-DB_USERNAME='admin'
-DB_PASSWORD='azerty'
-DB_NAME='agorium_db_dev'
-JWT_SECRET='agorium_secret'
-DB_HOSTNAME=127.0.0.1
-HOST=127.0.0.1:5000
-```
 after you can run
 ```shell
 npx sequelize-cli db:create # Run db creation

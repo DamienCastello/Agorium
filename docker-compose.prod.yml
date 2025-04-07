@@ -1,0 +1,60 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: agorium-db-prod
+    restart: always
+    environment:
+      MYSQL_DATABASE: agorium_db_prod
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: azerty
+    volumes:
+      - mysql-data:/var/lib/mysql
+    # Port exposé pour la production
+    ports:
+      - "3306:3306"
+    networks:
+      - proxy
+
+  backend:
+    build: ./backend
+    container_name: agorium-backend-prod
+    depends_on:
+      - mysql
+    environment:
+      DB_USERNAME: admin
+      DB_PASSWORD: azerty
+      DB_NAME: agorium_db_prod
+      DB_HOSTNAME: mysql
+      JWT_SECRET: agorium_secret
+      HOST: backend:3000
+    # Port exposé pour la production
+    ports:
+      - "3000:3000"
+    networks:
+      - proxy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        dockerize -wait tcp://mysql:3306 -timeout 60s &&
+        npx sequelize-cli db:migrate &&
+        node ./bin/www"
+
+  frontend:
+    build: ./frontend
+    container_name: agorium-frontend-prod
+    depends_on:
+      - backend
+    # Port exposé pour la production
+    ports:
+      - "8080:80"
+    networks:
+      - proxy
+
+volumes:
+  mysql-data:
+
+networks:
+  proxy:
+    external: true
