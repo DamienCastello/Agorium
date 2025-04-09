@@ -20,10 +20,10 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "sequelize": "^6.37.5"
+    "sequelize": "^6.37.5",
+    "sequelize-cli": "^6.6.2"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.3.0",
-    "sequelize-cli": "^6.6.2"
+    "@faker-js/faker": "^9.3.0"
   }
 }

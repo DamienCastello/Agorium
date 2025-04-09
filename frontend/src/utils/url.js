@@ -1,5 +1,17 @@
+const getBaseUrl = () => {
+  return window.environment.VITE_BASE_URL;
+};
+
+const getBackPort = () => {
+  return window.environment.VITE_PORT_BACK;
+};
+
+const getFrontPort = () => {
+  return window.environment.VITE_PORT_FRONT;
+};
+
 export default {
-    baseUrl : 'http://localhost',
-    portBack: '3000',
-    portFront: '8080'
+  baseUrl: getBaseUrl(),
+  portBack: getBackPort(),
+  portFront: getFrontPort()
 };

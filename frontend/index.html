@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html lang="">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.min.css"
-    >
-    <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agorium</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <script>
+    let xhr = new XMLHttpRequest()
+    window.environment = {}
+
+    xhr.onload = function () {
+      if (xhr.status == 200) {
+        const vars = JSON.parse(xhr.responseText)
+
+        Object.keys(vars).forEach((key) => (window.environment[key] = vars[key]))
+      }
+    }
+
+    xhr.open('GET', '/env.json?' + new Date().getTime(), false)
+    xhr.send()
+  </script>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agorium</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
 </html>
