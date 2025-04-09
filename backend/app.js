@@ -14,8 +14,6 @@ var commentsRouter = require('./routes/comments');
 var reportsRouter = require('./routes/reports');
 var authRouter = require('./routes/auth');
 
-require('dotenv').config();
-
 const { localAuthStrategy } = require('./routes/strategies/local');
 const { jwtAuthStrategy } = require('./routes/strategies/jwt');
 

@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models').User;
 const bcrypt = require('bcrypt');
 const i18n = require('../config/i18n-config');
-require('dotenv').config();
+require('dotenv').config({ path: '/app/../.env' });
 
 const secretKey = process.env.JWT_SECRET;
 

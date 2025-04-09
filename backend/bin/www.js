@@ -2,7 +2,7 @@ const models = require('../models');
 const app = require('../app');
 const debug = require('debug')('backend:server');
 const http = require('http');
-require('dotenv').config();
+require('dotenv').config({ path: '/app/../.env' });
 
 // Accepted origins
 const allowOrigins = [process.env.HOST_FRONT];

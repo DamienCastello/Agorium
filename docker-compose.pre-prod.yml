@@ -1,0 +1,59 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: agorium-db-pre-prod
+    restart: always
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: caS>13200.ago
+      MYSQL_DATABASE: agorium_db_pre_prod
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: azerty
+    volumes:
+      - mysql-data-preprod:/var/lib/mysql
+    networks:
+      - proxy
+
+  backend:
+    build: ./backend
+    container_name: agorium-backend-pre-prod
+    depends_on:
+      - mysql
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
+    environment:
+      - NODE_ENV=pre-prod  # Définition spécifique à cet environnement
+    networks:
+      - proxy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        npm install &&
+        dockerize -wait tcp://agorium-db-pre-prod:3306 -timeout 60s &&
+        npx sequelize-cli db:migrate &&
+        node ./bin/www"
+
+  frontend: 
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_MODE: pre-prod
+    container_name: agorium-frontend-pre-prod
+    depends_on:
+      - backend
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
+    networks:
+      - proxy
+
+volumes:
+  mysql-data-preprod:
+
+networks:
+  proxy:
+    external: true
