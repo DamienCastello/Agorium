@@ -3,47 +3,53 @@ services:
     image: mysql:8.0
     container_name: agorium-db-pre-prod
     restart: always
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
     environment:
+      MYSQL_ROOT_PASSWORD: caS>13200.ago
       MYSQL_DATABASE: agorium_db_pre_prod
       MYSQL_USER: admin
       MYSQL_PASSWORD: azerty
     volumes:
       - mysql-data:/var/lib/mysql
-    # Pas de port exposé pour un environnement de test privé
-    networks:
-      - proxy
 
   backend:
     build: ./backend
     container_name: agorium-backend-pre-prod
     depends_on:
       - mysql
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
     environment:
-      DB_USERNAME: admin
-      DB_PASSWORD: azerty
-      DB_NAME: agorium_db_pre_prod
-      DB_HOSTNAME: mysql
-      JWT_SECRET: agorium_secret
-      HOST: backend:3000
-    # Pas de port exposé pour un environnement de test privé
+      - NODE_ENV=pre-prod  # Définition spécifique à cet environnement
     networks:
       - proxy
     volumes:
       - ./backend:/app
     command: >
       sh -c "
+        npm install &&
         dockerize -wait tcp://mysql:3306 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
-  frontend:
-    build: ./frontend
+  frontend: 
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_MODE: pre-prod
     container_name: agorium-frontend-pre-prod
     depends_on:
       - backend
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
     networks:
       - proxy
-    # Pas de port exposé pour un environnement de test privé
+    ports:
+      - "8080:80"
 
 volumes:
   mysql-data:

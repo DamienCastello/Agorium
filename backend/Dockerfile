@@ -15,4 +15,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["dockerize", "-wait", "tcp://mysql:3306", "-timeout", "60s", "node", "bin/www.js"]
+CMD ["dockerize", "-wait", "tcp://mysql:3306", "-timeout", "120s", "node", "bin/www.js"]
