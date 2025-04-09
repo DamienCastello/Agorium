@@ -15,7 +15,7 @@
   },
   "production": {
     "username": "admin",
-    "password": "azerty",
+    "password": "caS*gg<5050.",
     "database": "agorium_db_prod",
     "host": "mysql",
     "dialect": "mysql"

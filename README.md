@@ -77,12 +77,13 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     DB_PORT=3306
     DB_NAME=agorium_db_preprod
     DB_HOSTNAME=mysql
-    HOST=backend:3000
+    HOST=agorium-preprod-backend.castello.ovh:3000
 
     # Frontend
-    VITE_BASE_URL=http://preprod.castello.ovh
+    VITE_BASE_URL=http://agorium-preprod-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
+    VITE_APP_MODE=pre-prod
 
     ```
 
@@ -92,14 +93,14 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 
     # Backend
     DB_USERNAME=admin
-    DB_PASSWORD=secure_password_here
+    DB_PASSWORD=caS*gg<5050.
     DB_PORT=3306
     DB_NAME=agorium_db_prod
     DB_HOSTNAME=mysql
-    HOST=backend:3000
+    HOST=agorium-backend.castello.ovh:3000
 
     # Frontend
-    VITE_BASE_URL=https://agorium.castello.ovh
+    VITE_BASE_URL=https://agorium-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
     ```

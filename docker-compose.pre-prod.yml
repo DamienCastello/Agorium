@@ -12,7 +12,9 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: azerty
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mysql-data-preprod:/var/lib/mysql
+    networks:
+      - proxy
 
   backend:
     build: ./backend
@@ -31,7 +33,7 @@ services:
     command: >
       sh -c "
         npm install &&
-        dockerize -wait tcp://mysql:3306 -timeout 60s &&
+        dockerize -wait tcp://agorium-db-pre-prod:3306 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
@@ -48,11 +50,9 @@ services:
       - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
     networks:
       - proxy
-    ports:
-      - "8080:80"
 
 volumes:
-  mysql-data:
+  mysql-data-preprod:
 
 networks:
   proxy:

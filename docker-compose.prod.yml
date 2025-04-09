@@ -1,18 +1,18 @@
-version: '3'
 services:
   mysql:
     image: mysql:8.0
     container_name: agorium-db-prod
     restart: always
+    env_file:
+      - .env      # Chargement du fichier d'environnement principal
+      - .env.prod # Chargement du fichier d'environnement spécifique à pre-prod
     environment:
+      MYSQL_ROOT_PASSWORD: caS>13200.ago
       MYSQL_DATABASE: agorium_db_prod
       MYSQL_USER: admin
-      MYSQL_PASSWORD: azerty
+      MYSQL_PASSWORD: caS*gg<5050.
     volumes:
-      - mysql-data:/var/lib/mysql
-    # Port exposé pour la production
-    ports:
-      - "3306:3306"
+      - mysql-data-prod:/var/lib/mysql
     networks:
       - proxy
 
@@ -21,39 +21,38 @@ services:
     container_name: agorium-backend-prod
     depends_on:
       - mysql
+    env_file:
+      - .env          # Chargement du fichier d'environnement principal
+      - .env.prod # Chargement du fichier d'environnement spécifique à pre-prod
     environment:
-      DB_USERNAME: admin
-      DB_PASSWORD: azerty
-      DB_NAME: agorium_db_prod
-      DB_HOSTNAME: mysql
-      JWT_SECRET: agorium_secret
-      HOST: backend:3000
-    # Port exposé pour la production
-    ports:
-      - "3000:3000"
+      - NODE_ENV=production  # Définition spécifique à cet environnement
     networks:
       - proxy
     volumes:
       - ./backend:/app
     command: >
       sh -c "
-        dockerize -wait tcp://mysql:3306 -timeout 60s &&
+        npm install &&
+        dockerize -wait tcp://agorium-db-prod:3306 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_APP_MODE: production
     container_name: agorium-frontend-prod
     depends_on:
       - backend
-    # Port exposé pour la production
-    ports:
-      - "8080:80"
+    env_file:
+      - .env      # Chargement du fichier d'environnement principal
+      - .env.prod # Chargement du fichier d'environnement spécifique à pre-prod
     networks:
       - proxy
 
 volumes:
-  mysql-data:
+  mysql-data-prod:
 
 networks:
   proxy:
