@@ -1,4 +1,6 @@
 const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 function createUploader(folder, limits = { fieldSize: 25 * 1024 * 1024 }) {
   const storage = multer.diskStorage({
@@ -6,15 +8,16 @@ function createUploader(folder, limits = { fieldSize: 25 * 1024 * 1024 }) {
       cb(null, `uploads/${folder}/`);
     },
     filename: function (req, file, cb) {
-      cb(null, file.originalname);
+      const ext = path.extname(file.originalname);
+      const filename = `${uuidv4()}${ext}`;
+      cb(null, filename);
     }
   });
 
   return multer({ storage, limits });
 }
 
-// Configure uploaders with specific or default limit
-const avatarUploader = createUploader('avatars', { fileSize: 5 * 1024 * 1024 }); // specific limit : 5 MB
-const previewUploader = createUploader('previews'); // default limit : 25 MB
+const avatarUploader = createUploader('avatars', { fileSize: 5 * 1024 * 1024 });
+const previewUploader = createUploader('previews');
 
 module.exports = { avatarUploader, previewUploader };

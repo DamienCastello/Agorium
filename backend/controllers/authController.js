@@ -29,7 +29,7 @@ module.exports = {
             const userData = {
                 id: user.id,
                 email: user.email,
-                name: user.name,
+                pseudo: user.pseudo,
                 avatar: user.avatar,
                 isAdmin: user.isAdmin,
             };
@@ -42,7 +42,7 @@ module.exports = {
         }
     },
     signUp: async function (req, res, next) {
-        if (!req.body.email || !req.body.password) {
+        if (!req.body.email || !req.body.password || !req.body.pseudo) {
             return res.status(400).json({ message: req.t('auth.error_fields_required') });
         }
     
@@ -58,7 +58,7 @@ module.exports = {
             const newUser = await User.create({
                 email: req.body.email,
                 password: hashedPassword,
-                name: req.body.email.split('@')[0],
+                pseudo: req.body.pseudo,
                 avatar: req.file ? `${req.file.path}` : null,
                 isAdmin: false
             });
@@ -66,7 +66,7 @@ module.exports = {
             const userData = {
                 id: newUser.id,
                 email: newUser.email,
-                name: newUser.name,
+                pseudo: newUser.pseudo,
                 avatar: newUser.avatar,
                 isAdmin: newUser.isAdmin,
             };

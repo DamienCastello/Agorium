@@ -9,9 +9,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
+      pseudo: {
         type: Sequelize.STRING,
         allowNull: false,
+        unique: true,
         validate: {
           len: [3, 20]
         }

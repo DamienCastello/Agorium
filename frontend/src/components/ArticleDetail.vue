@@ -11,14 +11,22 @@
         <p v-for="tag in article.tags" :key="tag.id" class="badge">{{ tag.name }}</p>
       </div>
 
-      <h1>{{ article.title }}</h1>
+      <h1 class="title">{{ article.title }}</h1>
       <div v-if="article.urlYoutube">
         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
       </div>
       <div v-else-if="article.preview">
         <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
       </div>
-      <div class="comment-container">
+      <div class="action-container">
+        <RouterLink :to="`/profile/${creator?.pseudo}`" class="author">
+        <h3>{{ creator?.pseudo }}</h3>
+        <img
+          :src="creator?.avatar ? `${url.baseUrl}:${url.portBack}/${creator?.avatar}` : `${url.baseUrl}:${url.portBack}/uploads/avatars/utilisateur.png`"
+          alt="author-avatar"
+          class="author-avatar"
+        />
+      </RouterLink>
         <div class="action-like" @click="toggleLike">
           {{ likeNumber }} <FadeSlideTransition>
             <component :is="componentToShow"  />
@@ -31,7 +39,9 @@
       </div>
         <p>{{ article.description }}</p>
       <hr />
-      <Comments :article="article" :refreshComments="fetchArticle" />
+      <div v-if="article.comments && article.comments.length > 0">
+        <Comments :article="article" :refreshComments="fetchArticle" />
+      </div>
     </div>
   </div>
   <notifications position="bottom right" />
@@ -56,6 +66,7 @@ import { useRouter } from "vue-router";
 import { useGlobalStore } from '@/stores/global';
 
 const article = ref(null);
+const creator = ref(null);
 const isLiked = ref(false);
 const likeNumber = ref(0);
 const state = ref("loading");
@@ -174,6 +185,28 @@ onMounted(() => {
             }
           }
         }
+
+        //Fetch creator article
+        axios.get(`${url.baseUrl}:${url.portBack}/api/v1/users/${response.data.article.userId}`, {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        })
+        .then((response) => {
+          if (response.data && response.data.user) {
+            creator.value = response.data.user
+          }
+        })
+        .catch((error) => {
+          notify({
+            title: "Fetching User",
+            type: 'error',
+            text: error.response.data.message,
+          });
+          state.value = "error";
+        });
         state.value = "idle";
       } else {
         state.value = "error";
@@ -226,9 +259,14 @@ const navigateToReport = (id) => {
   margin: 0 auto;
 }
 
-p {
+p, h1 {
   margin-top: 15px;
   text-align: center;
+}
+
+h3 {
+  font-size: 20px !important;
+  margin-bottom: 3px !important;
 }
 
 span {
@@ -256,12 +294,12 @@ span {
   text-align: center;
 }
 
-.comment-container {
+.action-container {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-around;
-  margin-top: 15px;
+  margin: 20px 10px;
 }
 
 .action-report {
@@ -309,6 +347,22 @@ span {
 .icon {
   cursor: pointer;
   font-size: 50px;
+}
+
+.author {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+}
+
+.author-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ccc;
 }
 
 @media (max-width: 768px) {

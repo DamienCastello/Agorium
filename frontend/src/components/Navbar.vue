@@ -52,7 +52,9 @@
           <summary @click="closeTranslation"><span>{{ $t('navigation.account') }}</span></summary>
           <ul>
             <li>
-              <RouterLink to="/profile" :class="{ 'active': isActiveRoute('/profile') }" @click="handleClick($event)">
+              <RouterLink :to="`/profile/${authStore.user?.pseudo}`"
+              :class="{ 'active': isActiveRoute(`/profile/${authStore.user?.pseudo}`) }" 
+              @click="handleClick($event)">
                 {{ $t('navigation.profile') }}
               </RouterLink>
             </li>
