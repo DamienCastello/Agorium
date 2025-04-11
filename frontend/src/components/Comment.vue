@@ -1,7 +1,7 @@
 <template>
     <div class="comment-container">
         <div class="comment">
-            <p><span>{{ props.comment.user.name }}:</span> {{ props.comment.content }}</p>
+            <p><span>{{ props.comment?.user.pseudo }}:</span> {{ props.comment?.content }}</p>
         </div>
         <div class="actions-comment">
             <div class="action-comment-like" @click="toggleLike">

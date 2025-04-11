@@ -1,5 +1,7 @@
 const models = require('../models');
 const User = models.User;
+const fs = require('fs');
+const path = require('path');
 
 module.exports = {
     index: function (req, res, next) {
@@ -11,23 +13,39 @@ module.exports = {
             })
     },
     show: function (req, res, next) {
-        User.findByPk(req.params.id, {
-            include: [
-                {
-                    model: models.Achievement,
-                    as: 'achievements'
-                }
-            ]
-        })
-            .then((user) => { res.json({ user }); })
+        const param = req.params.id;
+
+        const isNumericId = /^\d+$/.test(param);
+
+        if (isNumericId) {
+            User.findByPk(req.params.id, {
+                include: [
+                    {
+                        model: models.Achievement,
+                        as: 'achievements'
+                    }
+                ]
+            })
+            .then((user) => { res.status(200).json({ user }) })
             .catch((error) => {
                 console.log('error: ', error.message);
                 res.status(500).json({ message: req.t('error') });
             })
+        } else {
+            User.findOne({
+                where: { pseudo: param },
+                include: ['achievements']
+              })
+            .then((user) => { res.status(200).json({ user }) })
+            .catch((error) => {
+                console.log('error: ', error.message);
+                res.status(500).json({ message: req.t('error') });
+            })
+        }
     },
     create: function (req, res, next) {
         User.create({
-            name: req.params.name,
+            pseudo: req.params.pseudo,
             password: req.params.password,
             email: req.params.email,
             isAdmin: false,
@@ -40,24 +58,38 @@ module.exports = {
             })
     },
     update: function (req, res, next) {
-        const avatarPath = req.file ? req.file.path : null;
-
-        User.findByPk(req.params.id)
+        const newAvatarPath = req.file ? req.file.path : null;
+    
+        models.User.findByPk(req.params.id)
             .then((user) => {
-                user.update({
-                    name: req.params.name,
-                    avatar: avatarPath
-                })
-                .then((updatedUser) => { res.json({ updatedUser }); })
-                .catch((error) => {
-                    console.log('error: ', error.message);
-                    res.status(500).json({ message: req.t('user.error_label') });
-                })
+                if (!user) {
+                    return res.status(404).json({ message: req.t('user.not_found') });
+                }
+    
+                // Si un nouvel avatar est fourni et que l'ancien n'est pas celui par défaut
+                if (newAvatarPath && user.avatar && !user.avatar.includes('utilisateur.png')) {
+                    const oldAvatarPath = path.join(__dirname, '..', user.avatar);
+                    fs.unlink(oldAvatarPath, (err) => {
+                        if (err) {
+                            console.warn('Could not delete old avatar:', err.message);
+                        }
+                    });
+                }
+    
+                // Construire les données à mettre à jour
+                const updateData = {};
+                if (req.params.pseudo) updateData.pseudo = req.params.pseudo;
+                if (newAvatarPath) updateData.avatar = newAvatarPath;
+    
+                return user.update(updateData);
+            })
+            .then((updatedUser) => {
+                res.json({ updatedUser });
             })
             .catch((error) => {
-                console.log('error: ', error.message);
-                res.status(500).json({ message: req.t('error') });
-            })
+                console.log('error:', error.message);
+                res.status(500).json({ message: req.t('user.error_label') });
+            });
     },
     delete: function (req, res, next) {
         User.findByPk(req.params.id)

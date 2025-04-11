@@ -316,8 +316,7 @@ const handleSubmit = () => {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((response) => {
-        console.log("res : ", response)
+      .then(() => {
         state.value = 'loading';
         notify({
           title: t('notification.title.article_create'),

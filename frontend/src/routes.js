@@ -32,6 +32,6 @@ export const routes = [
     { path: '/articles/:id(\\d+)', name: 'ArticleDetail', component: ArticleDetail, meta: { public: true } },
     { path: '/validations/:id(\\d+)', name: 'Validate', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/new-article', name: 'PostArticle', component: PostArticle, meta: { requiresAuth: true } },
-    { path: '/profile', component: Profile, meta: { requiresAuth: true } },
+    { path: '/profile/:pseudo', name: 'Profile', component: Profile },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ];

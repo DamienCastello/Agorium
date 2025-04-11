@@ -84,7 +84,6 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
     VITE_APP_MODE=pre-prod
-
     ```
 
     Create a `.env.prod` file in the root folder with the following parameters:
@@ -138,6 +137,26 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 
 first run `npm install`
 
+Create a `.env` file in the backend folder with the following parameters:
+
+```env
+JWT_SECRET=agorium_secret
+
+# Backend
+DB_USERNAME=admin
+DB_PASSWORD=azerty
+DB_PORT=3306
+DB_NAME=agorium_db_dev
+DB_HOSTNAME=localhost
+
+HOST=localhost:3000
+
+# Frontend
+VITE_BASE_URL=http://localhost
+VITE_PORT_BACK=3000
+VITE_PORT_FRONT=5173
+```
+
 after you can run
 ```shell
 npx sequelize-cli db:create # Run db creation
@@ -157,9 +176,17 @@ Now you are ready to use this backend project
 
 first run `npm install`
 
+Create a `env.json` file in the frontend/public/ folder with the following parameters:
+```env
+{
+"VITE_BASE_URL": "http://localhost",
+"VITE_PORT_BACK": 3000,
+"VITE_PORT_FRONT": 5173
+}
+```
+
 run `npm run dev`
 
 The app will be accessible at http://localhost:5173 by default.
 
 Then Signup & Signin with your created credentials.
-
