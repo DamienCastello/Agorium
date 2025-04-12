@@ -98,7 +98,7 @@ const changeLanguage = async (lang) => {
   localStorage.setItem('selectedLanguage', locale.value);
 
   try {
-    await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/set-language`, { language: locale.value }, { withCredentials: true });
+    await axios.post(`${url.baseUrl}/api/v1/set-language`, { language: locale.value }, { withCredentials: true });
   } catch (error) {
     console.error(t('notification.text.log_error_language'), error);
   }

@@ -1,5 +1,5 @@
 const getBaseUrl = () => {
-  return window.environment.VITE_BASE_URL;
+  return window.environment.VITE_BACKEND_URL;
 };
 
 const getBackPort = () => {

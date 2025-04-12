@@ -18,7 +18,7 @@
           />
           <img
             v-else-if="article.preview"
-            :src="`${url.baseUrl}:${url.portBack}/${article.preview}`"
+            :src="`${url.baseUrl}/${article.preview}`"
             alt="Preview"
             class="card-image"
           />
@@ -71,7 +71,7 @@ const fetchArticles = async () => {
 
   isFetchingMore.value = true;
   try {
-    const response = await axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles/invalid`, {
+    const response = await axios.get(`${url.baseUrl}/api/v1/articles/invalid`, {
       params: { offset: offset.value, limit },
       withCredentials: true,
       headers: {

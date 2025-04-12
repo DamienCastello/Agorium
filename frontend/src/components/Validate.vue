@@ -78,7 +78,7 @@
                     <div class="field">
                         <label>{{ $t('validate.label_preview') }}: </label>
                     </div>
-                    <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
+                    <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
                     <div class="group">
                         <div class="field-row">
                             <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.preview.isValid }"
@@ -248,7 +248,7 @@
                     <div class="field">
                         <label>{{ $t('validate.label_preview') }}: </label>
                     </div>
-                    <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
+                    <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
                     <div class="group">
                         <table class="table-fields">
                             <thead>
@@ -489,7 +489,7 @@ const updateTag = (tag) => {
             validatedBy: authStore.user?.id
         };
 
-        axios.put(`${url.baseUrl}:${url.portBack}/api/v1/tags/${tag.id}/validate`, updatedTag, {
+        axios.put(`${url.baseUrl}/api/v1/tags/${tag.id}/validate`, updatedTag, {
             withCredentials: true,
         }).then(response => {
             notify({
@@ -539,7 +539,7 @@ const updateArticle = (article) => {
             validatedBy: authStore.user?.id
         };
 
-        axios.put(`${url.baseUrl}:${url.portBack}/api/v1/articles/${article.id}/validate`, updatedArticle, {
+        axios.put(`${url.baseUrl}/api/v1/articles/${article.id}/validate`, updatedArticle, {
             withCredentials: true,
         }).then(response => {
             notify({
@@ -570,7 +570,7 @@ onMounted(() => {
 
     const articleId = route.params.id;
 
-    axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles/${articleId}`, {
+    axios.get(`${url.baseUrl}/api/v1/articles/${articleId}`, {
         withCredentials: true,
         headers: {
             "Content-Type": "application/json",

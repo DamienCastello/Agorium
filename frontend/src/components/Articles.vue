@@ -69,7 +69,7 @@
         @click="navigateToArticle(article.id)">
         <img v-if="article.urlYoutube" :src="getYoutubeThumbnail(article.urlYoutube)" alt="Preview"
           class="card-image" />
-        <img v-else-if="article.preview" :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview"
+        <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview"
           class="card-image" />
         <div class="card-content">
           <h2>{{ article.title }}</h2>
@@ -135,7 +135,7 @@ const fetchArticles = async (reset = false) => {
   }
 
   try {
-    const response = await axios.get(`${url.baseUrl}:${url.portBack}/api/v1/articles`, {
+    const response = await axios.get(`${url.baseUrl}/api/v1/articles`, {
       params: {
         limit: limit.value,
         offset: offset.value,
@@ -181,7 +181,7 @@ const handleScroll = () => {
 
 onMounted(() => {
   fetchArticles();
-  axios.get(`${url.baseUrl}:${url.portBack}/api/v1/tags`, {
+  axios.get(`${url.baseUrl}/api/v1/tags`, {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",

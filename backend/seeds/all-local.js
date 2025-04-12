@@ -1,0 +1,34 @@
+const sequelize = require('../models').sequelize;
+
+async function runSeeds() {
+  try {
+    console.log('🔄 Connect to database...');
+    await sequelize.authenticate();
+    console.log('✅ Connection successful !');
+
+    console.log('🌱 Seeding users...');
+    await require('./01_users-local')();
+
+    console.log('🌱 Seeding tags...');
+    await require('./02_tags-local')();
+
+    /*
+    console.log('🌱 Seeding articles...');
+    await require('./03_articles-local')();
+
+    console.log('🌱 Seeding comments...');
+    await require('./04_comments-local')();
+    */
+
+    console.log('🌱 Seeding achievements...');
+    await require('./05_achievements-local')();
+
+    console.log('✅ All seeds have been executed successfully!');
+    process.exit();
+  } catch (err) {
+    console.error('❌ Error while seeding :', err);
+    process.exit(1);
+  }
+}
+
+runSeeds();

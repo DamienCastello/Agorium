@@ -73,7 +73,7 @@ const toggleLike = () => {
         }
 
         axios
-            .post(`${url.baseUrl}:${url.portBack}/api/v1/comments/${props.comment.id}/like`, { commentId: props.comment.id, userId: authStore.user.id }, {
+            .post(`${url.baseUrl}/api/v1/comments/${props.comment.id}/like`, { commentId: props.comment.id, userId: authStore.user.id }, {
                 withCredentials: true,
                 headers: {
                     "Authorization": `Bearer ${authStore.token}`,

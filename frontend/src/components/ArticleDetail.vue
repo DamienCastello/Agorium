@@ -16,13 +16,13 @@
         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
       </div>
       <div v-else-if="article.preview">
-        <img :src="`${url.baseUrl}:${url.portBack}/${article.preview}`" alt="Preview" />
+        <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
       </div>
       <div class="action-container">
         <RouterLink :to="`/profile/${creator?.pseudo}`" class="author">
         <h3>{{ creator?.pseudo }}</h3>
         <img
-          :src="creator?.avatar ? `${url.baseUrl}:${url.portBack}/${creator?.avatar}` : `${url.baseUrl}:${url.portBack}/uploads/avatars/utilisateur.png`"
+          :src="creator?.avatar ? `${url.baseUrl}/${creator?.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
           alt="author-avatar"
           class="author-avatar"
         />
@@ -98,7 +98,7 @@ const toggleLike = () => {
   }
 
   axios
-    .post(`${url.baseUrl}:${url.portBack}/api/v1/articles/${article.value.id}/like`, {}, {
+    .post(`${url.baseUrl}/api/v1/articles/${article.value.id}/like`, {}, {
       withCredentials: true,
       headers: {
         "Authorization": `Bearer ${authStore.token}`,
@@ -124,7 +124,7 @@ const toggleLike = () => {
 };
 
 const fetchArticle = () => {
-  axios(`${url.baseUrl}:${url.portBack}/api/v1/articles/${route.params.id}`, {
+  axios(`${url.baseUrl}/api/v1/articles/${route.params.id}`, {
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
@@ -162,7 +162,7 @@ onMounted(() => {
     return;
   }
 
-  axios(`${url.baseUrl}:${url.portBack}/api/v1/articles/${articleId}`, {
+  axios(`${url.baseUrl}/api/v1/articles/${articleId}`, {
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
@@ -187,7 +187,7 @@ onMounted(() => {
         }
 
         //Fetch creator article
-        axios.get(`${url.baseUrl}:${url.portBack}/api/v1/users/${response.data.article.userId}`, {
+        axios.get(`${url.baseUrl}/api/v1/users/${response.data.article.userId}`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",

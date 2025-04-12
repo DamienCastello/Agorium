@@ -88,7 +88,7 @@ const handleSignup = async () => {
       formData.append("avatar", avatarFile.value);
     }
 
-    const response = await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/auth/signup`, formData, {
+    const response = await axios.post(`${url.baseUrl}/api/v1/auth/signup`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

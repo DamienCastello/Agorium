@@ -137,7 +137,7 @@ const submitReport = async () => {
         const userId = authStore.user?.id ?? null;
 
         if (props.entity === 'articles') {
-            await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/articles/${props.articleId}/report`, {
+            await axios.post(`${url.baseUrl}/api/v1/articles/${props.articleId}/report`, {
                 articleId: props.articleId,
                 userId,
                 reason: report.value.reason,
@@ -154,7 +154,7 @@ const submitReport = async () => {
                 ? buildRefusalReasons()
                 : null;
 
-            await axios.put(`${url.baseUrl}:${url.portBack}/api/v1/articles/${props.articleId}/`, {
+            await axios.put(`${url.baseUrl}/api/v1/articles/${props.articleId}/`, {
                 refusalReasons: refusalReasons ? JSON.stringify(refusalReasons) : null,
                 overallReasonForRefusal: report.value.details
             }, {
@@ -186,7 +186,7 @@ const submitReport = async () => {
             }, 2000);
 
         } else if (props.entity === 'comments') {
-            await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/comments/${props.commentId}/report`, {
+            await axios.post(`${url.baseUrl}/api/v1/comments/${props.commentId}/report`, {
                 commentId: props.commentId,
                 userId,
                 reason: report.value.reason,
