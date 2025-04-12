@@ -38,7 +38,7 @@ const iconTextLeft = computed(() => {
 
 onMounted(() => {
     axios
-        .get(`${url.baseUrl}:${url.portBack}/api/v1/achievements/${props.id}`, {
+        .get(`${url.baseUrl}/api/v1/achievements/${props.id}`, {
             withCredentials: true,
             headers: {
                 "Content-Type": "application/json",

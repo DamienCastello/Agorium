@@ -3,7 +3,7 @@
         <div :class="{ clickable: user?.pseudo === authStore.user?.pseudo }"
             @click="user?.pseudo === authStore.user?.pseudo && selectAvatar()"
             >
-            <img :src="user.avatar ? `${url.baseUrl}:${url.portBack}/${user.avatar}` : `${url.baseUrl}:${url.portBack}/uploads/avatars/utilisateur.png`"
+            <img :src="user.avatar ? `${url.baseUrl}/${user.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
                 :key="user.avatar" alt="user-avatar" class="avatar-image">
         </div>
 
@@ -46,7 +46,7 @@ const route = useRoute();
 
 const fetchUser = async (pseudo) => {
   try {
-    const { data } = await axios.get(`${url.baseUrl}:${url.portBack}/api/v1/users/${pseudo}`);
+    const { data } = await axios.get(`${url.baseUrl}/api/v1/users/${pseudo}`);
     user.value = data.user;
   } catch (err) {
     console.error('Failed to load user', err);
@@ -103,7 +103,7 @@ const updateAvatar = async (event) => {
 
         try {
             const response = await axios.put(
-                `${url.baseUrl}:${url.portBack}/api/v1/users/${authStore.user?.id}`,
+                `${url.baseUrl}/api/v1/users/${authStore.user?.id}`,
                 formData,
                 {
                     withCredentials: true,

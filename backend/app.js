@@ -3,7 +3,6 @@ var path = require('path');
 const i18n = require('./config/i18n-config');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-//var cors = require('cors');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -21,17 +20,27 @@ var app = express();
 
 // CORS Middleware
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', `${process.env.VITE_BASE_URL}:${process.env.VITE_PORT_FRONT}`);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
+  const allowedOrigins = [
+      'https://agorium.castello.ovh',
+      'https://agorium-preprod.castello.ovh',
+      'http://localhost:8080',
+      'http://localhost:5173'
+  ];
 
-    // Handle OPTIONS method
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
+  if (allowedOrigins.includes(req.headers.origin)) {
+      res.header('Access-Control-Allow-Origin', req.headers.origin);
+  }
 
-    next();
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  // Handle OPTIONS method
+  if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+  }
+
+  next();
 });
 
 app.use(logger('dev'));

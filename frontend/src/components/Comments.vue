@@ -60,7 +60,7 @@ const submitComment = () => {
 
   axios
     .post(
-      `${url.baseUrl}:${url.portBack}/api/v1/comments/`,
+      `${url.baseUrl}/api/v1/comments/`,
       {
         articleId: props.article.id,
         content: newComment.value,

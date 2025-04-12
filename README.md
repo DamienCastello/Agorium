@@ -14,11 +14,11 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 - Implement gamification.
 - Add i18n to all displayed strings to translate into multiple languages.
 - Add infinite load on fetch articles.
-- Improve general style (border hover and more).
 ### CORE v2:
 - Deploy on a server and make it privately accessible.
 - Implement the video streaming system (upload, conversion HLS encoding, secure streaming).
 - Optimize file storage (avatars, preview, video, and maybe more).
+- Improve general style (use element+ to redisign).
 - Develop a DevOps pipeline (CI/CD with Docker).
 ### CORE V3:
 - Implementing SSR to solve SEO issues.
