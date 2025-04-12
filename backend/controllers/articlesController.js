@@ -31,7 +31,7 @@ module.exports = {
                 model: Comment,
                 as: 'comments',
                 attributes: ['id', 'content', 'userId', 'createdAt'],
-                include: [{ model: User, attributes: ['id', 'name'], as: 'user' }]
+                include: [{ model: User, attributes: ['id', 'pseudo'], as: 'user' }]
             }
         ];
 
@@ -88,7 +88,7 @@ module.exports = {
             {
               model: models.User,
               as: 'user',
-              attributes: ['id', 'name', 'email'],
+              attributes: ['id', 'pseudo', 'email'],
             }
           ]
         },
@@ -103,7 +103,7 @@ module.exports = {
             {
               model: models.User,
               as: 'user',
-              attributes: ['id', 'name', 'email'],
+              attributes: ['id', 'pseudo', 'email'],
             },
             {
               model: models.Like,
@@ -129,7 +129,7 @@ module.exports = {
             {
               model: models.User,
               as: 'user',
-              attributes: ['id', 'name', 'email'],
+              attributes: ['id', 'pseudo', 'email'],
             }
           ]
         },
@@ -144,7 +144,7 @@ module.exports = {
             {
               model: models.User,
               as: 'user',
-              attributes: ['id', 'name', 'email'],
+              attributes: ['id', 'pseudo', 'email'],
             },
             {
               model: models.Like,
@@ -294,7 +294,7 @@ module.exports = {
             {
               model: models.User,
               as: 'user',
-              attributes: ['id', 'name', 'email'],
+              attributes: ['id', 'pseudo', 'email'],
             }
           ]
         },
@@ -309,7 +309,7 @@ module.exports = {
             {
               model: models.User,
               as: 'user',
-              attributes: ['id', 'name', 'email'],
+              attributes: ['id', 'pseudo', 'email'],
             }
           ]
         },

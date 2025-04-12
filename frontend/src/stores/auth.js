@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(credentials) {
       try {
-        const response = await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/auth/signin`, credentials, { withCredentials: true });
+        const response = await axios.post(`${url.baseUrl}/api/v1/auth/signin`, credentials, { withCredentials: true });
         this.token = response.data.token;
         this.user = response.data.user;
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;

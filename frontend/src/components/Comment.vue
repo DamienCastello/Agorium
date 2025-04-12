@@ -1,7 +1,7 @@
 <template>
     <div class="comment-container">
         <div class="comment">
-            <p><span>{{ props.comment.user.name }}:</span> {{ props.comment.content }}</p>
+            <p><span>{{ props.comment?.user.pseudo }}:</span> {{ props.comment?.content }}</p>
         </div>
         <div class="actions-comment">
             <div class="action-comment-like" @click="toggleLike">
@@ -73,7 +73,7 @@ const toggleLike = () => {
         }
 
         axios
-            .post(`${url.baseUrl}:${url.portBack}/api/v1/comments/${props.comment.id}/like`, { commentId: props.comment.id, userId: authStore.user.id }, {
+            .post(`${url.baseUrl}/api/v1/comments/${props.comment.id}/like`, { commentId: props.comment.id, userId: authStore.user.id }, {
                 withCredentials: true,
                 headers: {
                     "Authorization": `Bearer ${authStore.token}`,

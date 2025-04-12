@@ -22,6 +22,7 @@ const messages = {
             },
             signup: {
                 title: "Create account",
+                field_pseudo: "Pseudo",
                 field_email: "Email",
                 field_password: "Password",
                 field_avatar: "Avatar (optional)",
@@ -204,6 +205,7 @@ const messages = {
             },
             signup: {
                 title: "Créer un compte",
+                field_pseudo: "Pseudo",
                 field_email: "Email",
                 field_password: "Mot de passe",
                 field_avatar: "Avatar (optionnel)",
@@ -230,8 +232,8 @@ const messages = {
                 like_article: "J'aime un article",
                 comment_create: "Commentaire sur un article",
                 new_badge: "Nouveau badge obtenu",
-                profil_error_user_fetch: "Erreur lors de la récupération de l'utilisateur",
-                profil_error_avatar_update: "Erreur lors de la mise à jour de l'avatar",
+                profile_error_user_fetch: "Erreur lors de la récupération de l'utilisateur",
+                profile_error_avatar_update: "Erreur lors de la mise à jour de l'avatar",
                 report_reason: "Motif du signalement",
                 report_create: "Signalement"
             },

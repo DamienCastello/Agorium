@@ -1,7 +1,9 @@
 <template>
     <div v-if="user" class="profile-container">
-        <div class="avatar-container" @click="selectAvatar">
-            <img :src="user.avatar ? `${url.baseUrl}:${url.portBack}/${user.avatar}` : `${url.baseUrl}:${url.portBack}/uploads/avatars/utilisateur.png`"
+        <div :class="{ clickable: user?.pseudo === authStore.user?.pseudo }"
+            @click="user?.pseudo === authStore.user?.pseudo && selectAvatar()"
+            >
+            <img :src="user.avatar ? `${url.baseUrl}/${user.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
                 :key="user.avatar" alt="user-avatar" class="avatar-image">
         </div>
 
@@ -33,12 +35,33 @@ import { useAuthStore } from '@/stores/auth';
 import { useNotification } from "@kyvg/vue3-notification";
 import BadgeIcon from './icons/BadgeIcon.vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 
 const authStore = useAuthStore();
 const { notify } = useNotification();
 const user = ref(null);
 const avatarInput = ref(null);
 const { t, locale } = useI18n();
+const route = useRoute();
+
+const fetchUser = async (pseudo) => {
+  try {
+    const { data } = await axios.get(`${url.baseUrl}/api/v1/users/${pseudo}`);
+    user.value = data.user;
+  } catch (err) {
+    console.error('Failed to load user', err);
+  }
+};
+
+onBeforeRouteUpdate((to, from, next) => {
+  if (to.params.pseudo !== from.params.pseudo) {
+    fetchUser(to.params.pseudo);
+  }
+  next();
+});
+
+onMounted(() => fetchUser(route.params.pseudo));
+
 
 const getIconClass = (iconCategory) => {
     switch (iconCategory) {
@@ -57,38 +80,21 @@ const getIconClass = (iconCategory) => {
     }
 }
 
-onMounted(() => {
-    axios
-        .get(`${url.baseUrl}:${url.portBack}/api/v1/users/${authStore.user?.id}`, {
-            withCredentials: true,
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-        })
-        .then((response) => {
-            user.value = response.data.user;
-        })
-        .catch((error) => {
-            notify({
-                title: t('notification.title.profile_error_user_fetch'),
-                type: 'error',
-                text: error.response.data.message,
-            });
-        });
-});
-
 const selectAvatar = () => {
     avatarInput.value.click();
 }
 
 const computedTitle = computed(() => {
   return locale.value === 'en'
-    ? `${user.value?.name} ${t('profile.title')}`
-    : `${t('profile.title')} ${user.value?.name}`;
+    ? `${user.value?.pseudo} ${t('profile.title')}`
+    : `${t('profile.title')} ${user.value?.pseudo}`;
 });
 
 const updateAvatar = async (event) => {
+    console.log('check : ', user.value?.pseudo, authStore.user?.pseudo)
+    if(user.value?.pseudo !== authStore.user?.pseudo) {
+        return
+    }
     const file = event.target.files[0];
 
     if (file) {
@@ -97,7 +103,7 @@ const updateAvatar = async (event) => {
 
         try {
             const response = await axios.put(
-                `${url.baseUrl}:${url.portBack}/api/v1/users/${authStore.user?.id}`,
+                `${url.baseUrl}/api/v1/users/${authStore.user?.id}`,
                 formData,
                 {
                     withCredentials: true,
@@ -139,7 +145,7 @@ const updateAvatar = async (event) => {
     margin: 10px 15px;
 }
 
-.avatar-container {
+.clickable {
     cursor: pointer;
 }
 

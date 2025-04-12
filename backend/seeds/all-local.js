@@ -7,21 +7,21 @@ async function runSeeds() {
     console.log('✅ Connection successful !');
 
     console.log('🌱 Seeding users...');
-    await require('./01_users')();
+    await require('./01_users-local')();
 
     console.log('🌱 Seeding tags...');
-    await require('./02_tags')();
+    await require('./02_tags-local')();
 
     /*
     console.log('🌱 Seeding articles...');
-    await require('./03_articles')();
+    await require('./03_articles-local')();
 
     console.log('🌱 Seeding comments...');
-    await require('./04_comments')();
+    await require('./04_comments-local')();
     */
 
     console.log('🌱 Seeding achievements...');
-    await require('./05_achievements')();
+    await require('./05_achievements-local')();
 
     console.log('✅ All seeds have been executed successfully!');
     process.exit();

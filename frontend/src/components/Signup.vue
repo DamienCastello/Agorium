@@ -3,6 +3,10 @@
     <h1>{{ $t('auth.signup.title') }}</h1>
     <form @submit.prevent="handleSignup">
       <fieldset>
+        <label for="pseudo">{{ $t('auth.signup.field_pseudo') }}</label>
+        <input id="pseudo" type="text" v-model="form.pseudo" required />
+      </fieldset>
+      <fieldset>
         <label for="email">{{ $t('auth.signup.field_email') }}</label>
         <input id="email" type="email" v-model="form.email" required />
       </fieldset>
@@ -46,8 +50,9 @@ import { useI18n } from "vue-i18n";
 
 const router = useRouter();
 const form = ref({
+  pseudo: "",
   email: "",
-  password: "",
+  password: ""
 });
 const avatarFile = ref(null);
 const avatarPreviewUrl = ref(null);
@@ -76,13 +81,14 @@ const handleFileChange = (event) => {
 const handleSignup = async () => {
   try {
     const formData = new FormData();
+    formData.append("pseudo", form.value.pseudo);
     formData.append("email", form.value.email);
     formData.append("password", form.value.password);
     if (avatarFile.value) {
       formData.append("avatar", avatarFile.value);
     }
 
-    const response = await axios.post(`${url.baseUrl}:${url.portBack}/api/v1/auth/signup`, formData, {
+    const response = await axios.post(`${url.baseUrl}/api/v1/auth/signup`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

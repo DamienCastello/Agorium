@@ -138,7 +138,7 @@ const addTag = () => {
   state.value = "loading";
 
   axios
-    .post(`${url.baseUrl}:${url.portBack}/api/v1/tags/`, newTagObject, {
+    .post(`${url.baseUrl}/api/v1/tags/`, newTagObject, {
       withCredentials: true,
       headers: {
         "Authorization": `Bearer ${authStore.token}`,
@@ -152,7 +152,7 @@ const addTag = () => {
         text: t('notification.text.tag_create'),
       });
 
-      return axios.get(`${url.baseUrl}:${url.portBack}/api/v1/tags/`, {
+      return axios.get(`${url.baseUrl}/api/v1/tags/`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +205,7 @@ const updateImagePreview = (preview) => {
 
 onMounted(() => {
   axios
-    .get(`${url.baseUrl}:${url.portBack}/api/v1/tags/`, {
+    .get(`${url.baseUrl}/api/v1/tags/`, {
       withCredentials: true,
       headers: {
         "Content-Type": "application/json",
@@ -311,13 +311,12 @@ const handleSubmit = () => {
 
   if (isValidYoutubeId) {
     axios
-      .post(`${url.baseUrl}:${url.portBack}/api/v1/articles/`, formData, {
+      .post(`${url.baseUrl}/api/v1/articles/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((response) => {
-        console.log("res : ", response)
+      .then(() => {
         state.value = 'loading';
         notify({
           title: t('notification.title.article_create'),
