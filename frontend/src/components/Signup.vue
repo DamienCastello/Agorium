@@ -8,11 +8,34 @@
       </fieldset>
       <fieldset>
         <label for="email">{{ $t('auth.signup.field_email') }}</label>
-        <input id="email" type="email" v-model="form.email" required />
+        <input id="email" type="email" v-model="form.email" required />  
       </fieldset>
       <fieldset>
         <label for="password">{{ $t('auth.signup.field_password') }}</label>
-        <input id="password" type="password" v-model="form.password" required />
+        <div class="password-container">
+          <input
+            id="password"
+            :type="passwordType === 'visible' ? 'text' : 'password'"
+            v-model="form.password"
+            required
+          />
+          <SlashedEyeIcon v-if="passwordType === 'visible'" class="password-icon" @click="changeType('password')" />
+          <EyeIcon v-if="passwordType === 'invisible'" class="password-icon" @click="changeType('password')" />
+        </div>
+      </fieldset>
+      <fieldset>
+        <label for="confirmPassword">{{ $t('auth.signup.field_password_confirm') }}</label>
+        <div class="password-container">
+          <input
+            id="confirmPassword"
+            :type="confirmPasswordType === 'visible' ? 'text' : 'password'"
+            v-model="form.confirmPassword"
+            :class="{ 'error-border': form.confirmPassword && form.confirmPassword !== form.password }"
+            required
+          />
+          <SlashedEyeIcon v-if="confirmPasswordType === 'visible'" class="password-icon" @click="changeType('confirmPassword')" />
+          <EyeIcon v-if="confirmPasswordType === 'invisible'" class="password-icon" @click="changeType('confirmPassword')" />
+        </div>
       </fieldset>
 
       <fieldset>
@@ -31,7 +54,7 @@
         <img :src="avatarPreviewUrl" alt="avatar" class="avatar" />
       </div>
     </FadeSlideTransition>
-      <button :disabled="navbarStore.isMenuOpen || navbarStore.isTranslationOpen" type="submit">{{
+      <button :disabled="isFormInvalid || navbarStore.isMenuOpen || navbarStore.isTranslationOpen" type="submit">{{
         $t('auth.signup.button') }}</button>
     </form>
   </div>
@@ -40,20 +63,25 @@
 
 <script setup>
 import axios from "axios";
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 import url from "@/utils/url";
 import { useNavbarStore } from "@/stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useI18n } from "vue-i18n";
+import EyeIcon from './icons/EyeIcon.vue'
+import SlashedEyeIcon from "./icons/SlashedEyeIcon.vue";
 
 const router = useRouter();
 const form = ref({
   pseudo: "",
   email: "",
-  password: ""
+  password: "",
+  confirmPassword: ""
 });
+const passwordType = ref('invisible');
+const confirmPasswordType = ref('invisible');
 const avatarFile = ref(null);
 const avatarPreviewUrl = ref(null);
 const navbarStore = useNavbarStore();
@@ -64,6 +92,25 @@ watch(avatarPreviewUrl, (newUrl, oldUrl) => {
   if (oldUrl) {
     URL.revokeObjectURL(oldUrl);
   }
+});
+
+const changeType = (field) => {
+  if (field === "password") {
+    passwordType.value = passwordType.value === "visible" ? "invisible" : "visible";
+  }
+  if (field === "confirmPassword") {
+    confirmPasswordType.value = confirmPasswordType.value === "visible" ? "invisible" : "visible";
+  }
+};
+
+const isFormInvalid = computed(() => {
+  return (
+    form.value.password !== form.value.confirmPassword ||
+    !form.value.pseudo ||
+    !form.value.email ||
+    !form.value.password ||
+    !form.value.confirmPassword
+  );
 });
 
 const handleFileChange = (event) => {
@@ -79,16 +126,26 @@ const handleFileChange = (event) => {
 };
 
 const handleSignup = async () => {
+  if (form.value.password !== form.value.confirmPassword) {
+    notify({
+      title: t('notification.title.signup'),
+      type: 'error',
+      text: t('auth.signup.error_password_match') || 'Passwords do not match.',
+    });
+    return;
+  }
+
   try {
     const formData = new FormData();
     formData.append("pseudo", form.value.pseudo);
     formData.append("email", form.value.email);
     formData.append("password", form.value.password);
+    formData.append("confirmPassword", form.value.confirmPassword);
     if (avatarFile.value) {
       formData.append("avatar", avatarFile.value);
     }
 
-    const response = await axios.post(`${url.baseUrl}/api/v1/auth/signup`, formData, {
+    await axios.post(`${url.baseUrl}/api/v1/auth/signup`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -106,7 +163,7 @@ const handleSignup = async () => {
     notify({
       title: t('notification.title.signup'),
       type: 'error',
-      text: error.response.data.message,
+      text: error.response?.data?.message || 'Signup failed.',
     });
   }
 };
@@ -131,6 +188,30 @@ const handleClickOutsideNavbar = (event) => {
 .file-upload {
   position: relative;
   display: inline-block;
+}
+
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.error-border {
+  border: 2px solid #ff4d4d;
+}
+
+.password-icon {
+  position: absolute;
+  right: 10px;
+  top: 18px;
+  cursor: pointer;
+  font-size: 20px;
+  color: #333;
 }
 
 .custom-label {

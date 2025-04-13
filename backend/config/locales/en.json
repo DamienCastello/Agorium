@@ -11,6 +11,7 @@
             "error_field_password": "Invalid password."
         },
         "signup": {
+            "password_mismatch": "The passwords do not match.",
             "error_label": "Error while creating user:",
             "error_email_format": "Invalid email format."
         }
