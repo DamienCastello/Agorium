@@ -1,7 +1,9 @@
 <template>
   <nav class="navbar" @mousedown="handleClickOutsideNavbar">
     <ul class="navbar-title">
-      <li><strong>Agorium</strong></li>
+      <li><RouterLink to="/articles" class="title-link" @click="closeMenu">
+        <strong>Agorium</strong>
+        </RouterLink></li>
       <div class="language-selector">
         <div class="dropdown-translation" @click="toggleTranslation">
           <i class="fa-solid fa-language"></i>
@@ -184,9 +186,18 @@ const handleClickOutsideNavbar = (event) => {
   padding: 0;
 }
 
-.navbar-title li {
-  font-size: 1.5rem;
+.title-link {
+  text-decoration: none;
+  color: #4040BF;
   font-weight: bold;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.title-link:active,
+.title-link:focus,
+.title-link:visited {
+  color: #4040BF;
 }
 
 .navbar-links {

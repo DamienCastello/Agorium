@@ -46,6 +46,10 @@ module.exports = {
             return res.status(400).json({ message: req.t('auth.error_fields_required') });
         }
     
+        if (req.body.password !== req.body.confirmPassword) {
+            return res.status(403).json({ message: req.t('auth.signup.password_mismatch') });
+        }
+    
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(req.body.email)) {
             return res.status(400).json({ message: req.t('auth.signup.error_email_format') });

@@ -137,9 +137,9 @@ const navigateToValidation = (id) => {
   
   .card {
     cursor: pointer;
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    background-color: rgb(233, 233, 233);
+    border: 1px solid rgb(233, 233, 233);
+    border-radius: 10px;
     overflow: hidden;
     transition: transform 0.2s;
     display: flex;
