@@ -1,5 +1,11 @@
 const getBaseUrl = () => {
-  return window.environment.VITE_BACKEND_URL;
+  // run with docker compose
+  if (window.environment.VITE_BACKEND_URL) {
+    return window.environment.VITE_BACKEND_URL;
+  }
+  
+  // run without docker
+  return `http://localhost:3000`;
 };
 
 const getBackPort = () => {
