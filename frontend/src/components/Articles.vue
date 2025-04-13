@@ -126,6 +126,14 @@ const limit = ref(10);
 const offset = ref(0);
 const isFetching = ref(false);
 
+// format in input date
+function formatDateRange(dates) {
+  if (Array.isArray(dates) && dates.length === 2 && dates[0] && dates[1]) {
+    return `${format(dates[0], 'yyyy-MM-dd')} - ${format(dates[1], 'yyyy-MM-dd')}`
+  }
+  return ''
+}
+
 const fetchArticles = async (reset = false) => {
   if (isFetching.value) return;
   isFetching.value = true;
@@ -143,8 +151,8 @@ const fetchArticles = async (reset = false) => {
         offset: offset.value,
         tag: selectedTag.value || null,
         search: nameFilter.value || null,
-        dateFrom: dateRange.value?.[0] || null,
-        dateTo: dateRange.value?.[1] || null,
+        dateFrom: dateRange.value?.[0] ? new Date(dateRange.value[0]).toLocaleDateString('fr-CA') : null,
+        dateTo: dateRange.value?.[1] ? new Date(dateRange.value[1]).toLocaleDateString('fr-CA') : null,
         sortBy: sortBy.value,
         sortOrder: dateSort.value,
       },
