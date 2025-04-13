@@ -7,10 +7,10 @@ async function runSeeds() {
     console.log('✅ Connection successful !');
 
     console.log('🌱 Seeding users...');
-    await require('./01_users-local')();
+    await require('./01_users')();
 
     console.log('🌱 Seeding tags...');
-    await require('./02_tags-local')();
+    await require('./02_tags')();
 
     /*
     console.log('🌱 Seeding articles...');

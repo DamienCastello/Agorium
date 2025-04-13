@@ -1,19 +1,13 @@
 <template>
   <Layout>
     <template #header>
-      <Navbar
-        :isAdmin="authStore.isAdmin()"
-        :isAuthenticated="authStore.isAuthenticated()"
-        @logout="authStore.logout"
-        class="pico"
-      />
+      <Navbar :isAdmin="authStore.isAdmin()" :isAuthenticated="authStore.isAuthenticated()" @logout="authStore.logout"
+        class="pico" />
     </template>
     <template #main>
-      <div class="content">
-        <slot name="main">
-          <RouterView />
-        </slot>
-      </div>
+      <slot name="main">
+        <RouterView />
+      </slot>
     </template>
     <template #footer>
       <Footer class="pico" />

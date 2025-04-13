@@ -58,7 +58,7 @@ main {
   justify-content: center;
   width: 100%;
   overflow: auto;
-  padding: 16px;
+  padding: 8px;
   text-align: center;
 }
 

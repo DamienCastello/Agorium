@@ -5,7 +5,7 @@
       <div class="filters-sort-row">
         <div class="filters">
           <!-- Filtre par tags -->
-          <div>
+          <div class="tag-filter">
             <div class="label-filter">
               <TagIcon />
               <label for="tagFilter">{{ $t('articles.tag_filter') }} :</label>
@@ -21,27 +21,28 @@
           </div>
 
           <!-- Tri par date (par défaut) ou par likes -->
-        <div class="sort">
-          <div class="label-filter">
-            <SortIcon />
-            <label class="pico">{{ $t('articles.sort_by') }} :</label>
+          <div class="sort-filter">
+            <div class="label-filter">
+              <SortIcon />
+              <label class="pico">{{ $t('articles.sort_by') }} :</label>
+            </div>
+            <div class="pico">
+              <select v-model="sortBy" @change="fetchArticles(true)" class="sort-selector">
+                <option value="createdAt">{{ $t('articles.sort_near') }}</option>
+                <option value="likes">{{ $t('articles.sort_likes') }}</option>
+              </select>
+            </div>
           </div>
-          <div class="pico">
-            <select v-model="sortBy" @change="fetchArticles(true)" class="sort-selector">
-              <option value="createdAt">{{ $t('articles.sort_near') }}</option>
-              <option value="likes">{{ $t('articles.sort_likes') }}</option>
-            </select>
-          </div>
-        </div>
-          
+
         </div>
 
         <!-- Filtre par intervalle de dates -->
         <div class="filter date-filter">
-            <label>{{ $t('articles.date_filter') }} :</label>
-            <VueDatePicker v-model="dateRange" :placeholder="$t('articles.date_placeholder')" range is-range
-              @update:model-value="fetchArticles(true)" :input-class="'custom-datepicker-input'" />
-          </div>
+          <label>{{ $t('articles.date_filter') }} :</label>
+          <VueDatePicker v-model="dateRange" :format="formatDateRange" :placeholder="$t('articles.date_placeholder')"
+            range is-range @update:model-value="fetchArticles(true)" :input-class="'custom-datepicker-input'"
+            :enable-time-picker="false" :disable-time="true" />
+        </div>
       </div>
 
       <!-- Barre de recherche -->
@@ -107,6 +108,7 @@ import TagIcon from "./icons/TagIcon.vue";
 import SearchIcon from "./icons/SearchIcon.vue";
 import SortIcon from "./icons/SortIcon.vue";
 import { useI18n } from "vue-i18n";
+import { format } from 'date-fns'
 
 const articles = ref([]);
 const state = ref("loading");
@@ -182,22 +184,22 @@ const handleScroll = () => {
 onMounted(() => {
   fetchArticles();
   axios.get(`${url.baseUrl}/api/v1/tags`, {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    })
+    withCredentials: true,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+  })
     .then((response) => {
       allTags.value = response.data.tags
     })
     .catch((error) => {
       notify({
-      title: t('notification.title.articles_fetch'),
-      type: "error",
-      text: error.response?.data?.message || "Erreur de chargement",
-    });
-    state.value = "error";
+        title: t('notification.title.articles_fetch'),
+        type: "error",
+        text: error.response?.data?.message || "Erreur de chargement",
+      });
+      state.value = "error";
     })
   window.addEventListener("scroll", handleScroll);
 });
@@ -219,22 +221,21 @@ const navigateToArticle = (id) => {
 <style scoped>
 .container {
   width: 100%;
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 16px;
+  max-width: 800px;
 }
 
 .articles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+  gap: 8px;
 }
 
 .card {
   cursor: pointer;
-  background: var(--background);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  max-width: 365px;
+  background-color: rgb(233, 233, 233);
+  border: 1px solid rgb(233, 233, 233);
+  border-radius: 10px;
   overflow: hidden;
   transition: transform 0.2s;
   display: flex;
@@ -299,47 +300,67 @@ const navigateToArticle = (id) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  height: 85px;
 }
 
-.date-filter{
-  min-height: 115px;
+.date-filter {
+  height: 85px;
+  min-width: 280px;
+  max-width: 300px;
+  font-size: 16px;
 }
 
 .filters {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.sort {
+.tag-filter {
+  width: 100%;
+  max-width: 220px;
+  min-width: 200px;
+}
+
+.tag-selector {
+  max-width: 220px;
+  min-width: 200px;
+  padding: 6px;
+  font-size: 16px;
+  height: 44px;
+}
+
+.sort-filter {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%;
+  min-width: 200px;
+  max-width: 230px;
+}
+
+.sort-selector {
+  max-width: 230px;
+  min-width: 200px;
+  padding: 6px;
+  font-size: 16px;
+  height: 44px;
 }
 
 .search-row {
   margin-top: 16px;
 }
 
-.sort-selector {
-  width: 100%;
-  max-width: 250px;
-}
-
-.filters > div {
+.filters>div {
   display: flex;
   flex-direction: column;
-  min-width: 200px;
-}
-
-.tag-selector {
-  width: 100%;
-  min-width: 200px;
 }
 
 .label-filter {
+  font-size: 16px;
   margin-bottom: 4px;
   color: #5e5e5e;
 }
@@ -363,5 +384,71 @@ const navigateToArticle = (id) => {
 /* Bordure autour du champ d'entrée */
 .dp__theme_light {
   --dp-border-color-focus: #6400e4;
+}
+
+@media (max-width: 768px) {
+  .filters-sort-row {
+    height: 150px;
+  }
+
+  .tag-filter {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .tag-selector {
+    max-width: 200px;
+    padding: 2px;
+    font-size: 14px;
+  }
+
+  .sort-filter {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 160px;
+  }
+
+  .sort-selector {
+    max-width: 160px;
+    padding: 2px;
+    font-size: 14px;
+  }
+
+  .filters>div {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 660px) {
+  .container {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 440px) {
+  .tag-filter {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .tag-selector {
+    min-width: 150px;
+    max-width: 200px;
+    font-size: 10px;
+  }
+
+  .sort-filter {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .sort-selector {
+    min-width: 150px;
+    max-width: 200px;
+    font-size: 10px;
+  }
 }
 </style>
