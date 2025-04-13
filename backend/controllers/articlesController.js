@@ -17,7 +17,13 @@ module.exports = {
         }
 
         if (dateFrom && dateTo) {
-            whereClause.createdAt = { [Op.between]: [new Date(dateFrom), new Date(dateTo)] };
+          const startDate = new Date(dateFrom);
+          const endDate = new Date(dateTo);
+          endDate.setHours(23, 59, 59, 999);
+        
+          whereClause.createdAt = {
+            [Op.between]: [startDate, endDate],
+          };
         }
 
         const includeOptions = [
