@@ -34,7 +34,7 @@ module.exports = {
 
         Tag.create({ name: req.body.name, isValid: false })
             .then((tag) => {
-                res.status(201).json({ tag });
+                res.status(200).json({ tag });
             })
             .catch((error) => {
                 console.error('Error creating tag: ', error.message);

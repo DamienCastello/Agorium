@@ -29,7 +29,7 @@
         <div class="dropdown" :class="{ open: isDropdownOpen }" ref="dropdownRef">
           <div class="dropdown-toggle" @click="toggleDropdown">
             <div class="selected-tags-container">
-              <span v-for="(tag, index) in selectedTags" :key="index" class="selected-tag">
+              <span v-for="(tag, index) in selectedTags" :key="index" :class="{ 'selected-valid-tag': tag.isValid, 'selected-invalid-tag': !tag.isValid}" @click="handleSelectedTagClick(tag, $event)">
                 {{ tag.name }}
               </span>
               <span class="dropdown-placeholder" v-if="selectedTags.length === 0">
@@ -40,8 +40,12 @@
           <div v-if="isDropdownOpen" class="dropdown-content">
             <div class="tags-list">
               <label v-for="(tag, index) in tags" :key="tag.id" class="tag-item"
-                :class="{ selected: selectedTags.includes(tag) }">
-                <input type="checkbox" :value="tag" v-model="selectedTags" @change="logSelectedTags" />
+                :class="{ 
+                  'not-selected-valid': !selectedTags.includes(tag) && tag.isValid,
+                  'not-selected-invalid': !selectedTags.includes(tag) && !tag.isValid,
+                  'selected-valid': selectedTags.includes(tag) && tag.isValid, 
+                  'selected-invalid': selectedTags.includes(tag) && !tag.isValid }">
+                <input type="checkbox" :value="tag" v-model="selectedTags"/>
                 {{ tag.name }}
               </label>
             </div>
@@ -119,6 +123,21 @@ const isFormValid = computed(() => {
   return form.value.title && form.value.description && (withVideo.value ? form.value.urlYoutube : selectedFile.value);
 });
 
+const handleSelectedTagClick = (tag, event) => {
+  // Empêche la fermeture du dropdown si clic dans la sélection
+  event.stopPropagation();
+
+  // Ne fait rien si le dropdown est fermé
+  if (!isDropdownOpen.value) return;
+
+  // Si le tag est présent, on le retire
+  const index = selectedTags.value.findIndex(t => t.name === tag.name);
+  if (index !== -1) {
+    selectedTags.value.splice(index, 1);
+  }
+};
+
+
 const addTag = () => {
   if (!newTag.value.trim()) return;
 
@@ -133,7 +152,7 @@ const addTag = () => {
     return;
   }
 
-  const newTagObject = { name: newTag.value };
+  const newTagObject = { name: newTag.value, isValid: false };
 
   state.value = "loading";
 
@@ -372,6 +391,7 @@ input.switch {
   transition: border-color 0.3s;
   max-width: 100%;
   margin-bottom: 40px;
+  z-index: 1;
 }
 
 .dropdown.open {
@@ -435,7 +455,6 @@ input.switch {
 .tag-item {
   padding: 4px 8px;
   border-radius: 12px;
-  border: 2px solid #6400e4;
   cursor: pointer;
   display: inline-block;
   font-size: 12px;
@@ -443,19 +462,44 @@ input.switch {
   transition: background-color 0.3s, color 0.3s;
 }
 
-.tag-item.selected {
+.selected-valid {
   background-color: #6400e4;
   color: white;
-  border-color: #6400e4;
+  border: 2px solid #6400e4;
 }
 
-.selected-tag {
+.selected-invalid {
+  background-color: #e4a100;
+  color: white;
+  border: 2px solid #c98d01;
+}
+
+.not-selected-valid {
+  border: 2px solid #6400e4;
+}
+
+.not-selected-invalid {
+  border: 2px solid #c98d01;
+}
+
+.selected-valid-tag {
   padding: 4px 8px;
   background-color: #6400e4;
   color: white;
   border-radius: 12px;
   font-size: 12px;
   margin: 0 4px 4px 0;
+  z-index: 4;
+}
+
+.selected-invalid-tag {
+  padding: 4px 8px;
+  background-color: #e4a100;
+  color: white;
+  border-radius: 12px;
+  font-size: 12px;
+  margin: 0 4px 4px 0;
+  z-index: 4;
 }
 
 .tags-list input[type="checkbox"] {
