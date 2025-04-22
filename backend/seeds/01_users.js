@@ -14,7 +14,7 @@ module.exports = async function() {
     });
     console.log(user1);
 
-    /*
+    
     const user2 = await User.create({
       id: 2,
       pseudo: 'Zanmato',
@@ -47,7 +47,7 @@ module.exports = async function() {
       points: 10
     });
     console.log(user4);
-    */
+    
 
   } catch (error) {
     console.error('Error while seeding users:', error);

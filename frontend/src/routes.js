@@ -3,8 +3,9 @@ import Login from './components/Login.vue'
 import Articles from "./components/Articles.vue";
 import Validations from "./components/Validations.vue";
 import Validate from "./components/Validate.vue";
-import PostArticle from "./components/PostArticle.vue";
+import ArticlePost from "./components/ArticlePost.vue";
 import ArticleDetail from "./components/ArticleDetail.vue";
+import ArticleUpdate from "./components/ArticleUpdate.vue";
 import Report from './components/Report.vue';
 import Profile from './components/Profile.vue';
 import NotFound from "./components/NotFound.vue";
@@ -30,8 +31,9 @@ export const routes = [
     { path: '/articles', name: 'Articles', component: Articles, meta: { public: true } },
     { path: '/validations', name: 'Validations', component: Validations, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/articles/:id(\\d+)', name: 'ArticleDetail', component: ArticleDetail, meta: { public: true } },
+    { path: '/articles/edit/:id(\\d+)', name: 'ArticleUpdate', component: ArticleUpdate, meta: { requiresAuth: true } },
     { path: '/validations/:id(\\d+)', name: 'Validate', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
-    { path: '/new-article', name: 'PostArticle', component: PostArticle, meta: { requiresAuth: true } },
+    { path: '/new-article', name: 'ArticlePost', component: ArticlePost, meta: { requiresAuth: true } },
     { path: '/profile/:pseudo', name: 'Profile', component: Profile },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ];
