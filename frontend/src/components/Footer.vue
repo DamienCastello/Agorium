@@ -1,39 +1,37 @@
 <template>
   <footer class="footer" @mousedown="handleClickOutsideNavbar">
     <div class="footer-content">
-      <p class="footer-text">2025 Agorium</p>
+      <p class="footer-text">2025 Agorium v{{ appVersion }}</p>
       <div class="social-links">
-        <a @click.prevent="handleClickOutsideNavbar" href="https://www.linkedin.com/in/castello-damien/" target="_blank" aria-label="LinkedIn">
-          <i class="fab fa-linkedin"></i> LinkedIn
-        </a>
-        <a @click.prevent="handleClickOutsideNavbar" href="https://github.com/DamienCastello" target="_blank" aria-label="GitHub">
-          <i class="fab fa-github"></i> GitHub
-        </a>
+        <RouterLink to="/roadmap" class="roadmap-link">
+          <i class="fas fa-map-signs"></i> Roadmap
+        </RouterLink>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup>
-  import { useNavbarStore } from '@/stores/navbar';
+import { useNavbarStore } from '@/stores/navbar';
+import { RouterLink } from 'vue-router';
 
-  const navbarStore = useNavbarStore();
-  const handleClickOutsideNavbar = (event) => {
-    if (navbarStore.isMenuOpen) {
-      event.preventDefault();
-      event.stopPropagation();
-      navbarStore.closeMenu();
-    }
-    if (navbarStore.isTranslationOpen) {
-      event.preventDefault();
-      event.stopPropagation();
-      navbarStore.closeTranslation();
-    } else {
-      return true;
-    }
-  };
+const appVersion = __APP_VERSION__;
+const navbarStore = useNavbarStore();
+const handleClickOutsideNavbar = (event) => {
+  if (navbarStore.isMenuOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+    navbarStore.closeMenu();
+  }
+  if (navbarStore.isTranslationOpen) {
+    event.preventDefault();
+    event.stopPropagation();
+    navbarStore.closeTranslation();
+  } else {
+    return true;
+  }
+};
 </script>
-
 
 <style scoped>
 .footer {
@@ -61,7 +59,7 @@
   margin-top: 10px;
 }
 
-.social-links a {
+.roadmap-link {
   color: #fff;
   font-size: 18px;
   text-decoration: none;
@@ -69,11 +67,11 @@
   align-items: center;
 }
 
-.social-links a i {
+.roadmap-link i {
   margin-right: 8px;
 }
 
-.social-links a:hover {
+.roadmap-link:hover {
   color: #ddd;
   transition: color 0.3s ease;
 }

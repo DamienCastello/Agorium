@@ -15,7 +15,8 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 - Add i18n to all displayed strings to translate into multiple languages.
 - Add infinite load on fetch articles.
 ### CORE v2:
-- Deploy on a server and make it privately accessible.
+- Buy domain & server & deploy.
+- Dockerize project.
 - Implement the video streaming system (upload, conversion HLS encoding, secure streaming).
 - Optimize file storage (avatars, preview, video, and maybe more).
 - Improve general style (use element+ to redisign).
@@ -25,7 +26,6 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 - Implement an accessibility system (screen readers, keyboard navigation).
 - Strengthen security (strong authentication, backups, protection against attacks).
 - Improve performance (caching, CDN).
-- Buy a domain, setup SSL/TLS, and make the project public.
 - Find a way to avoid reporting abusive articles (with IP or another way...)
 
 ## Dockerized Version
