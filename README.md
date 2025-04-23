@@ -47,7 +47,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
    Create a `.env` file in the root folder with the following parameters:
    ```env
     JWT_SECRET=agorium_secret
-    VITE_AGORIUM_VERSION=2.1.1
+    VITE_AGORIUM_VERSION=2.1.2
     ```
 
     Create a `.env.dev` file in the root folder with the following parameters:
@@ -66,7 +66,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_BASE_URL=http://localhost
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
-    VITE_AGORIUM_VERSION=2.1.1
+    VITE_AGORIUM_VERSION=2.1.2
     ```
 
     Create a `.env.pre-prod` file in the root folder with the following parameters:
@@ -86,7 +86,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
     VITE_APP_MODE=pre-prod
-    VITE_AGORIUM_VERSION=2.1.1
+    VITE_AGORIUM_VERSION=2.1.2
     ```
 
     Create a `.env.prod` file in the root folder with the following parameters:
@@ -105,7 +105,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_BASE_URL=https://agorium-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
-    VITE_AGORIUM_VERSION=2.1.1
+    VITE_AGORIUM_VERSION=2.1.2
     ```
 
 4. **Start with Docker**: 
