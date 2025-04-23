@@ -6,6 +6,8 @@ import { useAuthStore } from './stores/auth';
 import { createPinia } from 'pinia';
 import Notifications from '@kyvg/vue3-notification';
 import i18n from './i18n/translations'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 
 const router = createRouter({
@@ -31,6 +33,7 @@ router.beforeEach((to, from, next) => {
 const app = createApp(App);
 app.use(router);
 app.use(pinia);
+app.use(ElementPlus);
 app.use(Notifications);
 app.use(i18n);
 app.mount('#app');

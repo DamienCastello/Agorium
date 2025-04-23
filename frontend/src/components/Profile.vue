@@ -13,11 +13,18 @@
             <h1 class="title">
                 {{ computedTitle }}
             </h1>
-        <div class="achievements">
+
+            <h7>Points: {{ user?.points }}</h7>
+            <h4>Succès: </h4>
+        <div class="achievements pico">
+            
             <div v-for="(achievement, index) in user.achievements" :key="index" class="achievement">
                 <BadgeIcon :id="achievement.id" :icon="getIconClass(achievement.iconCategory)" />
             </div>
         </div>
+
+            <ArticlesTreatment v-if="authStore.user?.id === user.id" />
+
     </div>
 
     <div v-else>
@@ -34,6 +41,7 @@ import url from '@/utils/url';
 import { useAuthStore } from '@/stores/auth';
 import { useNotification } from "@kyvg/vue3-notification";
 import BadgeIcon from './icons/BadgeIcon.vue';
+import ArticlesTreatment from './ArticlesTreatment.vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 
@@ -91,7 +99,6 @@ const computedTitle = computed(() => {
 });
 
 const updateAvatar = async (event) => {
-    console.log('check : ', user.value?.pseudo, authStore.user?.pseudo)
     if(user.value?.pseudo !== authStore.user?.pseudo) {
         return
     }
@@ -133,20 +140,10 @@ const updateAvatar = async (event) => {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.achievements {
-    display: flex;
-    flex-direction: row !important;
-    align-items: center;
-}
-
-.achievement {
-    margin: 10px 15px;
-}
-
-.clickable {
-    cursor: pointer;
+    width: 100%;
+    max-width: 800px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .avatar-image {
@@ -155,9 +152,32 @@ const updateAvatar = async (event) => {
     height: 200px;
     object-fit: cover;
     border: 2px solid #ccc;
+    max-width: 100%;
+    transition: width 0.3s, height 0.3s;
+}
+
+.achievements {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.achievement {
+    margin: 10px;
+    text-align: center;
+    transition: width 0.3s;
+}
+
+.clickable {
+    cursor: pointer;
 }
 
 input[type="file"] {
     display: none;
 }
+
+
 </style>

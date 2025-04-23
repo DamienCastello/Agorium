@@ -30,6 +30,7 @@ services:
       - proxy
     volumes:
       - ./backend:/app
+      - /home/gamma/agorium-prod-uploads:/app/public/uploads
     command: >
       sh -c "
         npm install &&

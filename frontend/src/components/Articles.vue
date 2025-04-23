@@ -235,7 +235,7 @@ const navigateToArticle = (id) => {
 .articles-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 8px;
+  gap: 20px;
 }
 
 .card {
