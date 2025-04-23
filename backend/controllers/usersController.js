@@ -49,7 +49,7 @@ module.exports = {
             password: req.params.password,
             email: req.params.email,
             isAdmin: false,
-            avatar: req.params.avatar
+            avatar: req.uploadedFiles.avatars
         })
             .then((user) => { res.json({ user }); })
             .catch((error) => {
@@ -58,7 +58,7 @@ module.exports = {
             })
     },
     update: function (req, res, next) {
-        const newAvatarPath = req.file ? req.file.path : null;
+        const newAvatarPath = req.uploadedFiles ? req.uploadedFiles.avatars : null;
     
         models.User.findByPk(req.params.id)
             .then((user) => {
@@ -68,12 +68,12 @@ module.exports = {
     
                 // Si un nouvel avatar est fourni et que l'ancien n'est pas celui par défaut
                 if (newAvatarPath && user.avatar && !user.avatar.includes('utilisateur.png')) {
-                    const oldAvatarPath = path.join(__dirname, '..', user.avatar);
+                    const oldAvatarPath = path.join('/app/public', user.avatar);
                     fs.unlink(oldAvatarPath, (err) => {
-                        if (err) {
+                        if (err && err.code !== 'ENOENT') {
                             console.warn('Could not delete old avatar:', err.message);
                         }
-                    });
+                    });                    
                 }
     
                 // Construire les données à mettre à jour
