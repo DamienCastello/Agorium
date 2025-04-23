@@ -1,7 +1,7 @@
 <template>
   <footer class="footer" @mousedown="handleClickOutsideNavbar">
     <div class="footer-content">
-      <p class="footer-text">2025 Agorium v{{ appVersion }}</p>
+      <p class="footer-text">2025 Agorium v{{ window.environment.VITE_AGORIUM_VERSION }}</p>
       <div class="social-links">
         <RouterLink to="/roadmap" class="roadmap-link">
           <i class="fas fa-map-signs"></i> Roadmap
@@ -15,7 +15,6 @@
 import { useNavbarStore } from '@/stores/navbar';
 import { RouterLink } from 'vue-router';
 
-const appVersion = __APP_VERSION__;
 const navbarStore = useNavbarStore();
 const handleClickOutsideNavbar = (event) => {
   if (navbarStore.isMenuOpen) {
