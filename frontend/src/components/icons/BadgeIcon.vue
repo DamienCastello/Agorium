@@ -1,12 +1,13 @@
 <template>
-    <div class="badge-container">
-        <span>{{ badge?.name }}</span>
-        <div class="icon-container">
-            <i class="fa-solid fa-shield"></i>
-            <span class="badge-name">{{ badge?.description }}</span>
-            <span class="icon-text" :style="{ left: iconTextLeft }">{{ parseInt(badge?.threshold) }}</span>
-            <i :class="icon"></i>
+    <div class="badge-container pico">
+        <div>
+            <div class="icon-container">
+                <span class="badge-name">{{ badge?.description }}</span>
+                <i :class="['fa-solid', icon]"></i>
+                <span class="icon-text">{{ parseInt(badge?.threshold) }}</span>
+            </div>
         </div>
+
     </div>
     <notifications position="bottom right" />
 </template>
@@ -22,18 +23,17 @@ const props = defineProps({
     icon: String
 });
 const { notify } = useNotification();
-const badge = ref(null)
+const badge = ref(null);
 
 const iconTextLeft = computed(() => {
     const threshold = parseInt(badge?.threshold);
-
     if (threshold >= 100 && threshold <= 999) {
-        return '37px';
+        return '35%';
     }
     else if (threshold >= 10 && threshold <= 99) {
-        return '42px';
+        return '40%';
     }
-    return '46px';
+    return '45%';
 });
 
 onMounted(() => {
@@ -46,7 +46,7 @@ onMounted(() => {
             },
         })
         .then((response) => {
-            badge.value = response.data.achievement
+            badge.value = response.data.achievement;
         })
         .catch((error) => {
             notify({
@@ -56,26 +56,31 @@ onMounted(() => {
             });
         });
 });
-
 </script>
 
 <style scoped>
 .badge-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 1;
+  min-width: clamp(80px, 16vw, 130px);
+  max-width: clamp(80px, 16vw, 130px);
 }
 
 .icon-container {
     position: relative;
-    border: 2px solid black;
-    width: 110px;
-    height: 110px;
+    width: clamp(70px, 15vw, 110px);
+    height: clamp(70px, 15vw, 110px);
     border-radius: 50%;
-    padding-top: 4px;
-
+    border: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.548);
+    /* ou transparent selon le style que tu veux */
+    transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .icon-container .badge-name {
@@ -93,80 +98,47 @@ onMounted(() => {
     min-width: 180px;
 }
 
+
 .icon-container:hover {
     transform: scale(1.05);
-    transition: background-color 0.3s ease;
-    /* Ajoute une transition pour un effet fluide */
     background-color: #d1d1d1;
-    z-index: 1;
 }
 
-.icon-container:hover .badge-name {
-    visibility: visible;
-    z-index: 10;
-}
-
-i.fa-shield {
-    vertical-align: middle;
-    font-size: 90px;
+.icon-container i {
+    font-size: clamp(30px, 8vw, 60px);
+    color: white;
+    z-index: 2;
 }
 
 .icon-text {
     position: absolute;
-    left: 43px;
-    top: 34px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(14px, 1.5vw, 24px);
     color: black;
     font-weight: bold;
-    z-index: 5;
+    z-index: 3;
+    pointer-events: none;
 }
 
-i.fa-comment {
-    font-size: 50px;
-    color: white;
+.badge-name {
+    visibility: hidden;
     position: absolute;
-    left: 28px;
-    top: 23px;
-}
-
-.fa-file {
-    font-size: 50px;
+    top: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(12px, 1vw, 16px);
+    padding: 2px 4px;
+    background-color: black;
     color: white;
-    position: absolute;
-    left: 36px;
-    top: 23px;
+    text-align: center;
+    border-radius: 6px;
+    min-width: 180px;
+    z-index: 10;
 }
 
-.fa-calendar {
-    font-size: 50px;
-    color: white;
-    position: absolute;
-    left: 31px;
-    top: 20px;
+.icon-container:hover .badge-name {
+    visibility: visible;
 }
-
-.fa-heart {
-    font-size: 50px;
-    color: white;
-    position: absolute;
-    left: 27px;
-    top: 25px;
-}
-
-.fa-star {
-    font-size: 50px;
-    color: white;
-    position: absolute;
-    left: 24px;
-    top: 23px;
-}
-
-
-.fa-flag {
-    font-size: 50px;
-    color: white;
-    position: absolute;
-    left: 33px;
-    top: 28px;
-}
-
 </style>

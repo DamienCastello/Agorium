@@ -66,9 +66,6 @@ footer {
   flex-shrink: 0;
   text-align: center;
   padding: 16px;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
 }
 /* Variables pour le thème Indigo */
 :root {

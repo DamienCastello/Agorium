@@ -5,75 +5,75 @@ const { Article, User, Like, Tag, Comment } = require('../models');
 module.exports = {
   indexValidated: async function (req, res, next) {
     try {
-        const { limit = 10, offset = 0, tag, search, dateFrom, dateTo, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+      const { limit = 10, offset = 0, tag, search, dateFrom, dateTo, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
-        const whereClause = { isValid: true };
+      const whereClause = { isValid: true };
 
-        if (search) {
-            whereClause[Op.or] = [
-                { title: { [Op.like]: `%${search}%` } },
-                { description: { [Op.like]: `%${search}%` } }
-            ];
-        }
-
-        if (dateFrom && dateTo) {
-          const startDate = new Date(dateFrom);
-          const endDate = new Date(dateTo);
-          endDate.setHours(23, 59, 59, 999);
-        
-          whereClause.createdAt = {
-            [Op.between]: [startDate, endDate],
-          };
-        }
-
-        const includeOptions = [
-            {
-                model: Tag,
-                as: 'tags',
-                attributes: ['id', 'name'],
-                through: { attributes: [] } // Évite de récupérer les métadonnées de la table pivot
-            },
-            {
-                model: Comment,
-                as: 'comments',
-                attributes: ['id', 'content', 'userId', 'createdAt'],
-                include: [{ model: User, attributes: ['id', 'pseudo'], as: 'user' }]
-            }
+      if (search) {
+        whereClause[Op.or] = [
+          { title: { [Op.like]: `%${search}%` } },
+          { description: { [Op.like]: `%${search}%` } }
         ];
+      }
 
-        // Filtrage par tag si un tag est sélectionné
-        if (tag) {
-            includeOptions[0].where = { name: tag };
+      if (dateFrom && dateTo) {
+        const startDate = new Date(dateFrom);
+        const endDate = new Date(dateTo);
+        endDate.setHours(23, 59, 59, 999);
+
+        whereClause.createdAt = {
+          [Op.between]: [startDate, endDate],
+        };
+      }
+
+      const includeOptions = [
+        {
+          model: Tag,
+          as: 'tags',
+          attributes: ['id', 'name'],
+          through: { attributes: [] } // Évite de récupérer les métadonnées de la table pivot
+        },
+        {
+          model: Comment,
+          as: 'comments',
+          attributes: ['id', 'content', 'userId', 'createdAt'],
+          include: [{ model: User, attributes: ['id', 'pseudo'], as: 'user' }]
         }
+      ];
 
-        const articles = await Article.findAll({
-            where: whereClause,
-            attributes: {
-                include: [
-                    [
-                        Sequelize.literal(`(
+      // Filtrage par tag si un tag est sélectionné
+      if (tag) {
+        includeOptions[0].where = { name: tag };
+      }
+
+      const articles = await Article.findAll({
+        where: whereClause,
+        attributes: {
+          include: [
+            [
+              Sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM Likes AS likes
                             WHERE likes.articleId = Article.id
                         )`),
-                        'likeCount'
-                    ]
-                ]
-            },
-            include: includeOptions,
-            order: [
-                sortBy === 'likes' ? [Sequelize.literal('likeCount'), sortOrder] : ['createdAt', sortOrder]
-            ],
-            limit: parseInt(limit),
-            offset: parseInt(offset)
-        });
+              'likeCount'
+            ]
+          ]
+        },
+        include: includeOptions,
+        order: [
+          sortBy === 'likes' ? [Sequelize.literal('likeCount'), sortOrder] : ['createdAt', sortOrder]
+        ],
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      });
 
-        res.status(200).json({ articles });
+      res.status(200).json({ articles });
     } catch (error) {
-        console.error('Error fetching articles:', error.message);
-        res.status(500).json({ message: 'Internal Server Error' });
+      console.error('Error fetching articles:', error.message);
+      res.status(500).json({ message: 'Internal Server Error' });
     }
-},
+  },
   indexNotValidated: function (req, res, next) {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
@@ -82,10 +82,10 @@ module.exports = {
       limit: limit,
       where: {
         [Op.or]: [
-            { isValid: false },
-            { isValid: null }
+          { isValid: false },
+          { isValid: null }
         ]
-    },
+      },
       include: [
         {
           model: models.Like,
@@ -124,6 +124,59 @@ module.exports = {
         console.log("error: ", error)
         res.status(500).json({ message: req.t('error') })
       })
+  },
+  indexNotValidatedByUser: function (req, res, next) {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    Article.findAll({
+      offset: offset,
+      limit: limit,
+      where: {
+        userId: req.params.id,
+        [Op.or]: [
+          { isValid: false },
+          { isValid: null }
+        ]
+      },
+      include: [
+        {
+          model: models.Like,
+          as: 'likes',
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+              attributes: ['id', 'pseudo', 'email'],
+            }
+          ]
+        },
+        {
+          model: models.Tag,
+          as: 'tags',
+        },
+        {
+          model: models.Comment,
+          as: 'comments',
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+              attributes: ['id', 'pseudo', 'email'],
+            },
+            {
+              model: models.Like,
+              as: 'likes',
+            },
+          ]
+        },
+      ]
+    })
+      .then((articles) => { res.json({ articles }); })
+      .catch((error) => {
+        console.log("error: ", error);
+        res.status(500).json({ message: req.t('error') });
+      });
   },
   show: function (req, res, next) {
     Article.findByPk(req.params.id, {
@@ -170,120 +223,120 @@ module.exports = {
   },
   create: async function (req, res, next) {
     try {
-        const { title, description, urlYoutube, tags } = req.body;
+      const { title, description, urlYoutube, tags } = req.body;
 
-        if (!title || !description) {
-            return res.status(400).json({ message: req.t('article.fields_required') });
+      if (!title || !description) {
+        return res.status(400).json({ message: req.t('article.fields_required') });
+      }
+
+      if (title.length < 3) {
+        return res.status(400).json({ message: req.t('article.title_length') });
+      }
+
+      if (typeof tags === 'string') {
+        try {
+          req.body.tags = JSON.parse(tags);
+        } catch (error) {
+          return res.status(400).json({ message: req.t('article.invalid_tags') });
+        }
+      }
+
+      if (!tags || !Array.isArray(tags) || tags.length === 0) {
+        return res.status(400).json({ message: req.t('article.tag_required') });
+      }
+
+      const userId = req.user.id;
+      const imagePath = req.file ? req.file.path : null;
+
+      if (!userId) {
+        return res.status(400).json({ message: req.t('article.user_required') });
+      }
+
+      // Création de l'article
+      const article = await Article.create({
+        title,
+        description,
+        preview: imagePath,
+        urlYoutube: urlYoutube || null,
+        refusalReasons: JSON.stringify({
+          title: {
+            value: '',
+            isValid: null,
+            validatedBy: null,
+          },
+          description: {
+            value: '',
+            isValid: null,
+            validatedBy: null,
+          },
+          videoContent: {
+            value: '',
+            isValid: null,
+            validatedBy: null,
+          },
+          preview: {
+            value: '',
+            isValid: null,
+            validatedBy: null,
+          },
+        }),
+        overallReasonForRefusal: null,
+        isValid: false,
+        userId,
+      });
+
+      if (tags && Array.isArray(tags)) {
+        const tagIds = tags.map((tag) => tag.id);
+        const tagsToAssociate = await models.Tag.findAll({ where: { id: tagIds } });
+
+        await article.setTags(tagsToAssociate);
+
+        // Vérifier le nombre d'articles pour débloquer des succès
+        const articleCount = await Article.count({ where: { userId } });
+        const user = await models.User.findByPk(userId);
+
+        let achievement;
+        let userAchievement;
+
+        if (articleCount === 1) {
+          achievement = await models.Achievement.findByPk(1);
+          await achievement.addUsers(user);
+          user.points += achievement.points;
+          await user.save();
+        } else if (articleCount === 5) {
+          achievement = await models.Achievement.findByPk(2);
+          await achievement.addUsers(user);
+          user.points += achievement.points;
+          await user.save();
+        } else if (articleCount % 20 === 0) {
+          achievement = await models.Achievement.findByPk(3);
+
+          [userAchievement, created] = await models.UserAchievement.findOrCreate({
+            where: { userId, achievementId: achievement.id },
+            defaults: {
+              dateEarned: new Date(),
+              iteration: 1,
+            },
+          });
+
+          if (!created) {
+            userAchievement.iteration += 1;
+            userAchievement.dateEarned = new Date();
+            await userAchievement.save();
+          }
+
+          user.points += achievement.points;
+          await user.save();
         }
 
-        if (title.length < 3) {
-            return res.status(400).json({ message: req.t('article.title_length') });
-        }
-
-        if (typeof tags === 'string') {
-            try {
-                req.body.tags = JSON.parse(tags);
-            } catch (error) {
-                return res.status(400).json({ message: req.t('article.invalid_tags') });
-            }
-        }
-
-        if (!tags || !Array.isArray(tags) || tags.length === 0) {
-            return res.status(400).json({ message: req.t('article.tag_required') });
-        }
-
-        const userId = req.user.id;
-        const imagePath = req.file ? req.file.path : null;
-
-        if (!userId) {
-            return res.status(400).json({ message: req.t('article.user_required') });
-        }
-
-        // Création de l'article
-        const article = await Article.create({
-            title,
-            description,
-            preview: imagePath,
-            urlYoutube: urlYoutube || null,
-            refusalReasons: JSON.stringify({
-              title: {
-                value: '',
-                isValid: null,
-                validatedBy: null,
-              },
-              description: {
-                value: '',
-                isValid: null,
-                validatedBy: null,
-              },
-              videoContent: {
-                value: '',
-                isValid: null,
-                validatedBy: null,
-              },
-              preview: {
-                value: '',
-                isValid: null,
-                validatedBy: null,
-              },
-            }),
-            overallReasonForRefusal: null,
-            isValid: false,
-            userId,
-        });
-
-        if (tags && Array.isArray(tags)) {
-            const tagIds = tags.map((tag) => tag.id);
-            const tagsToAssociate = await models.Tag.findAll({ where: { id: tagIds } });
-
-            await article.setTags(tagsToAssociate);
-
-            // Vérifier le nombre d'articles pour débloquer des succès
-            const articleCount = await Article.count({ where: { userId } });
-            const user = await models.User.findByPk(userId);
-
-            let achievement;
-            let userAchievement;
-
-            if (articleCount === 1) {
-                achievement = await models.Achievement.findByPk(1);
-                await achievement.addUsers(user);
-                user.points += achievement.points;
-                await user.save();
-            } else if (articleCount === 5) {
-                achievement = await models.Achievement.findByPk(2);
-                await achievement.addUsers(user);
-                user.points += achievement.points;
-                await user.save();
-            } else if (articleCount % 20 === 0) {
-                achievement = await models.Achievement.findByPk(3);
-
-                [userAchievement, created] = await models.UserAchievement.findOrCreate({
-                    where: { userId, achievementId: achievement.id },
-                    defaults: {
-                        dateEarned: new Date(),
-                        iteration: 1,
-                    },
-                });
-
-                if (!created) {
-                    userAchievement.iteration += 1;
-                    userAchievement.dateEarned = new Date();
-                    await userAchievement.save();
-                }
-
-                user.points += achievement.points;
-                await user.save();
-            }
-
-            return res.status(200).json({ article, achievement, userAchievement, user });
-        }
+        return res.status(200).json({ article, achievement, userAchievement, user });
+      }
 
     } catch (error) {
-        console.error("Error creating article: ", error.message);
-        return res.status(500).json({ message: req.t('error') });
+      console.error("Error creating article: ", error.message);
+      return res.status(500).json({ message: req.t('error') });
     }
-},
+  },
   like: function (req, res, next) {
     const user = req.user;
 
@@ -428,7 +481,35 @@ module.exports = {
       });
   },
   update: function (req, res, next) {
-    const { title, description, urlYoutube, tags, overallReasonForRefusal, refusalReasons } = req.body;
+    console.log("check req : ", req)
+    const { title, description, urlYoutube, tags } = req.body;
+
+      if (!title || !description) {
+        return res.status(400).json({ message: req.t('article.fields_required') });
+      }
+
+      if (title.length < 3) {
+        return res.status(400).json({ message: req.t('article.title_length') });
+      }
+
+      if (typeof tags === 'string') {
+        try {
+          req.body.tags = JSON.parse(tags);
+        } catch (error) {
+          return res.status(400).json({ message: req.t('article.invalid_tags') });
+        }
+      }
+
+      if (!tags || !Array.isArray(tags) || tags.length === 0) {
+        return res.status(400).json({ message: req.t('article.tag_required') });
+      }
+
+      const userId = req.user.id;
+      const imagePath = req.file ? req.file.path : null;
+
+      if (!userId) {
+        return res.status(400).json({ message: req.t('article.user_required') });
+      }
 
     Article.findByPk(req.params.id)
       .then((article) => {
@@ -437,11 +518,35 @@ module.exports = {
         }
 
         return article.update({
-          title: title || article.title,
-          description: description || article.description,
+          title: title,
+          description: description,
+          preview: imagePath || article.preview,
           urlYoutube: urlYoutube || article.urlYoutube,
-          overallReasonForRefusal: overallReasonForRefusal || article.overallReasonForRefusal,
-          refusalReasons: refusalReasons || article.refusalReasons
+          refusalReasons: JSON.stringify({
+            title: {
+              value: '',
+              isValid: null,
+              validatedBy: null,
+            },
+            description: {
+              value: '',
+              isValid: null,
+              validatedBy: null,
+            },
+            videoContent: {
+              value: '',
+              isValid: null,
+              validatedBy: null,
+            },
+            preview: {
+              value: '',
+              isValid: null,
+              validatedBy: null,
+            },
+          }),
+          overallReasonForRefusal: null,
+          isValid: false,
+          userId: userId
         })
           .then((updatedArticle) => {
             if (tags && Array.isArray(tags)) {

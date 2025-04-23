@@ -11,14 +11,12 @@ async function runSeeds() {
 
     console.log('🌱 Seeding tags...');
     await require('./02_tags')();
-
-    /*
+  
     console.log('🌱 Seeding articles...');
-    await require('./03_articles-local')();
+    await require('./03_articles')();
 
     console.log('🌱 Seeding comments...');
-    await require('./04_comments-local')();
-    */
+    await require('./04_comments')();
 
     console.log('🌱 Seeding achievements...');
     await require('./05_achievements-local')();
