@@ -19,11 +19,15 @@
   
       <section class="releases-notes">
         <h2>Last releases</h2>
-        <p><strong>v2.1.0</strong></p>
+        <p><strong>v2.1.1</strong></p>
         <ul class="standard-list">
           <li>Add update article (in profile view).</li>
           <li>Isolate the upload folder and make it persistent.</li>
           <li>Add Roadmap.</li>
+        </ul>
+        <p><strong>v2.0.1</strong></p>
+        <ul class="standard-list">
+          <li>Fix multiples bugs.</li>
         </ul>
       </section>
   
