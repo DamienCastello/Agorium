@@ -23,7 +23,7 @@
             </div>
         </div>
 
-            <ArticlesTreatment />
+            <ArticlesTreatment v-if="authStore.user?.id === user.id" />
 
     </div>
 
