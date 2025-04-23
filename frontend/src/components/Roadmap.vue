@@ -19,6 +19,10 @@
   
       <section class="releases-notes">
         <h2>Last releases</h2>
+        <p><strong>v2.1.2</strong></p>
+        <ul class="standard-list">
+          <li>Fix config.</li>
+        </ul>
         <p><strong>v2.1.1</strong></p>
         <ul class="standard-list">
           <li>Add update article (in profile view).</li>
