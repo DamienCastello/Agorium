@@ -1,7 +1,7 @@
 <template>
   <footer class="footer" @mousedown="handleClickOutsideNavbar">
     <div class="footer-content">
-      <p class="footer-text">2025 Agorium v{{ window.environment.VITE_AGORIUM_VERSION }}</p>
+      <p class="footer-text">2025 Agorium v{{ agoriumVersion }}</p>
       <div class="social-links">
         <RouterLink to="/roadmap" class="roadmap-link">
           <i class="fas fa-map-signs"></i> Roadmap
@@ -30,6 +30,8 @@ const handleClickOutsideNavbar = (event) => {
     return true;
   }
 };
+
+const agoriumVersion = window.environment?.VITE_AGORIUM_VERSION || 'x.x.x';
 </script>
 
 <style scoped>
