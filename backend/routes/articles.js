@@ -5,7 +5,7 @@ const { isAdmin } = require('../middlewares/admin');
 const { authenticateJwt } = require('../middlewares/auth');
 
 const articlesController = require('../controllers/articlesController')
-const { previewUploader } = require('../middlewares/uploaders');
+const { articleUploader } = require('../middlewares/articleUploader');
 
 
 /* GET validated articles listing. */
@@ -19,28 +19,42 @@ router.get('/:id', articlesController.show);
 //like/unlike
 router.post('/:id/like', authenticateJwt, articlesController.like);
 //create
-router.post('/', authenticateJwt, previewUploader.single("preview"), (req, res, next) => {
-    if (typeof req.body.tags === 'string') {
-      try {
+router.post(
+  '/',
+  authenticateJwt,
+  articleUploader.fields([
+    { name: 'preview', maxCount: 1 },
+    { name: 'video', maxCount: 1 }
+  ]),
+  async (req, res, next) => {
+    try {
+      if (typeof req.body.tags === 'string') {
         req.body.tags = JSON.parse(req.body.tags);
-      } catch (error) {
-        return res.status(400).json({ message: "Invalid tags format" });
       }
+      return articlesController.create(req, res, next);
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
     }
-    articlesController.create(req, res, next);
-  });
+  }
+);
+
 //report
 router.post('/:id/report', articlesController.report);
 //update
-router.put('/:id', authenticateJwt, previewUploader.single("preview"), (req, res, next) => {
-  if (typeof req.body.tags === 'string') {
-    try {
+router.put('/:id', authenticateJwt, articleUploader.fields([
+  { name: 'preview', maxCount: 1 },
+  { name: 'video', maxCount: 1 }
+]),
+async (req, res, next) => {
+  try {
+    if (typeof req.body.tags === 'string') {
       req.body.tags = JSON.parse(req.body.tags);
-    } catch (error) {
-      return res.status(400).json({ message: "Invalid tags format" });
     }
+
+    return articlesController.update(req, res, next);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
-  articlesController.update(req, res, next);
 });
 //validate
 router.put('/:id/validate', authenticateJwt, isAdmin, articlesController.validate);

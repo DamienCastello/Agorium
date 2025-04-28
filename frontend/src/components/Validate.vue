@@ -14,16 +14,19 @@
                     <div class="tag-row">
                         <span class="tag-name">{{ tag.name }}</span>
                         <div class="tag-actions">
-                            <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')" class="mobile-icon-tag">
+                            <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')"
+                                class="mobile-icon-tag">
                                 <CheckIcon class="icon-check" />
                             </span>
-                            <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')" class="mobile-icon-tag">
+                            <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')"
+                                class="mobile-icon-tag">
                                 <CrossIcon class="icon-cross" />
                             </span>
                         </div>
                         <textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                             placeholder="Motif du refus du tag"></textarea>
-                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{ $t('validate.save_button') }}</button>
+                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{ $t('validate.save_button')
+                        }}</button>
                     </div>
                 </div>
 
@@ -38,7 +41,8 @@
                             @click="accept(article, 'title')">
                             <CheckIcon />
                         </div>
-                        <div class="icon-fields-mobile" :class="{ refused: article.refusalReasons.title.isValid === false }"
+                        <div class="icon-fields-mobile"
+                            :class="{ refused: article.refusalReasons.title.isValid === false }"
                             @click="refuse(article, 'title')">
                             <CrossIcon />
                         </div>
@@ -49,17 +53,44 @@
                 </div>
 
                 <hr />
+                <div v-if="article.video">
+                    <div class="field">
+                        <label>{{ $t('validate.label_video') }}: </label>
+                    </div>
+                    <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                        <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="group">
+                        <div class="field-row">
+                            <div class="icon-fields-mobile"
+                                :class="{ validated: article.refusalReasons.videoFile.isValid }"
+                                @click="accept(article, 'videoFile')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.videoFile.isValid === false }"
+                                @click="refuse(article, 'videoFile')">
+                                <CrossIcon />
+                            </div>
+                            <textarea :disabled="article.refusalReasons.videoFile.isValid"
+                                v-model="article.refusalReasons.videoFile.value"
+                                :placeholder="$t('validate.placeholder_video')"></textarea>
+                        </div>
+                    </div>
+                </div>
 
                 <div v-if="article.urlYoutube">
                     <div class="field">
                         <label>{{ $t('validate.label_video') }}: </label>
                     </div>
-                    <div class="player">
+                    <div class="preview-container">
                         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
                     </div>
                     <div class="group">
                         <div class="field-row">
-                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.videoContent.isValid }"
+                            <div class="icon-fields-mobile"
+                                :class="{ validated: article.refusalReasons.videoContent.isValid }"
                                 @click="accept(article, 'videoContent')">
                                 <CheckIcon />
                             </div>
@@ -81,7 +112,8 @@
                     <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
                     <div class="group">
                         <div class="field-row">
-                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.preview.isValid }"
+                            <div class="icon-fields-mobile"
+                                :class="{ validated: article.refusalReasons.preview.isValid }"
                                 @click="accept(article, 'preview')">
                                 <CheckIcon />
                             </div>
@@ -105,7 +137,8 @@
                 </div>
                 <div class="group">
                     <div class="field-row">
-                        <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.description.isValid }"
+                        <div class="icon-fields-mobile"
+                            :class="{ validated: article.refusalReasons.description.isValid }"
                             @click="accept(article, 'description')">
                             <CheckIcon />
                         </div>
@@ -132,8 +165,9 @@
                             <CrossIcon />
                         </div>
                         <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
-                        :placeholder="$t('validate.placeholder_final')" class="final-textarea"></textarea>
-                        <button :disabled="navbarStore.isMenuOpen" @click="updateArticle(article)">{{ $t('validate.save_button') }}</button>
+                            :placeholder="$t('validate.placeholder_final')" class="final-textarea"></textarea>
+                        <button :disabled="navbarStore.isMenuOpen" @click="updateArticle(article)">{{
+                            $t('validate.save_button') }}</button>
                     </div>
                 </div>
             </div>
@@ -157,7 +191,8 @@
                             <td class="icon-tag" :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')">
                                 <CheckIcon class="icon-check" />
                             </td>
-                            <td class="icon-tag" :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')">
+                            <td class="icon-tag" :class="{ refused: tag.isValid === false }"
+                                @click="refuse(tag, 'tag')">
                                 <CrossIcon class="icon-cross" />
                             </td>
 
@@ -165,7 +200,8 @@
                             <td><textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                                     :placeholder="$t('validate.placeholder_tags')"></textarea>
                             </td>
-                            <td class="tag-submit"><button @click="updateTag(tag)">{{ $t('validate.save_button') }}</button></td>
+                            <td class="tag-submit"><button @click="updateTag(tag)">{{ $t('validate.save_button')
+                            }}</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -190,7 +226,8 @@
                                     @click="accept(article, 'title')">
                                     <CheckIcon />
                                 </td>
-                                <td class="icon-fields" :class="{ refused: article.refusalReasons.title.isValid === false }"
+                                <td class="icon-fields"
+                                    :class="{ refused: article.refusalReasons.title.isValid === false }"
                                     @click="refuse(article, 'title')">
                                     <CrossIcon />
                                 </td>
@@ -210,7 +247,7 @@
                     <div class="field">
                         <label>{{ $t('validate.label_video') }}: </label>
                     </div>
-                    <div class="player">
+                    <div class="preview-container">
                         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
                     </div>
                     <div class="group">
@@ -244,11 +281,16 @@
                         </table>
                     </div>
                 </div>
-                <div v-else-if="article.preview">
+                <div v-if="article.video">
                     <div class="field">
-                        <label>{{ $t('validate.label_preview') }}: </label>
+                        <label>{{ $t('validate.label_video') }}: </label>
                     </div>
-                    <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
+                    <div class="preview-container">
+                        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                            <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
                     <div class="group">
                         <table class="table-fields">
                             <thead>
@@ -260,7 +302,46 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="icon-fields" :class="{ validated: article.refusalReasons.preview.isValid }"
+                                    <td class="icon-fields"
+                                        :class="{ validated: article.refusalReasons.videoFile.isValid }"
+                                        @click="accept(article, 'videoFile')">
+                                        <CheckIcon />
+                                    </td>
+                                    <td class="icon-fields"
+                                        :class="{ refused: article.refusalReasons.videoFile.isValid === false }"
+                                        @click="refuse(article, 'videoFile')">
+                                        <CrossIcon />
+                                    </td>
+                                    <td>
+                                        <textarea :disabled="article.refusalReasons.videoFile.isValid"
+                                            v-model="article.refusalReasons.videoFile.value"
+                                            :placeholder="$t('validate.placeholder_video')"></textarea>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div v-else-if="article.preview">
+                    <div class="field">
+                        <label>{{ $t('validate.label_preview') }}: </label>
+                    </div>
+                    <div class="preview-container">
+                        <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
+                    </div>
+                    <div class="group">
+                        <table class="table-fields">
+                            <thead>
+                                <tr>
+                                    <th scope="col">{{ $t('validate.th_validate') }}</th>
+                                    <th scope="col">{{ $t('validate.th_refuse') }}</th>
+                                    <th scope="col">{{ $t('validate.th_reason') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="icon-fields"
+                                        :class="{ validated: article.refusalReasons.preview.isValid }"
                                         @click="accept(article, 'preview')">
                                         <CheckIcon />
                                     </td>
@@ -297,7 +378,8 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="icon-fields" :class="{ validated: article.refusalReasons.description.isValid }"
+                                <td class="icon-fields"
+                                    :class="{ validated: article.refusalReasons.description.isValid }"
                                     @click="accept(article, 'description')">
                                     <CheckIcon />
                                 </td>
@@ -340,7 +422,7 @@
                                 </td>
                                 <td>
                                     <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
-                                    :placeholder="$t('validate.placeholder_final')" class="final-textarea">
+                                        :placeholder="$t('validate.placeholder_final')" class="final-textarea">
                                     </textarea>
                                 </td>
                                 <td class="final-submit">
@@ -403,6 +485,9 @@ const accept = (item, entity) => {
         } else if (entity === 'videoContent') {
             item.refusalReasons.videoContent.value = "";
             item.refusalReasons.videoContent.isValid = true;
+        } else if (entity === 'videoFile') {
+            item.refusalReasons.videoFile.value = "";
+            item.refusalReasons.videoFile.isValid = true;
         } else if (entity === 'preview') {
             item.refusalReasons.preview.value = "";
             item.refusalReasons.preview.isValid = true;
@@ -425,7 +510,7 @@ const accept = (item, entity) => {
             }
 
             //Verify fields validations before validate article
-            if (article.value.preview === null) {
+            if (article.value.urlYoutube !== null) {
                 if (
                     !item.refusalReasons.title.isValid ||
                     !item.refusalReasons.videoContent.isValid ||
@@ -438,10 +523,23 @@ const accept = (item, entity) => {
                     });
                     canValidate = false
                 }
-            } else if (article.value.urlYoutube === null) {
+            } else if (article.value.preview !== null) {
                 if (
                     !item.refusalReasons.title.isValid ||
                     !item.refusalReasons.preview.isValid ||
+                    !item.refusalReasons.description.isValid
+                ) {
+                    notify({
+                        title: t('notification.title.validation'),
+                        type: 'warn',
+                        text: t('notification.text.invalid_fields'),
+                    });
+                    canValidate = false
+                }
+            } else if (article.value.video !== null) {
+                if (
+                    !item.refusalReasons.title.isValid ||
+                    !item.refusalReasons.videoFile.isValid ||
                     !item.refusalReasons.description.isValid
                 ) {
                     notify({
@@ -459,7 +557,7 @@ const accept = (item, entity) => {
             }
         }
     })
-    
+
 }
 
 const refuse = (item, entity) => {
@@ -470,6 +568,8 @@ const refuse = (item, entity) => {
             item.refusalReasons.title.isValid = false;
         } else if (entity === 'videoContent') {
             item.refusalReasons.videoContent.isValid = false;
+        } else if (entity === 'videoFile') {
+            item.refusalReasons.videoFile.isValid = false;
         } else if (entity === 'preview') {
             item.refusalReasons.preview.isValid = false;
         } else if (entity === 'description') {
@@ -504,7 +604,7 @@ const updateTag = (tag) => {
                 text: `${t('notification.text.error_tags_validation')}: ${error.response.data.message}`,
             });
         });
-    })  
+    })
 };
 
 const updateArticle = (article) => {
@@ -531,6 +631,11 @@ const updateArticle = (article) => {
                 videoContent: {
                     value: article.refusalReasons.videoContent.value,
                     isValid: article.refusalReasons.videoContent.isValid,
+                    validatedBy: authStore.user?.id
+                },
+                videoFile: {
+                    value: article.refusalReasons.videoFile.value,
+                    isValid: article.refusalReasons.videoFile.isValid,
                     validatedBy: authStore.user?.id
                 }
             }),
@@ -642,8 +747,11 @@ label {
     margin-right: 15px;
 }
 
-.player {
+.preview-container {
     margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .icon-check {
@@ -794,7 +902,8 @@ textarea {
     margin-bottom: 10px;
 }
 
-.final-submit, .tag-submit {
+.final-submit,
+.tag-submit {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -875,13 +984,15 @@ button {
         align-items: center;
     }
 
-    span.validated, div.validated {
+    span.validated,
+    div.validated {
         background-color: green;
     }
 
-    span.refused, div.refused {
+    span.refused,
+    div.refused {
         background-color: crimson;
     }
-    
+
 }
 </style>

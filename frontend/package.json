@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:preprod": "vite build --mode pre-prod",
+    "build:preprod": "vite build --mode preprod",
     "preview": "vite preview"
   },
   "dependencies": {

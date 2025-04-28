@@ -1,18 +1,30 @@
 export default function extractVideoId(url) {
-    // Regex to capture YouTube video IDs in different formats
-    const youtubeRegex = /(?:https?:\/\/(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|\S+\?v=|(?:v|e(?:mbed)?)\/|\S+?\/)|youtu\.be\/))([\w\-]{11})/;
-    
-    const match = url.match(youtubeRegex);
-    
-    // If a match is found, returns the video ID
-    if (match && match[1]) {
-      return match[1];
-    }
-    
-    // If no ID is found, returns false
-    return false;
+  try {
+      const parsedUrl = new URL(url);
+      
+      // Cas des liens youtube.com (watch, embed, etc.)
+      if (parsedUrl.hostname.includes('youtube.com')) {
+          // Exemples d'URLs: /watch?v=ID, /embed/ID
+          if (parsedUrl.pathname === '/watch') {
+              return parsedUrl.searchParams.get('v');
+          } else if (parsedUrl.pathname.startsWith('/embed/')) {
+              return parsedUrl.pathname.split('/embed/')[1].split('/')[0];
+          } else if (parsedUrl.pathname.startsWith('/v/')) {
+              return parsedUrl.pathname.split('/v/')[1].split('/')[0];
+          }
+      }
+      
+      // Cas des liens youtu.be
+      if (parsedUrl.hostname.includes('youtu.be')) {
+          return parsedUrl.pathname.slice(1);
+      }
+  } catch (err) {
+      // Si ce n'est pas une URL valide
+      console.error('Invalid URL', err);
   }
-  
+
+  return false;
+}
   /*
   // Example of use
   const url1 = "https://www.youtube.com/watch?v=U3tqI9Sf5yU";

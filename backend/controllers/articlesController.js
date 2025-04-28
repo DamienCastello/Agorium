@@ -1,5 +1,6 @@
 const models = require('../models');
 const { Op, Sequelize } = require('sequelize');
+const path = require('path');
 const { Article, User, Like, Tag, Comment } = require('../models');
 
 module.exports = {
@@ -246,7 +247,25 @@ module.exports = {
       }
 
       const userId = req.user.id;
-      const imagePath = req.file ? req.file.path : null;
+
+      let previewPath = null;
+      let videoPath = null;
+
+
+      if (req.files?.preview?.[0]) {
+        previewPath = req.uploadedFiles.preview.replace('/app/public', '');
+        if (process.env.NODE_ENV === 'development') {
+          previewPath = `uploads/previews/${req.files.preview[0].filename}`;
+        }
+      }
+
+      if (req.files?.video?.[0]) {
+        videoPath = req.uploadedFiles.video.replace('/app/public', '');
+        if (process.env.NODE_ENV === 'development') {
+          videoPath = `uploads/videos/${req.files.video[0].filename}`;
+        }
+      }
+
 
       if (!userId) {
         return res.status(400).json({ message: req.t('article.user_required') });
@@ -256,7 +275,9 @@ module.exports = {
       const article = await Article.create({
         title,
         description,
-        preview: imagePath,
+        preview: previewPath,
+        video: videoPath,
+        thumbnail: '',
         urlYoutube: urlYoutube || null,
         refusalReasons: JSON.stringify({
           title: {
@@ -274,6 +295,11 @@ module.exports = {
             isValid: null,
             validatedBy: null,
           },
+          videoFile: {
+            value: '',
+            isValid: null,
+            validatedBy: null,
+          },
           preview: {
             value: '',
             isValid: null,
@@ -284,6 +310,44 @@ module.exports = {
         isValid: false,
         userId,
       });
+
+      if (videoPath) {
+        const {
+          isExecutableFile,
+          analyzeVideo,
+          extractFrameFromVideo,
+          scanForNSFW
+        } = require('../services/video');
+
+        const oldVideoPath = article.video;
+        const oldThumbnailPath = article.thumbnail;
+        let fullVideoPath = null;
+
+        fullVideoPath = path.join('/app/public', videoPath);
+        if(process.env.NODE_ENV === 'development') {
+          fullVideoPath = path.resolve(videoPath);
+        }
+
+        await isExecutableFile(fullVideoPath);
+        await analyzeVideo(fullVideoPath);
+
+        const fs = require('fs');
+        const { v4: uuidv4 } = require('uuid');
+        const { getUploadPath } = require('../utils/getUploadPath');
+
+        const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
+        const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
+        
+        if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
+          fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
+        }
+        
+        await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
+        await scanForNSFW(thumbnailFullPath);
+
+        // Mise à jour du chemin relatif dans la base
+        await article.update({ thumbnail: thumbnailDbPath });
+      }
 
       if (tags && Array.isArray(tags)) {
         const tagIds = tags.map((tag) => tag.id);
@@ -480,94 +544,160 @@ module.exports = {
         res.status(500).json({ message: req.t('error') });
       });
   },
-  update: function (req, res, next) {
-    console.log("check req : ", req)
-    const { title, description, urlYoutube, tags } = req.body;
-
+  update: async function (req, res, next) {
+    try {
+      const { title, description, urlYoutube, tags: rawTags } = req.body;
+  
       if (!title || !description) {
         return res.status(400).json({ message: req.t('article.fields_required') });
       }
-
+  
       if (title.length < 3) {
         return res.status(400).json({ message: req.t('article.title_length') });
       }
-
+  
+      let tags = rawTags;
       if (typeof tags === 'string') {
         try {
-          req.body.tags = JSON.parse(tags);
+          tags = JSON.parse(tags);
         } catch (error) {
           return res.status(400).json({ message: req.t('article.invalid_tags') });
         }
       }
-
+  
       if (!tags || !Array.isArray(tags) || tags.length === 0) {
         return res.status(400).json({ message: req.t('article.tag_required') });
       }
-
+  
       const userId = req.user.id;
-      const imagePath = req.file ? req.file.path : null;
-
       if (!userId) {
         return res.status(400).json({ message: req.t('article.user_required') });
       }
-
-    Article.findByPk(req.params.id)
-      .then((article) => {
-        if (!article) {
-          return res.status(404).json({ message: req.t('article.not_found') });
+  
+      const article = await Article.findByPk(req.params.id);
+      if (!article) {
+        return res.status(404).json({ message: req.t('article.not_found') });
+      }
+  
+      const oldVideoPath = article.video;
+      const oldThumbnailPath = article.thumbnail;
+      const oldPreviewPath = article.preview; // ⬅️ Je récupère aussi l'ancien preview ici
+  
+      let previewPath = null;
+      let videoPath = null;
+  
+      if (req.files?.preview?.[0]) {
+        previewPath = req.uploadedFiles.preview.replace('/app/public', '');
+        if (process.env.NODE_ENV === 'development') {
+          previewPath = `uploads/previews/${req.files.preview[0].filename}`;
         }
-
-        return article.update({
-          title: title,
-          description: description,
-          preview: imagePath || article.preview,
-          urlYoutube: urlYoutube || article.urlYoutube,
-          refusalReasons: JSON.stringify({
-            title: {
-              value: '',
-              isValid: null,
-              validatedBy: null,
-            },
-            description: {
-              value: '',
-              isValid: null,
-              validatedBy: null,
-            },
-            videoContent: {
-              value: '',
-              isValid: null,
-              validatedBy: null,
-            },
-            preview: {
-              value: '',
-              isValid: null,
-              validatedBy: null,
-            },
-          }),
-          overallReasonForRefusal: null,
-          isValid: false,
-          userId: userId
-        })
-          .then((updatedArticle) => {
-            if (tags && Array.isArray(tags)) {
-              const tagIds = tags.map((tag) => tag.id);
-              return Tag.findAll({ where: { id: tagIds } })
-                .then((tagsToAssociate) => {
-                  return updatedArticle.setTags(tagsToAssociate);
-                })
-                .then(() => {
-                  res.json({ updatedArticle });
-                });
-            } else {
-              res.json({ updatedArticle });
-            }
-          });
-      })
-      .catch((error) => {
-        console.error("Error updating article:", error.message);
-        res.status(500).json({ message: req.t('error') });
+      }
+  
+      if (req.files?.video?.[0]) {
+        videoPath = req.uploadedFiles.video.replace('/app/public', '');
+        if (process.env.NODE_ENV === 'development') {
+          videoPath = `uploads/videos/${req.files.video[0].filename}`;
+        }
+      }
+  
+      let thumbnailPath = article.thumbnail;
+  
+      const updatedArticle = await article.update({
+        title,
+        description,
+        preview: previewPath || article.preview,  // ⬅️ pour garder l'ancien preview si pas uploadé
+        video: videoPath || article.video,          // ⬅️ pour garder l'ancienne vidéo si pas uploadée
+        thumbnail: thumbnailPath,
+        urlYoutube: urlYoutube || article.urlYoutube,
+        refusalReasons: JSON.stringify({
+          title: { value: '', isValid: null, validatedBy: null },
+          description: { value: '', isValid: null, validatedBy: null },
+          videoContent: { value: '', isValid: null, validatedBy: null },
+          videoFile: { value: '', isValid: null, validatedBy: null },
+          preview: { value: '', isValid: null, validatedBy: null },
+        }),
+        overallReasonForRefusal: null,
+        isValid: false,
+        userId
       });
-  },
+  
+      if (tags && Array.isArray(tags)) {
+        const tagIds = tags.map(tag => tag.id);
+        const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+        await updatedArticle.setTags(tagsToAssociate);
+      }
+  
+      const fs = require('fs');
+      const path = require('path');
+  
+      // Suppression de l'ancien preview si un nouveau preview a été uploadé
+      if (previewPath && oldPreviewPath) {
+        const oldFullPreviewPath = process.env.NODE_ENV === 'development'
+          ? path.resolve(oldPreviewPath)
+          : path.join('/app/public', oldPreviewPath);
+        if (fs.existsSync(oldFullPreviewPath)) {
+          fs.unlinkSync(oldFullPreviewPath);
+        }
+      }
+  
+      if (req.files?.video?.[0]) {
+        const {
+          isExecutableFile,
+          analyzeVideo,
+          extractFrameFromVideo,
+          scanForNSFW
+        } = require('../services/video');
+  
+        let fullVideoPath = path.join('/app/public', videoPath);
+        if (process.env.NODE_ENV === 'development') {
+          fullVideoPath = path.resolve(videoPath);
+        }
+  
+        await isExecutableFile(fullVideoPath);
+        await analyzeVideo(fullVideoPath);
+  
+        const { getUploadPath } = require('../utils/getUploadPath');
+        const { v4: uuidv4 } = require('uuid');
+        const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
+        const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
+  
+        if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
+          fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
+        }
+  
+        await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
+        await scanForNSFW(thumbnailFullPath);
+  
+        if (oldVideoPath) {
+          const oldFullVideoPath = process.env.NODE_ENV === 'development'
+            ? path.resolve(oldVideoPath)
+            : path.join('/app/public', oldVideoPath);
+          if (fs.existsSync(oldFullVideoPath)) {
+            fs.unlinkSync(oldFullVideoPath);
+          }
+        }
+  
+        if (oldThumbnailPath) {
+          const oldFullThumbnailPath = process.env.NODE_ENV === 'development'
+            ? path.resolve(oldThumbnailPath)
+            : path.join('/app/public', oldThumbnailPath);
+          if (fs.existsSync(oldFullThumbnailPath)) {
+            fs.unlinkSync(oldFullThumbnailPath);
+          }
+        }
+  
+        await article.update({
+          video: videoPath,
+          thumbnail: thumbnailDbPath
+        });
+      }
+  
+      return res.json({ updatedArticle });
+    } catch (error) {
+      console.error("Error updating article:", error.message);
+      return res.status(500).json({ message: req.t('error') });
+    }
+  },  
   validate: function (req, res, next) {
     const user = req.user;
 

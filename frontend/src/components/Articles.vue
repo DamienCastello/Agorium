@@ -66,12 +66,16 @@
       <p>{{ $t('articles.state_error') }}</p>
     </div>
     <div v-else class="articles-grid pico" :aria-busy="state === 'loading'">
-      <div v-for="(article, index) in articles" :key="index" class="card"
-        @click="navigateToArticle(article.id)">
+      <div v-for="(article, index) in articles" :key="index" class="card" @click="navigateToArticle(article.id)">
         <img v-if="article.urlYoutube" :src="getYoutubeThumbnail(article.urlYoutube)" alt="Preview"
           class="card-image" />
-        <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview"
-          class="card-image" />
+        <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview" class="card-image" />
+        <img
+        v-else-if="article.video"
+        :src="`${url.baseUrl}/${article.thumbnail}`"
+        alt="Preview"
+        class="card-image"
+      />
         <div class="card-content">
           <h2>{{ article.title }}</h2>
           <p class="description">

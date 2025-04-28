@@ -1,14 +1,14 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: agorium-db-pre-prod
+    container_name: agorium-db-preprod
     restart: always
     env_file:
       - .env          # Chargement du fichier d'environnement principal
-      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
+      - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
     environment:
       MYSQL_ROOT_PASSWORD: caS>13200.ago
-      MYSQL_DATABASE: agorium_db_pre_prod
+      MYSQL_DATABASE: agorium_db_preprod
       MYSQL_USER: admin
       MYSQL_PASSWORD: azerty
     volumes:
@@ -18,22 +18,23 @@ services:
 
   backend:
     build: ./backend
-    container_name: agorium-backend-pre-prod
+    container_name: agorium-backend-preprod
     depends_on:
       - mysql
     env_file:
       - .env          # Chargement du fichier d'environnement principal
-      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
+      - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
     environment:
-      - NODE_ENV=pre-prod  # Définition spécifique à cet environnement
+      - NODE_ENV=preprod  # Définition spécifique à cet environnement
     networks:
       - proxy
     volumes:
       - ./backend:/app
+      - /home/gamma/agorium-preprod-uploads:/app/public/uploads
     command: >
       sh -c "
         npm install &&
-        dockerize -wait tcp://agorium-db-pre-prod:3306 -timeout 60s &&
+        dockerize -wait tcp://agorium-db-preprod:3306 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
@@ -41,13 +42,13 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_APP_MODE: pre-prod
-    container_name: agorium-frontend-pre-prod
+        VITE_APP_MODE: preprod
+    container_name: agorium-frontend-preprod
     depends_on:
       - backend
     env_file:
       - .env          # Chargement du fichier d'environnement principal
-      - .env.pre-prod # Chargement du fichier d'environnement spécifique à pre-prod
+      - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
     networks:
       - proxy
 

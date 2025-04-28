@@ -15,29 +15,34 @@
       <div v-if="article.urlYoutube">
         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
       </div>
+      <div v-else-if="article.video" class="player">
+        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+          <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+
+      </div>
       <div v-else-if="article.preview">
         <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
       </div>
       <div class="action-container">
         <RouterLink :to="`/profile/${creator?.pseudo}`" class="author">
-        <h3>{{ creator?.pseudo }}</h3>
-        <img
-          :src="creator?.avatar ? `${url.baseUrl}/${creator?.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
-          alt="author-avatar"
-          class="author-avatar"
-        />
-      </RouterLink>
+          <h3>{{ creator?.pseudo }}</h3>
+          <img
+            :src="creator?.avatar ? `${url.baseUrl}/${creator?.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
+            alt="author-avatar" class="author-avatar" />
+        </RouterLink>
         <div class="action-like" @click="toggleLike">
           {{ likeNumber }} <FadeSlideTransition>
-            <component :is="componentToShow"  />
+            <component :is="componentToShow" />
           </FadeSlideTransition>
         </div>
         <div class="action-report" @click="navigateToReport(article.id)">
-          <ReportIcon class="icon"/>
+          <ReportIcon class="icon" />
           {{ $t('article_detail.report') }}
         </div>
       </div>
-        <p>{{ article.description }}</p>
+      <p>{{ article.description }}</p>
       <hr />
       <div v-if="article.comments && article.comments.length > 0">
         <Comments :article="article" :refreshComments="fetchArticle" />
@@ -85,41 +90,41 @@ const toggleLike = () => {
         type: 'error',
         text: "Article is not loaded or missing ID !",
       });
-    return;
-  }
+      return;
+    }
 
-  if (!authStore.user) {
+    if (!authStore.user) {
       notify({
         title: "Liking Article",
         type: 'error',
         text: "You must be authenticated to like an article.",
       });
-    return;
-  }
+      return;
+    }
 
-  axios
-    .post(`${url.baseUrl}/api/v1/articles/${article.value.id}/like`, {}, {
-      withCredentials: true,
-      headers: {
-        "Authorization": `Bearer ${authStore.token}`,
-        "Content-Type": "application/json",
-      },
-    })
-    .then((response) => {
-      article.value.likes = response.data.likes;
-      state.value = "idle";
-      isLiked.value = response.data.isLiked;
-      if(isLiked.value === true) likeNumber.value++
-      else if(isLiked.value === false) likeNumber.value--
-    })
-    .catch((error) => {
-      notify({
-        title: "Liking Article",
-        type: 'error',
-        text: error.response.data.message,
+    axios
+      .post(`${url.baseUrl}/api/v1/articles/${article.value.id}/like`, {}, {
+        withCredentials: true,
+        headers: {
+          "Authorization": `Bearer ${authStore.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        article.value.likes = response.data.likes;
+        state.value = "idle";
+        isLiked.value = response.data.isLiked;
+        if (isLiked.value === true) likeNumber.value++
+        else if (isLiked.value === false) likeNumber.value--
+      })
+      .catch((error) => {
+        notify({
+          title: "Liking Article",
+          type: 'error',
+          text: error.response.data.message,
+        });
+        state.value = "error";
       });
-      state.value = "error";
-    });
   })
 };
 
@@ -156,7 +161,7 @@ const componentToShow = computed(() => {
 
 onMounted(() => {
   const articleId = route.params.id;
-  
+
   if (!articleId) {
     state.value = "error";
     return;
@@ -174,12 +179,12 @@ onMounted(() => {
         article.value = response.data.article;
         likeNumber.value = article.value.likes.length;
         //Set isLiked to dynamic display icon
-        if(!authStore.user) {
+        if (!authStore.user) {
           isLiked.value = false
           state.value = "idle";
         } else {
-          for(let i=0; i<response.data.article.likes.length; i++){
-            if(response.data.article.likes[i].user.id === authStore.user.id){
+          for (let i = 0; i < response.data.article.likes.length; i++) {
+            if (response.data.article.likes[i].user.id === authStore.user.id) {
               isLiked.value = true
               state.value = "idle";
             }
@@ -194,19 +199,19 @@ onMounted(() => {
             Accept: "application/json",
           },
         })
-        .then((response) => {
-          if (response.data && response.data.user) {
-            creator.value = response.data.user
-          }
-        })
-        .catch((error) => {
-          notify({
-            title: "Fetching User",
-            type: 'error',
-            text: error.response.data.message,
+          .then((response) => {
+            if (response.data && response.data.user) {
+              creator.value = response.data.user
+            }
+          })
+          .catch((error) => {
+            notify({
+              title: "Fetching User",
+              type: 'error',
+              text: error.response.data.message,
+            });
+            state.value = "error";
           });
-          state.value = "error";
-        });
         state.value = "idle";
       } else {
         state.value = "error";
@@ -230,15 +235,15 @@ const navigateToReport = (id) => {
         type: 'error',
         text: "You must be authenticated to report an article.",
       });
-    return;
-  }
-  
+      return;
+    }
+
     const articleType = article.value.urlYoutube ? 'youtube' : 'preview'
     globalStore.setReportType(articleType);
-    router.push({ 
-          name: 'ReportArticle', 
-          params: { articleId: id, entity: 'articles' } 
-      });
+    router.push({
+      name: 'ReportArticle',
+      params: { articleId: id, entity: 'articles' }
+    });
   });
 };
 </script>
@@ -259,7 +264,8 @@ const navigateToReport = (id) => {
   margin: 0 auto;
 }
 
-p, h1 {
+p,
+h1 {
   margin-top: 15px;
   text-align: center;
 }
@@ -365,17 +371,26 @@ span {
   border: 2px solid #ccc;
 }
 
+.player {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0px;
   }
+
   .article-container {
     max-width: 300px;
     min-width: 300px;
   }
+
   .action-report {
     margin-top: 5px;
   }
+
   h1 {
     font-size: 20px;
   }

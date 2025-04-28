@@ -21,7 +21,7 @@ async function runSeeds() {
     */
 
     console.log('🌱 Seeding achievements...');
-    await require('./05_achievements')();
+    await require('./05_achievements.js')();
 
     console.log('✅ All seeds have been executed successfully!');
     process.exit();
