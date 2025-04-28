@@ -69,9 +69,9 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_AGORIUM_VERSION=2.1.2
     ```
 
-    Create a `.env.pre-prod` file in the root folder with the following parameters:
+    Create a `.env.preprod` file in the root folder with the following parameters:
    ```env
-    NODE_ENV=pre-prod
+    NODE_ENV=preprod
 
     # Backend
     DB_USERNAME=admin
@@ -85,7 +85,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_BASE_URL=http://agorium-preprod-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
-    VITE_APP_MODE=pre-prod
+    VITE_APP_MODE=preprod
     VITE_AGORIUM_VERSION=2.1.2
     ```
 
@@ -166,7 +166,7 @@ after you can run
 npx sequelize-cli db:create # Run db creation
 npx sequelize-cli db:migrate # Run migrations
 
-node seeds/01_users.js && node seeds/02_tags.js && node seeds/03_articles.js && node seeds/04_comments.js node seeds/05_achievements.js # Run seeds
+node seeds/01_users.js && node seeds/02_tags.js && node seeds/03_articles.js && node seeds/04_comments.js && node seeds/05_achievements.js # Run seeds
 
 nodemon # Start server
 ```

@@ -65,8 +65,15 @@ app.use((req, res, next) => {
   i18n.setLocale(req, lang);
   next();
 });
+
+if (process.env.NODE_ENV === "development") {
+  app.use('/uploads', express.static('uploads'));
+  app.use(express.static(path.join(__dirname, 'public')));
+} else {
+  app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+}
   
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 
 // Initialize auth strategies config
 localAuthStrategy;

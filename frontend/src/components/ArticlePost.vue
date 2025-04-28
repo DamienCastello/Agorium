@@ -2,17 +2,20 @@
   <div v-if="state === 'error'">
     <p>{{ $t('publish.state_error') }}</p>
   </div>
-  <div v-else-if="state === 'loading'">
-    <p>{{ $t('publish.state_loading') }}</p>
-  </div>
-  <div v-else class="pico">
+
+  <div v-else class="pico" v-loading="state === 'loading'" :element-loading-text="$t('publish.state_loading')">
     <div @mousedown="handleClickOutsideNavbar">
       <h1>{{ $t('publish.title') }}</h1>
 
-      <label>
-        <input class="switch" name="withVideo" type="checkbox" role="switch" @click="toggleWithVideo" checked />
-        {{ $t('publish.switch_video') }}
-      </label>
+      <fieldset>
+        <h3>{{ $t('publish.media_type') }}</h3>
+
+        <el-radio-group v-model="mediaType">
+          <el-radio value="image">{{ $t('publish.option_image') }}</el-radio>
+          <el-radio value="video">{{ $t('publish.option_video') }}</el-radio>
+          <el-radio value="youtube">{{ $t('publish.option_youtube') }}</el-radio>
+        </el-radio-group>
+      </fieldset>
 
 
       <form @submit.prevent="handleSubmit">
@@ -64,9 +67,14 @@
           <component 
             :is="componentToShow"
             v-model="form.urlYoutube"
+            :mode="'create'"
             :imagePreview="imagePreview"
+            :videoPreview="videoPreview"
             @update:selectedFile="updateSelectedFile"
             @update:imagePreview="updateImagePreview"
+            @update:videoPreview="updateVideoPreview"
+            @update:videoThumbnail="updateVideoThumbnail" 
+            :videoThumbnail="videoThumbnail"
           />
         </FadeSlideTransition>
         <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('publish.tag_required') }}</p>
@@ -86,6 +94,7 @@ import { useAuthStore } from "@/stores/auth";
 import url from "@/utils/url";
 import UrlYoutubeFieldset from "./UrlYoutubeFieldset.vue";
 import ImageSelector from "./ImageSelector.vue";
+import VideoSelector from "./VideoSelector.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useRouter } from "vue-router";
 import { useNavbarStore } from "../stores/navbar";
@@ -107,20 +116,31 @@ const navbarStore = useNavbarStore();
 const router = useRouter();
 const { notify } = useNotification();
 const { t } = useI18n();
-
 const state = ref("loading");
 const tags = ref([]);
 const selectedTags = ref([]);
-const withVideo = ref(true);
+const mediaType = ref("youtube");
 const selectedFile = ref(null);
 const imagePreview = ref(null);
+const videoPreview = ref(null);
+const videoThumbnail = ref(null);
 const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
 
 const isFormValid = computed(() => {
-  return form.value.title && form.value.description && (withVideo.value ? form.value.urlYoutube : selectedFile.value);
+  if (!form.value.title || !form.value.description) return false;
+
+  switch (mediaType.value) {
+    case "youtube":
+      return form.value.urlYoutube.length > 0;
+    case "image":
+    case "video":
+      return selectedFile.value !== null;
+    default:
+      return false;
+  }
 });
 
 const handleSelectedTagClick = (tag, event) => {
@@ -197,19 +217,10 @@ const addTag = () => {
     });
 };
 
-const toggleWithVideo = () => {
-  withVideo.value = !withVideo.value;
-
-  if (withVideo.value) {
-    selectedFile.value = null;
-    imagePreview.value = null;
-  } else {
-    form.value.urlYoutube = "";
-  }
-};
-
 const componentToShow = computed(() => {
-  return withVideo.value ? UrlYoutubeFieldset : ImageSelector;
+  if (mediaType.value === "youtube") return UrlYoutubeFieldset;
+  if (mediaType.value === "video") return VideoSelector;
+  return ImageSelector;
 });
 
 const updateSelectedFile = (file) => {
@@ -220,6 +231,14 @@ const updateSelectedFile = (file) => {
 
 const updateImagePreview = (preview) => {
   imagePreview.value = preview;
+};
+
+const updateVideoPreview = (video) => {
+  videoPreview.value = video;
+};
+
+const updateVideoThumbnail = (thumbnail) => {
+  videoThumbnail.value = thumbnail;
 };
 
 onMounted(() => {
@@ -290,12 +309,15 @@ const handleClickOutsideNavbar = (event) => {
 };
 
 const handleSubmit = () => {
-  if (!selectedFile.value && !withVideo.value || !form.value.urlYoutube && withVideo.value) {
+  state.value = 'loading';
+
+  if ((!selectedFile.value && (mediaType.value === 'image' || mediaType.value === 'video')) || (!form.value.urlYoutube && mediaType.value === 'youtube')) {
     notify({
       title: t('notification.title.field_media_required'),
       type: 'warn',
       text: t('notification.text.field_media_required'),
     });
+    state.value = 'idle';
     return;
   }
 
@@ -311,9 +333,7 @@ const handleSubmit = () => {
 
   formData.append("title", form.value.title);
   formData.append("description", form.value.description);
-  if (!withVideo.value) {
-    formData.append("preview", selectedFile.value)
-  } else {
+  if (mediaType.value === "youtube") {
     if (!isValidYoutubeId) {
       notify({
         title: t('notification.title.field_media_required'),
@@ -321,14 +341,20 @@ const handleSubmit = () => {
         text: t('notification.text.field_media_url'),
       });
     }
-    formData.append("urlYoutube", form.value.urlYoutube);
+    if (isValidYoutubeId) {
+      formData.append("urlYoutube", form.value.urlYoutube);
+    } else {
+      return
+    }
+  } else if (mediaType.value === "image") {
+    formData.append("preview", selectedFile.value)
+  } else if (mediaType.value === "video") {
+    formData.append("video", selectedFile.value)
   }
-
 
   formData.append("userId", authStore.user.id);
   formData.append("tags", JSON.stringify(cleanedTags));
-
-  if (isValidYoutubeId) {
+  
     axios
       .post(`${url.baseUrl}/api/v1/articles/`, formData, {
         headers: {
@@ -336,14 +362,13 @@ const handleSubmit = () => {
         },
       })
       .then(() => {
-        state.value = 'loading';
         notify({
           title: t('notification.title.article_create'),
           type: 'success',
           text: t('notification.text.article_create'),
         });
         setTimeout(() => {
-          // Have to delete timeout in V2
+          // Improve it by call after navigation ...
           state.value = 'idle';
           router.push("/articles");
         }, 2000);
@@ -357,8 +382,6 @@ const handleSubmit = () => {
         });
         state.value = 'error';
       });
-  }
-
 
 };
 
@@ -372,8 +395,14 @@ const toggleDropdown = () => {
 </script>
 
 <style scoped>
-input.switch {
-  min-width: 30px !important;
+
+
+::v-deep .el-radio.is-checked .el-radio__input {
+  --el-color-primary: #4040BF !important;
+}
+
+::v-deep .el-radio.is-checked .el-radio__label {
+  --el-color-primary: #4040BF !important;
 }
 
 .dropdown-placeholder {

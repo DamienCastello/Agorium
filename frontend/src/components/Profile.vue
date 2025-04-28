@@ -14,7 +14,7 @@
                 {{ computedTitle }}
             </h1>
 
-            <h7>Points: {{ user?.points }}</h7>
+            <h6>Points: {{ user?.points }}</h6>
             <h4>Succès: </h4>
         <div class="achievements pico">
             

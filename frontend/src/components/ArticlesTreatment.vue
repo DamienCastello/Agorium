@@ -21,6 +21,12 @@
         alt="Preview"
         class="card-image"
       />
+      <img
+        v-else-if="article.video"
+        :src="`${url.baseUrl}/${article.thumbnail}`"
+        alt="Preview"
+        class="card-image"
+      />
       <div class="card-content">
         <h3>{{ article.title }}</h3>
         <p class="description">

@@ -1,7 +1,10 @@
-module.exports = {
-    up: async (queryInterface, Sequelize) => {
-      await queryInterface.bulkInsert('Achievements', [
-        //Used
+const models = require('../models');
+const Achievement = models.Achievement;
+
+module.exports = async function() {
+  try {
+    const achievements = [
+      // Used
       {
         id: 1,
         name: 'First article published',
@@ -13,7 +16,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
       {
         id: 2,
         name: '5 articles published',
@@ -25,7 +27,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
       {
         id: 3,
         name: 'Prolific author',
@@ -37,9 +38,8 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //Not used
-      // TODO: Need implementation back & front
+
+      // Not used yet (future)
       {
         id: 4,
         name: 'Featured Article',
@@ -51,11 +51,11 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //Used
+
+      // Used
       {
         id: 5,
-        name: 'first comment',
+        name: 'First comment',
         description: 'You have written your first comment !',
         points: 10,
         isReusable: false,
@@ -64,7 +64,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
       {
         id: 6,
         name: 'Active commentator',
@@ -76,12 +75,12 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //To implement
+
+      // To implement
       {
         id: 7,
         name: 'First comment liked',
-        description: 'One of yours comments have been liked for the first time !',
+        description: 'One of your comments has been liked for the first time !',
         points: 10,
         isReusable: false,
         threshold: 1.00,
@@ -89,8 +88,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //To implement
       {
         id: 8,
         name: 'Popular comments',
@@ -102,8 +99,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //To implement
       {
         id: 9,
         name: 'Very popular comments',
@@ -115,8 +110,6 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //To implement
       {
         id: 10,
         name: 'Super star of comments',
@@ -128,8 +121,8 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
-  
-      //Used
+
+      // Used
       {
         id: 11,
         name: 'First like',
@@ -141,11 +134,15 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       }
-      ]);
-    },
-  
-    down: async (queryInterface, Sequelize) => {
-      await queryInterface.bulkDelete('Achievements', null, {});
-    },
-  };
-  
+    ];
+
+    // Insert all achievements sequentially
+    for (const achievementData of achievements) {
+      const achievement = await Achievement.create(achievementData);
+      console.log(`Created achievement: ${achievement.name}`);
+    }
+
+  } catch (error) {
+    console.error('Error while seeding achievements:', error);
+  }
+};

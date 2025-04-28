@@ -44,12 +44,17 @@ module.exports = {
         }
     },
     create: function (req, res, next) {
+        const avatarPath = req.uploadedFiles ? req.uploadedFiles.avatars : null;
+
+        // Vérifie que l'avatar est bien défini et modifie son path pour être relatif
+        const avatar = avatarPath ? avatarPath.replace('/app/public', '') : null;
+
         User.create({
             pseudo: req.params.pseudo,
             password: req.params.password,
             email: req.params.email,
             isAdmin: false,
-            avatar: req.uploadedFiles.avatars
+            avatar: avatar
         })
             .then((user) => { res.json({ user }); })
             .catch((error) => {
@@ -70,12 +75,13 @@ module.exports = {
                 if (newAvatarPath && user.avatar && !user.avatar.includes('utilisateur.png')) {
                     const oldAvatarPath = path.join('/app/public', user.avatar);
                     fs.unlink(oldAvatarPath, (err) => {
+                        console.log("check old path: ", oldAvatarPath)
                         if (err && err.code !== 'ENOENT') {
                             console.warn('Could not delete old avatar:', err.message);
                         }
                     });                    
                 }
-    
+
                 // Construire les données à mettre à jour
                 const updateData = {};
                 if (req.params.pseudo) updateData.pseudo = req.params.pseudo;
