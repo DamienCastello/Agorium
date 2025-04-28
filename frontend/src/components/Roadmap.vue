@@ -19,17 +19,23 @@
   
       <section class="releases-notes">
         <h2>Last releases</h2>
-        <p><strong>v2.1.2</strong></p>
+        <p><strong>v1.3.0</strong></p>
+        <ul class="standard-list">
+          <li>Add upload video</li>
+          <li>analyze and scan uploads</li>
+          <li>Add Roadmap.</li>
+        </ul>
+        <p><strong>v1.2.1</strong></p>
         <ul class="standard-list">
           <li>Fix config.</li>
         </ul>
-        <p><strong>v2.1.1</strong></p>
+        <p><strong>v1.2.0</strong></p>
         <ul class="standard-list">
           <li>Add update article (in profile view).</li>
           <li>Isolate the upload folder and make it persistent.</li>
           <li>Add Roadmap.</li>
         </ul>
-        <p><strong>v2.0.1</strong></p>
+        <p><strong>v1.1.1</strong></p>
         <ul class="standard-list">
           <li>Fix multiples bugs.</li>
         </ul>
