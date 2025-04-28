@@ -63,7 +63,7 @@ module.exports = {
                 email: req.body.email,
                 password: hashedPassword,
                 pseudo: req.body.pseudo,
-                avatar: req.file ? `${req.file.path}` : null,
+                avatar: req.uploadedFiles ? req.uploadedFiles.avatars : null,
                 isAdmin: false
             });
     

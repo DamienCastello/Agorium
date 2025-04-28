@@ -2,17 +2,9 @@
     <div v-if="state === 'error'">
         <p>{{ $t('update.state_error') }}</p>
     </div>
-    <div v-else-if="state === 'loading'">
-        <p>{{ $t('update.state_loading') }}</p>
-    </div>
-    <div v-else class="pico">
+    <div v-else class="pico" v-loading="state === 'loading'" :element-loading-text="$t('publish.state_loading')">
         <div @mousedown="handleClickOutsideNavbar">
             <h1>{{ $t('update.title') }}</h1>
-
-            <label>
-                <input class="switch" name="withVideo" type="checkbox" role="switch" @click="toggleWithVideo" checked />
-                {{ $t('update.switch_video') }}
-            </label>
 
 
             <form @submit.prevent="handleSubmit">
@@ -28,8 +20,7 @@
                             style="color: red">*</span></label>
                     <p v-if="!refusalReasons.description.isValid" class="validation-message">{{
                         refusalReasons.description.value }}</p>
-                    <textarea id="description" :placeholder="lorem" v-model="form.description" rows="5"
-                        cols="33"></textarea>
+                    <textarea id="description" v-model="form.description" rows="5" cols="33"></textarea>
                 </fieldset>
 
                 <label>Tags <span style="color: red">*</span></label>
@@ -73,15 +64,23 @@
                                 <input id="new-tag" type="text" :placeholder="$t('update.placeholder_tag')"
                                     v-model="newTag" @keyup.enter="addTag" class="new-tag-input" />
                                 <button @click="addTag" type="button" class="add-tag-button">{{ $t('update.add_button')
-                                    }}</button>
+                                }}</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <p v-if="!refusalReasons.videoFile.isValid" class="validation-message">{{
+                    refusalReasons.videoFile.value }}</p>
+                <p v-if="!refusalReasons.videoContent.isValid" class="validation-message">{{
+                    refusalReasons.videoContent.value }}</p>
+                <p v-if="!refusalReasons.preview.isValid" class="validation-message">{{
+                    refusalReasons.preview.value }}</p>
                 <FadeSlideTransition>
-                    <component :is="componentToShow" v-model="form.urlYoutube" :imagePreview="imagePreview"
-                        @update:selectedFile="updateSelectedFile" @update:imagePreview="updateImagePreview" />
+                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'" :imagePreview="imagePreview"
+                        @update:videoThumbnail="updateVideoThumbnail" :videoThumbnail="videoThumbnail"
+                        @update:imagePreview="updateImagePreview" :videoPreview="videoPreview"
+                        @update:videoPreview="updateVideoPreview" @update:selectedFile="updateSelectedFile" />
                 </FadeSlideTransition>
                 <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('update.tag_required') }}</p>
                 <p v-if="overallReasonForRefusal" class="validation-message">{{ overallReasonForRefusal }}
@@ -106,6 +105,7 @@ import axios from 'axios';
 import { useAuthStore } from "@/stores/auth";
 import UrlYoutubeFieldset from "./UrlYoutubeFieldset.vue";
 import ImageSelector from "./ImageSelector.vue";
+import VideoSelector from "./VideoSelector.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useNavbarStore } from "../stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
@@ -120,26 +120,45 @@ const router = useRouter();
 const { notify } = useNotification();
 const { t } = useI18n();
 
+const mediaType = ref("youtube");
 const state = ref("loading");
 const tags = ref([]);
 const selectedTags = ref([]);
-const withVideo = ref(true);
-const refusalReasons = ref(null);
+const refusalReasons = ref({
+  title: { isValid: true, value: "" },
+  description: { isValid: true, value: "" },
+  preview: { isValid: true, value: "" },
+  videoContent: { isValid: true, value: "" },
+  videoFile: { isValid: true, value: "" }
+});;
 const overallReasonForRefusal = ref(null);
 const selectedFile = ref(null);
 const imagePreview = ref(null);
+const videoPreview = ref(null);
+const videoThumbnail = ref(null);
 const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
 
 const form = ref({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
+    urlYoutube: ""
 });
 
 const isFormValid = computed(() => {
-    return form.value.title && form.value.description && (withVideo.value ? form.value.urlYoutube : selectedFile.value);
+    if (!form.value.title || !form.value.description) return false;
+
+    switch (mediaType.value) {
+        case "youtube":
+            return form.value.urlYoutube.length > 0;
+        case "image":
+        case "video":
+            return selectedFile.value !== null;
+        default:
+            return false;
+    }
 });
 
 const handleSelectedTagClick = (tag, event) => {
@@ -156,18 +175,6 @@ const handleSelectedTagClick = (tag, event) => {
     }
 };
 
-
-const toggleWithVideo = () => {
-    withVideo.value = !withVideo.value;
-
-    if (withVideo.value) {
-        selectedFile.value = null;
-        imagePreview.value = null;
-    } else {
-        form.value.urlYoutube = "";
-    }
-};
-
 const toggleTag = (tag) => {
     const index = selectedTags.value.findIndex(t => t.id === tag.id);
     if (index !== -1) {
@@ -178,7 +185,9 @@ const toggleTag = (tag) => {
 };
 
 const componentToShow = computed(() => {
-    return withVideo.value ? UrlYoutubeFieldset : ImageSelector;
+    if (mediaType.value === "youtube") return UrlYoutubeFieldset;
+    if (mediaType.value === "video") return VideoSelector;
+    return ImageSelector;
 });
 
 const updateSelectedFile = (file) => {
@@ -191,6 +200,13 @@ const updateImagePreview = (preview) => {
     imagePreview.value = preview;
 };
 
+const updateVideoPreview = (video) => {
+    videoPreview.value = video;
+};
+
+const updateVideoThumbnail = (thumbnail) => {
+    videoThumbnail.value = thumbnail;
+};
 
 const fetchArticle = async () => {
     axios(`${url.baseUrl}/api/v1/articles/${articleId}`, {
@@ -201,27 +217,40 @@ const fetchArticle = async () => {
         },
     })
         .then((response) => {
-            refusalReasons.value = JSON.parse(response.data.article.refusalReasons)
-            overallReasonForRefusal.value = response.data.article.overallReasonForRefusal
-            selectedTags.value = response.data.article.tags;
-            if (response.data.article.urlYoutube) {
-                withVideo.value = true;
+            const article = response.data.article
+            if (article.video) mediaType.value = 'video'
+            if (article.preview) mediaType.value = 'image'
+            if (article.urlYoutube) mediaType.value = 'youtube'
+            refusalReasons.value = JSON.parse(article.refusalReasons)
+            overallReasonForRefusal.value = article.overallReasonForRefusal
+            selectedTags.value = article.tags;
+
+            if (mediaType.value === 'youtube') {
                 form.value = {
-                    title: response.data.article.title,
-                    description: response.data.article.description,
-                    urlYoutube: response.data.article.urlYoutube,
-                    image: response.data.article.image,
-                    tags: response.data.article.tags
+                    title: article.title,
+                    description: article.description,
+                    urlYoutube: article.urlYoutube,
+                    tags: article.tags
                 };
-            } else if (response.data.article.imagePreview) {
-                withVideo.value = false;
+            } else if (mediaType.value === 'image') {
+                imagePreview.value = `${article.preview}`;
                 form.value = {
-                    title: response.data.article.title,
-                    description: response.data.article.description,
-                    imagePreview: response.data.article.imagePreview,
-                    image: response.data.article.image,
-                    tags: response.data.article.tags
+                    title: article.title,
+                    description: article.description,
+                    preview: article.preview,
+                    tags: article.tags
                 };
+            } else if (mediaType.value === 'video') {
+                form.value = {
+                    title: article.title,
+                    description: article.description,
+                    video: article.video,
+                    tags: article.tags
+                };
+                if (mediaType.value === 'video' && article.video) {
+                    videoPreview.value = `${article.video}`;
+                    videoThumbnail.value = `${article.thumbnail}`;
+                }
             }
         })
         .catch((error) => {
@@ -271,7 +300,9 @@ onBeforeUnmount(() => {
 });
 
 const handleSubmit = async () => {
-    if (!selectedFile.value && !withVideo.value || !form.value.urlYoutube && withVideo.value) {
+    state.value = 'loading';
+
+    if ((!selectedFile.value && mediaType !== 'youtube') || (!form.value.urlYoutube && mediaType === 'youtube')) {
         notify({
             title: t('notification.title.field_media_required'),
             type: 'warn',
@@ -285,16 +316,14 @@ const handleSubmit = async () => {
         return cleanTag;
     });
 
-    // Verify youtube ID is valid
-    const isValidYoutubeId = extractVideoId(form.value.urlYoutube)
-
     const formData = new FormData();
 
     formData.append("title", form.value.title);
     formData.append("description", form.value.description);
-    if (!withVideo.value) {
-        formData.append("preview", selectedFile.value)
-    } else {
+    if (mediaType.value === "youtube") {
+        // Verify youtube ID is valid
+        const isValidYoutubeId = extractVideoId(form.value.urlYoutube ?? '')
+
         if (!isValidYoutubeId) {
             notify({
                 title: t('notification.title.field_media_required'),
@@ -302,40 +331,45 @@ const handleSubmit = async () => {
                 text: t('notification.text.field_media_url'),
             });
         }
-        formData.append("urlYoutube", form.value.urlYoutube);
+        if (isValidYoutubeId) {
+            formData.append("urlYoutube", form.value.urlYoutube);
+        } else {
+            return
+        }
+    } else if (mediaType.value === "image") {
+        formData.append("preview", selectedFile.value)
+    } else if (mediaType.value === "video") {
+        formData.append("video", selectedFile.value)
     }
     formData.append("userId", authStore.user.id);
     formData.append("tags", JSON.stringify(cleanedTags));
 
-    if (isValidYoutubeId) {
-        axios
-            .put(`${url.baseUrl}/api/v1/articles/${route.params.id}`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            })
-            .then(() => {
-                state.value = 'loading';
-                notify({
-                    title: t('notification.title.article_update'),
-                    type: 'success',
-                    text: t('notification.text.article_update'),
-                });
-                setTimeout(() => {
-                    // Have to delete timeout in V2
-                    state.value = 'idle';
-                    router.push("/articles");
-                }, 2000);
-            })
-            .catch((error) => {
-                notify({
-                    title: t('notification.title.article_update'),
-                    type: 'error',
-                    text: error.response.data.message,
-                });
-                state.value = 'error';
+    axios
+        .put(`${url.baseUrl}/api/v1/articles/${route.params.id}`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        })
+        .then(() => {
+            notify({
+                title: t('notification.title.article_update'),
+                type: 'success',
+                text: t('notification.text.article_update'),
             });
-    }
+            setTimeout(() => {
+                // Improve it by call after navigation ...
+                state.value = 'idle';
+                router.push("/articles");
+            }, 2000);
+        })
+        .catch((error) => {
+            notify({
+                title: t('notification.title.article_update'),
+                type: 'error',
+                text: error.response.data.message,
+            });
+            state.value = 'error';
+        });
 
 
 };
@@ -383,10 +417,6 @@ const toggleDropdown = () => {
 </script>
 
 <style scoped>
-input.switch {
-    min-width: 30px !important;
-}
-
 .dropdown-placeholder {
     font-size: 18px;
     font-weight: lighter;
