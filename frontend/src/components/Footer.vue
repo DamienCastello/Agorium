@@ -3,8 +3,14 @@
     <div class="footer-content">
       <p class="footer-text">2025 Agorium v{{ agoriumVersion }}</p>
       <div class="social-links">
+        <RouterLink to="/about-us" class="roadmap-link">
+          <i class="fa-solid fa-question"></i> {{ $t('about.link') }}
+        </RouterLink>
         <RouterLink to="/roadmap" class="roadmap-link">
           <i class="fas fa-map-signs"></i> Roadmap
+        </RouterLink>
+        <RouterLink to="/general-therms-service" class="roadmap-link">
+          <i class="fa-solid fa-scale-balanced"></i> {{ $t('cgu.link') }}
         </RouterLink>
       </div>
     </div>
@@ -50,6 +56,7 @@ const agoriumVersion = window.environment?.VITE_AGORIUM_VERSION || 'x.x.x';
 }
 
 .footer-text {
+  color: #fff;
   margin-bottom: 10px;
 }
 
@@ -63,6 +70,7 @@ const agoriumVersion = window.environment?.VITE_AGORIUM_VERSION || 'x.x.x';
 .roadmap-link {
   color: #fff;
   font-size: 18px;
+  padding: 0 10px;
   text-decoration: none;
   display: flex;
   align-items: center;

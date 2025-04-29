@@ -10,6 +10,8 @@ import Report from './components/Report.vue';
 import Profile from './components/Profile.vue';
 import NotFound from "./components/NotFound.vue";
 import Roadmap from './components/Roadmap.vue';
+import AboutUs from './components/AboutUs.vue';
+import GeneralTherms from './components/GeneralTherms.vue';
 
 export const routes = [
     { path: '/', name: 'Home', component: Articles, meta: { public: true } },
@@ -37,5 +39,7 @@ export const routes = [
     { path: '/new-article', name: 'ArticlePost', component: ArticlePost, meta: { requiresAuth: true } },
     { path: '/profile/:pseudo', name: 'Profile', component: Profile },
     { path: '/roadmap', name: 'Roadmap', component: Roadmap, meta: { public: true } },
+    { path: '/about-us', name: 'AboutUs', component: AboutUs, meta: { public: true } },
+    { path: '/general-therms-service', name: 'GeneralTherms', component: GeneralTherms, meta: { public: true } },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ];

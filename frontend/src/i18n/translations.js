@@ -14,6 +14,32 @@ const messages = {
             profile: "My profile",
             logout: "Logout",
         },
+        cgu: {
+            title: "Terms of Service",
+            link: "Terms of Service",
+            introduction: "Welcome to Agorium. By accessing our platform, you agree to the following terms, which define the legal and ethical framework of our services.",
+            section1: {
+                title: "1. Freedom of expression and responsibility",
+                content: "Agorium is a space for open and uncensored dialogue. We encourage free expression, including on controversial topics. However, users are fully responsible for their content and must not violate applicable laws (hate speech, criminal glorification, illegal material, etc.)."
+            },
+            section2: {
+                title: "2. Content creation and sharing",
+                content: "You may publish articles, videos, music, or other creative works, provided they respect copyright and legal norms. Any illegal, violent, or infringing content may be removed without prior notice."
+            },
+            section3: {
+                title: "3. Ownership and licensing",
+                content: "You retain ownership of your content. By publishing it on Agorium, you grant us a non-exclusive, worldwide, royalty-free license to display it on our platform."
+            },
+            section4: {
+                title: "4. Moderation and reporting",
+                content: "Agorium uses transparent and human moderation. We do not censor opinions but will act in case of abuse or violation of these terms. Users can report inappropriate content."
+            },
+            section5: {
+                title: "5. Account suspension or termination",
+                content: "Serious or repeated breaches of these terms may result in suspension or termination of your account. We reserve this right to preserve the platform’s integrity."
+            },
+            conclusion: "By using Agorium, you agree to these terms. If you do not agree, please do not use the platform."
+        },
         auth: {
             login: {
                 title: "Login",
@@ -29,6 +55,10 @@ const messages = {
                 field_avatar: "Avatar (optional)",
                 button: "Sign up",
                 placeholder_file: "No file selected",
+                accept_cgu: "I accept therms of service",
+                accept: "Accept",
+                close: "Close",
+                read_cgu: "Read GT"
             }
         },
         notification: {
@@ -178,6 +208,16 @@ const messages = {
             state_loading: "Loading data ...",
             label_articles_treatment: "Posted articles being processed"
         },
+        about: {
+            title: "Why Agorium Exists",
+            link: "About us",
+            line1: "Too often, public debate is locked down, the media silenced by subsidies or private interests, and critical voices pushed aside.",
+            line2: "I created Agorium so that at least one place exists where we can speak freely.",
+            line3: "Talk about health, science, politics, and society. Expose what others prefer to hide.",
+            line4: "But also to share your documentaries, music, games, or any original content — as long as it's within legal boundaries.",
+            line5: "Agorium is a free media space for those who want to inform, awaken, and sometimes provoke — but always consciously.",
+            line6: "This is a personal, ongoing project — built alone, without funding, just with passion."            
+          },
         report: {
             title: "Report",
             title_subject_article: "article",
@@ -224,6 +264,32 @@ const messages = {
             profile: "Mon profil",
             logout: "Se déconnecter",
         },
+        cgu: {
+            title: "Conditions Générales d'Utilisation",
+            link: "Conditions Générales d'Utilisation",
+            introduction: "Bienvenue sur Agorium. En accédant à notre plateforme, vous acceptez les présentes conditions d’utilisation, qui définissent le cadre légal et éthique de nos services.",
+            section1: {
+                title: "1. Liberté d'expression et responsabilité",
+                content: "Agorium est un espace dédié à la libre parole. Nous encourageons les débats ouverts, y compris sur des sujets sensibles. Toutefois, les utilisateurs sont responsables du contenu qu’ils publient, et s’engagent à ne pas enfreindre les lois en vigueur (incitation à la haine, apologie de crimes, diffusion de contenus illicites, etc.)."
+            },
+            section2: {
+                title: "2. Création et partage de contenu",
+                content: "Vous pouvez publier des articles, vidéos, musiques ou autres créations, dans le respect de la loi et des droits d’auteur. Tout contenu incitant à la violence, illégal, ou violant les droits d’un tiers pourra être supprimé sans préavis."
+            },
+            section3: {
+                title: "3. Propriété et licences",
+                content: "Vous restez propriétaire de votre contenu. En le publiant sur Agorium, vous nous accordez une licence non exclusive, mondiale et gratuite pour le diffuser sur notre plateforme."
+            },
+            section4: {
+                title: "4. Modération et signalement",
+                content: "Agorium applique une modération humaine et transparente. Nous ne censurons pas les opinions, mais intervenons en cas d’abus manifeste ou de non-respect des présentes CGU. Un système de signalement est à disposition des utilisateurs."
+            },
+            section5: {
+                title: "5. Suspension ou suppression de compte",
+                content: "Tout manquement grave ou répété aux CGU peut entraîner la suspension temporaire ou définitive de votre compte. Nous nous réservons ce droit pour préserver l'intégrité de la plateforme."
+            },
+            conclusion: "L’usage d’Agorium implique l’adhésion à ces conditions. Si vous ne les acceptez pas, merci de ne pas utiliser la plateforme."
+        },
         auth: {
             login: {
                 title: "Se connecter",
@@ -239,6 +305,10 @@ const messages = {
                 field_avatar: "Avatar (optionnel)",
                 button: "S'inscrire",
                 placeholder_file: "Aucun fichier choisi",
+                accept_cgu: "J'accepte les Conditions Générales d'Utilisation",
+                close: "Fermer",
+                accept: "Accepter",
+                read_cgu: "Lire les CGU"
             }
         },
         notification: {
@@ -388,6 +458,16 @@ const messages = {
             state_loading: "Chargement des données ...",
             label_articles_treatment: "Articles postés en cours de traitement"
         },
+        about: {
+            title: "Pourquoi Agorium existe",
+            link: "A propos de nous",
+            line1: "Trop souvent, les débats publics sont verrouillés, les médias bâillonnés par les subventions ou les intérêts privés, et les voix critiques sont réduites au silence.",
+            line2: "J’ai créé Agorium pour qu’il existe au moins un endroit où l’on peut parler librement.",
+            line3: "Parler de santé, de science, de politique, de société. Mettre en lumière ce que d'autres préfèrent taire.",
+            line4: "Mais aussi pour partager vos documentaires, musiques, jeux ou tout autre contenu original, tant que les règles légales sont respectées.",
+            line5: "Agorium est un média libre, fait pour celles et ceux qui veulent informer, éveiller, déranger parfois — mais toujours en conscience.",
+            line6: "C’est un projet personnel, en cours de développement, sans financement, sans équipe, fait seul et par passion."
+          },    
         report: {
             title: "Signaler un",
             title_subject_article: "article",

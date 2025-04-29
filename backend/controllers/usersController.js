@@ -75,7 +75,6 @@ module.exports = {
                 if (newAvatarPath && user.avatar && !user.avatar.includes('utilisateur.png')) {
                     const oldAvatarPath = path.join('/app/public', user.avatar);
                     fs.unlink(oldAvatarPath, (err) => {
-                        console.log("check old path: ", oldAvatarPath)
                         if (err && err.code !== 'ENOENT') {
                             console.warn('Could not delete old avatar:', err.message);
                         }
