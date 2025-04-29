@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="isDialogVisible" title="Welcome" width="500">
+  <el-dialog v-model="isDialogVisible" title="Welcome" width="800">
   <div>
     <p>{{ $t('cgu.introduction') }}</p>
     <p><strong>{{ $t('cgu.section1.title') }}</strong></p>

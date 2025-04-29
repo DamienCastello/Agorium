@@ -3,6 +3,9 @@
     <div class="footer-content">
       <p class="footer-text">2025 Agorium v{{ agoriumVersion }}</p>
       <div class="social-links">
+        <RouterLink to="/about-us" class="roadmap-link">
+          <i class="fa-solid fa-question"></i> About us
+        </RouterLink>
         <RouterLink to="/roadmap" class="roadmap-link">
           <i class="fas fa-map-signs"></i> Roadmap
         </RouterLink>
