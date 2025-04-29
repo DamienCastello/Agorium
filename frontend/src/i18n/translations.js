@@ -16,6 +16,7 @@ const messages = {
         },
         cgu: {
             title: "Terms of Service",
+            link: "Terms of Service",
             introduction: "Welcome to Agorium. By accessing our platform, you agree to the following terms, which define the legal and ethical framework of our services.",
             section1: {
                 title: "1. Freedom of expression and responsibility",
@@ -209,6 +210,7 @@ const messages = {
         },
         about: {
             title: "Why Agorium Exists",
+            link: "About us",
             line1: "Too often, public debate is locked down, the media silenced by subsidies or private interests, and critical voices pushed aside.",
             line2: "I created Agorium so that at least one place exists where we can speak freely.",
             line3: "Talk about health, science, politics, and society. Expose what others prefer to hide.",
@@ -264,6 +266,7 @@ const messages = {
         },
         cgu: {
             title: "Conditions Générales d'Utilisation",
+            link: "Conditions Générales d'Utilisation",
             introduction: "Bienvenue sur Agorium. En accédant à notre plateforme, vous acceptez les présentes conditions d’utilisation, qui définissent le cadre légal et éthique de nos services.",
             section1: {
                 title: "1. Liberté d'expression et responsabilité",
@@ -457,6 +460,7 @@ const messages = {
         },
         about: {
             title: "Pourquoi Agorium existe",
+            link: "A propos de nous",
             line1: "Trop souvent, les débats publics sont verrouillés, les médias bâillonnés par les subventions ou les intérêts privés, et les voix critiques sont réduites au silence.",
             line2: "J’ai créé Agorium pour qu’il existe au moins un endroit où l’on peut parler librement.",
             line3: "Parler de santé, de science, de politique, de société. Mettre en lumière ce que d'autres préfèrent taire.",

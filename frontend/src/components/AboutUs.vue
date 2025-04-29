@@ -2,7 +2,12 @@
     <section class="about-message">
       <h1>{{ $t('about.title') }}</h1>
       <div class="admin-box">
-        <p v-for="(line, index) in aboutLines" :key="index">{{ line }}</p>
+        <p>{{ t('about.line1') }}</p>
+        <p>{{ t('about.line2') }}</p>
+        <p>{{ t('about.line3') }}</p>
+        <p>{{ t('about.line4') }}</p>
+        <p>{{ t('about.line5') }}</p>
+        <p>{{ t('about.line6') }}</p>
         <div class="signature">
           <img :src="`${url.baseUrl}/uploads/avatars/admin.png`" alt="Admin Avatar" class="avatar" />
           <span class="admin-name">Admin</span>
@@ -16,9 +21,6 @@
   import url from '@/utils/url';
   
   const { t } = useI18n();
-  
-  // ✅ ici on récupère le tableau d'une façon sûre
-  const aboutLines = [t('about.line1'), t('about.line2'), t('about.line3'), t('about.line4'), t('about.line5'), t('about.line6')];
   </script>
   
   <style scoped>
