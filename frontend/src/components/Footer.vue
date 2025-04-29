@@ -50,6 +50,7 @@ const agoriumVersion = window.environment?.VITE_AGORIUM_VERSION || 'x.x.x';
 }
 
 .footer-text {
+  color: #fff;
   margin-bottom: 10px;
 }
 

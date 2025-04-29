@@ -42,6 +42,7 @@ module.exports = {
         }
     },
     signUp: async function (req, res, next) {
+        console.log("bodyyy" , req)
         if (!req.body.email || !req.body.password || !req.body.pseudo) {
             return res.status(400).json({ message: req.t('auth.error_fields_required') });
         }

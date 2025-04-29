@@ -14,6 +14,31 @@ const messages = {
             profile: "My profile",
             logout: "Logout",
         },
+        cgu: {
+            title: "Terms of Service",
+            introduction: "Welcome to our platform. By using our services, you agree to the following terms.",
+            section1: {
+                title: "1. General Terms",
+                content: "These terms govern the use of our platform, and by using our services, you accept these conditions."
+            },
+            section2: {
+                title: "2. Content Creation",
+                content: "Users are allowed to create and publish content on the platform, but it must comply with our content policies."
+            },
+            section3: {
+                title: "3. User Rights",
+                content: "You retain ownership of your content, but grant us the right to display and distribute it on our platform."
+            },
+            section4: {
+                title: "4. Moderation",
+                content: "We reserve the right to moderate content to ensure compliance with our policies."
+            },
+            section5: {
+                title: "5. Termination",
+                content: "We may suspend or terminate your account if you violate our terms."
+            },
+            conclusion: "By using our platform, you agree to these terms. If you do not agree, please do not use our services."
+        },
         auth: {
             login: {
                 title: "Login",
@@ -29,6 +54,10 @@ const messages = {
                 field_avatar: "Avatar (optional)",
                 button: "Sign up",
                 placeholder_file: "No file selected",
+                accept_cgu: "I accept therms of service",
+                accept: "Accept",
+                close: "Close",
+                read_cgu: "Read GT"
             }
         },
         notification: {
@@ -178,6 +207,14 @@ const messages = {
             state_loading: "Loading data ...",
             label_articles_treatment: "Posted articles being processed"
         },
+        about: {
+            title: "Why Agorium Exists",
+            line1: "Too often, public debates are locked down, the media silenced by subsidies or private interests, and critical voices pushed aside.",
+            line2: "I created Agorium so that at least one place exists where we can speak freely.",
+            line3: "Talk about health, science, politics, and society. Expose what others prefer to hide.",
+            line4: "But also to share your documentaries, music, games, or any original content — as long as it's within the legal rules.",
+            line5: "Agorium is a free media space for those who want to inform, awaken, and sometimes provoke — but always consciously."
+        },
         report: {
             title: "Report",
             title_subject_article: "article",
@@ -224,6 +261,31 @@ const messages = {
             profile: "Mon profil",
             logout: "Se déconnecter",
         },
+        cgu: {
+            title: "Conditions Générales d'Utilisation",
+            introduction: "Bienvenue sur notre plateforme. En utilisant nos services, vous acceptez les conditions suivantes.",
+            section1: {
+                title: "1. Conditions générales",
+                content: "Ces conditions régissent l'utilisation de notre plateforme, et en utilisant nos services, vous acceptez ces conditions."
+            },
+            section2: {
+                title: "2. Création de contenu",
+                content: "Les utilisateurs sont autorisés à créer et publier du contenu sur la plateforme, mais cela doit respecter nos politiques de contenu."
+            },
+            section3: {
+                title: "3. Droits des utilisateurs",
+                content: "Vous conservez la propriété de votre contenu, mais vous nous accordez le droit de l'afficher et de le distribuer sur notre plateforme."
+            },
+            section4: {
+                title: "4. Modération",
+                content: "Nous nous réservons le droit de modérer le contenu pour garantir le respect de nos politiques."
+            },
+            section5: {
+                title: "5. Résiliation",
+                content: "Nous pouvons suspendre ou résilier votre compte si vous enfreignez nos conditions."
+            },
+            conclusion: "En utilisant notre plateforme, vous acceptez ces conditions. Si vous n'êtes pas d'accord, veuillez ne pas utiliser nos services."
+        },
         auth: {
             login: {
                 title: "Se connecter",
@@ -239,6 +301,10 @@ const messages = {
                 field_avatar: "Avatar (optionnel)",
                 button: "S'inscrire",
                 placeholder_file: "Aucun fichier choisi",
+                accept_cgu: "J'accepte les Conditions Générales d'Utilisation",
+                close: "Fermer",
+                accept: "Accepter",
+                read_cgu: "Lire les CGU"
             }
         },
         notification: {
@@ -387,6 +453,14 @@ const messages = {
             title: "Profil de",
             state_loading: "Chargement des données ...",
             label_articles_treatment: "Articles postés en cours de traitement"
+        },
+        about: {
+            title: "Pourquoi Agorium existe",
+            line1: "Trop souvent, les débats publics sont verrouillés, les médias bâillonnés par les subventions ou les intérêts privés, et les voix critiques sont réduites au silence.",
+            line2: "J’ai créé Agorium pour qu’il existe au moins un endroit où l’on peut parler librement.",
+            line3: "Parler de santé, de science, de politique, de société. Mettre en lumière ce que d'autres préfèrent taire.",
+            line4: "Mais aussi pour partager vos documentaires, musiques, jeux ou tout autre contenu original, tant que les règles légales sont respectées.",
+            line5: "Agorium est un média libre, fait pour celles et ceux qui veulent informer, éveiller, déranger parfois — mais toujours en conscience."
         },
         report: {
             title: "Signaler un",
