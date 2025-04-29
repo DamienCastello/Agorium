@@ -1,143 +1,123 @@
 <template>
-    <div class="roadmap pico">
-      <h1>Project Roadmap</h1>
-  
-      <ul class="status-list">
-        <li>
-          CORE v1 — Terminé
-          <i class="fas fa-check-circle" style="color: green;"></i>
-        </li>
-        <li>
-          CORE v2 — En cours
-          <i class="fas fa-tools" style="color: orange;"></i>
-        </li>
-        <li>
-          CORE v3 — À venir
-          <i class="fas fa-hourglass-half" style="color: gray;"></i>
-        </li>
+  <div class="roadmap">
+    <h1>📌 Project Roadmap</h1>
+
+    <section class="card">
+      <h2>📝 Last Releases</h2>
+      <div v-for="release in releases" :key="release.version" class="release-block">
+        <p class="release-version"><strong>{{ release.version }}</strong></p>
+        <ul class="bullet-list">
+          <li v-for="(item, idx) in release.items" :key="idx">{{ item }}</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🛠️ CORE v1 — En cours</h2>
+      <ul class="check-list">
+        <li v-for="(item, idx) in coreV1" :key="idx">{{ item }}</li>
       </ul>
-  
-      <section class="releases-notes">
-        <h2>Last releases</h2>
-        <p><strong>v1.3.0</strong></p>
-        <ul class="standard-list">
-          <li>Add upload video</li>
-          <li>analyze and scan uploads</li>
-          <li>Add Roadmap.</li>
-        </ul>
-        <p><strong>v1.2.1</strong></p>
-        <ul class="standard-list">
-          <li>Fix config.</li>
-        </ul>
-        <p><strong>v1.2.0</strong></p>
-        <ul class="standard-list">
-          <li>Add update article (in profile view).</li>
-          <li>Isolate the upload folder and make it persistent.</li>
-          <li>Add Roadmap.</li>
-        </ul>
-        <p><strong>v1.1.1</strong></p>
-        <ul class="standard-list">
-          <li>Fix multiples bugs.</li>
-        </ul>
-      </section>
-  
-      <section class="core-details">
-        <h2>CORE v1</h2>
-        <ul class="standard-list">
-          <li>A form allows users to feed the list of articles.</li>
-          <li>Users can comment on articles, like and associate tags.</li>
-          <li>Admin users can validate articles and associated tags.</li>
-          <li>Sort and filter articles by date, tags, pertinence.</li>
-          <li>Implement article reporting, gamification, i18n, infinite loading.</li>
-        </ul>
-  
-        <h2>CORE v2</h2>
-        <ul class="standard-list">
-          <li>Buy domain & deploy on server.</li>
-          <li>Dockerize project.</li>
-          <li>Video upload & streaming with HLS.</li>
-          <li>File storage optimization.</li>
-          <li>Style improvement (Element+).</li>
-          <li>CI/CD pipeline with Docker.</li>
-        </ul>
-  
-        <h2>CORE v3</h2>
-        <ul class="standard-list">
-          <li>SSR for SEO.</li>
-          <li>Accessibility features.</li>
-          <li>Security enhancements.</li>
-          <li>Performance: cache, CDN.</li>
-          <li>Abuse reporting improvements.</li>
-        </ul>
-      </section>
-    </div>
-  </template>
+    </section>
+
+    <section class="card">
+      <h2>⏳ CORE v2 — À venir</h2>
+      <ul class="check-list">
+        <li v-for="(item, idx) in coreV2" :key="idx">{{ item }}</li>
+      </ul>
+    </section>
+  </div>
+</template>
+
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
-onMounted(() => {
-  window.scrollTo(0, 0); 
-});
+onMounted(() => window.scrollTo(0, 0))
+
+const releases = ref([
+  { version: 'v1.3.1', items: ['Add Terms of Service', 'Add About us page'] },
+  { version: 'v1.3.0', items: ['Add upload video', 'Analyze and scan uploads'] },
+  { version: 'v1.2.1', items: ['Fix config.'] },
+  { version: 'v1.2.0', items: [
+    'Add update article (in profile view)',
+    'Isolate the upload folder and make it persistent',
+    'Add Roadmap'
+  ]},
+  { version: 'v1.1.1', items: ['Fix multiples bugs.'] },
+])
+
+const coreV1 = ref([
+  'A form allows users to feed the list of articles',
+  'Users can comment on articles, like and associate tags',
+  'Admin users can validate articles and associated tags',
+  'Sort and filter articles by date, tags, pertinence',
+  'Implement article reporting, gamification, i18n, infinite loading',
+  'Buy domain & deploy on server',
+  'Dockerize project',
+  'Video upload & streaming',
+  'File storage optimization',
+  'Abuse reporting improvements',
+  'Style improvement (Element+)',
+  'CI/CD pipeline with Docker'
+])
+
+const coreV2 = ref([
+  'SSR for SEO',
+  'Accessibility features',
+  'Security enhancements',
+  'Performance: cache, CDN'
+])
 </script>
-  
-  <style scoped>
-  .roadmap {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    font-size: 18px;
-    color: #fff;
-  }
-  
-  h1,
-  h2 {
-    color: #4f1a81; /* Violet clair */
-    margin: 1.5rem 0 1rem;
-  }
-  
-  /* Liste sans puce (status avec icônes) */
-  .status-list {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .status-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 0.5rem 0;
-    padding: 0.5rem 1rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 6px;
-  }
-  
-  /* Listes avec puces */
-  .standard-list {
-    list-style: lower-alpha;
-    padding-left: 1.5rem;
-  }
-  
-  .standard-list li {
-    margin: 0.5rem 0;
-  }
-  
-  /* Section releases */
-  .releases-notes {
-    margin-top: 2rem;
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    border-radius: 8px;
-  }
-  
-  .core-details {
-    margin-top: 2rem;
-  }
-  
-  .core-details h2 {
-    margin-top: 1.5rem;
-    font-size: 1.2rem;
-    color: #863ec9;
-  }
-  </style>
-  
+
+<style scoped>
+.roadmap {
+  max-width: 860px;
+  margin: auto;
+  padding: 2rem 1rem;
+  font-size: 1rem;
+  color: #444444;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #863ec9;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+  color: #c0a4f4;
+  margin-bottom: 1rem;
+}
+
+.card {
+  background-color: rgba(97, 97, 97, 0.192);
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.123);
+}
+
+.release-block + .release-block {
+  margin-top: 1rem;
+}
+
+.release-version {
+  margin-bottom: 0.3rem;
+  color: #424242;
+}
+
+.bullet-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.check-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+
+</style>
