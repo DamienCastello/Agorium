@@ -203,7 +203,6 @@ notify({
 return;
 }
 
-console.log("alo", form.value)
 try {
 const formData = new FormData();
 formData.append("pseudo", form.value.pseudo);
