@@ -25,6 +25,7 @@ import { useRouter } from 'vue-router';
 import { useNavbarStore } from '../stores/navbar';
 import { useNotification } from "@kyvg/vue3-notification";
 import { useI18n } from 'vue-i18n';
+import { onMounted } from 'vue';
 
 const email = ref('');
 const password = ref('');
@@ -46,6 +47,8 @@ const handleLogin = async () => {
     });
   }
 };
+
+onMounted(() => window.scrollTo(0, 0));
 
 const handleClickOutsideNavbar = (event) => {
   if (navbarStore.isMenuOpen) {

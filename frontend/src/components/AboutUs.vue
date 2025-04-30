@@ -18,9 +18,12 @@
   
   <script setup>
   import { useI18n } from 'vue-i18n';
+  import { onMounted } from 'vue'
   import url from '@/utils/url';
   
   const { t } = useI18n();
+
+  onMounted(() => window.scrollTo(0, 0));
   </script>
   
   <style scoped>

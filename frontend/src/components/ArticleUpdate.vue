@@ -265,6 +265,7 @@ const fetchArticle = async () => {
 };
 
 onMounted(() => {
+    window.scrollTo(0, 0);
     fetchArticle();
     axios
         .get(`${url.baseUrl}/api/v1/tags/`, {

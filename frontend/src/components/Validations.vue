@@ -112,6 +112,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
+  window.scrollTo(0, 0);
   fetchArticles();
   window.addEventListener("scroll", handleScroll);
 });
