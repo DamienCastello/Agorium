@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useNotification } from "@kyvg/vue3-notification";
 import url from "@/utils/url";
@@ -95,6 +95,8 @@ const isSubmitting = ref(false);
 const state = ref("idle");
 
 const props = defineProps(['entity', 'articleId', 'commentId']);
+
+onMounted(() => window.scrollTo(0, 0));
 
 const buildRefusalReasons = () => {
     return {

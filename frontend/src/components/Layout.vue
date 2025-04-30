@@ -6,7 +6,7 @@
       </div>
     </header>
     <main class="main" @click="closeNavbar">
-      <slot name="main"></slot>
+        <slot name="main"></slot>
     </main>
     <footer class="footer">
       <div class="pico">
@@ -38,6 +38,7 @@ const closeNavbar = () => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  max-width: 100vw;
 }
 
 .header {

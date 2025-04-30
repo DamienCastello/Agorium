@@ -1,9 +1,11 @@
 <template>
-  <nav class="navbar" @mousedown="handleClickOutsideNavbar">
+  <nav class="navbar" @click="handleClickOutsideNavbar">
     <ul class="navbar-title">
-      <li><RouterLink to="/articles" class="title-link" @click="closeMenu">
-        <strong>Agorium</strong>
-        </RouterLink></li>
+      <li>
+        <RouterLink to="/articles" class="title-link" @click="closeMenu">
+          <strong>Agorium</strong>
+        </RouterLink>
+      </li>
       <div class="language-selector">
         <div class="dropdown-translation" @click="toggleTranslation">
           <i class="fa-solid fa-language"></i>
@@ -55,8 +57,7 @@
           <ul>
             <li>
               <RouterLink :to="`/profile/${authStore.user?.pseudo}`"
-              :class="{ 'active': isActiveRoute(`/profile/${authStore.user?.pseudo}`) }" 
-              @click="handleClick($event)">
+                :class="{ 'active': isActiveRoute(`/profile/${authStore.user?.pseudo}`) }" @click="handleClick($event)">
                 {{ $t('navigation.profile') }}
               </RouterLink>
             </li>
@@ -109,7 +110,7 @@ const changeLanguage = async (lang) => {
 };
 
 const handleClick = (event) => {
-  closeMenu();  
+  closeMenu();
   closeDropdown(event);
 };
 
@@ -148,6 +149,11 @@ const closeDropdown = (event) => {
 };
 
 const handleClickOutsideNavbar = (event) => {
+  // Ignore si clic sur l'icône burger
+  if (event.target.closest('.burger-menu')) {
+    return;
+  }
+
   const isInsideDropdown = event.target.closest('.dropdown-translation') || event.target.closest('.navbar-links');
 
   if (!isInsideDropdown) {
@@ -342,4 +348,25 @@ const handleClickOutsideNavbar = (event) => {
   align-items: center;
   max-height: 70px;
 }
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .navbar-links.open {
+    flex-direction: row !important;
+    max-height: 200px;
+    padding: 10px;
+    justify-content: center;
+  }
+
+  .navbar-links.open li {
+    margin: 0 10px;
+  }
+}
+
+@media screen and (max-width: 768px) and (orientation: portrait) {
+  .navbar-links.open {
+    padding: 5px;
+  }
+}
+
+
 </style>

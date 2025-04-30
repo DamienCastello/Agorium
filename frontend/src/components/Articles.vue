@@ -194,6 +194,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
+  window.scrollTo(0, 0);
   fetchArticles();
   axios.get(`${url.baseUrl}/api/v1/tags`, {
     withCredentials: true,

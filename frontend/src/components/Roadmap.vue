@@ -32,7 +32,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 
-onMounted(() => window.scrollTo(0, 0))
+onMounted(() => window.scrollTo(0, 0));
 
 const releases = ref([
   { version: 'v1.3.1', items: ['Add Terms of Service', 'Add About us page'] },

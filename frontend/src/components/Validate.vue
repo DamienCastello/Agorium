@@ -440,7 +440,7 @@
 
 <script setup>
 import axios from "axios";
-import { onMounted, ref, onBeforeUnmount, nextTick } from "vue";
+import { onMounted, ref, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import extractYoutubeUrl from "../utils/extractYoutubeUrl";
@@ -671,7 +671,7 @@ onMounted(() => {
     window.addEventListener('resize', () => {
         checkWindowSize();
     });
-
+    window.scrollTo(0, 0);
 
     const articleId = route.params.id;
 

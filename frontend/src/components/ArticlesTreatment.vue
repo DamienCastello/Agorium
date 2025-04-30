@@ -115,6 +115,7 @@ const navigateToArticle = (id) => {
 };
 
 onMounted(() => {
+  window.scrollTo(0, 0);
   fetchArticles();
 
   const el = scrollRef.value;

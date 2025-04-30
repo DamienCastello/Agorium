@@ -84,4 +84,21 @@ const agoriumVersion = window.environment?.VITE_AGORIUM_VERSION || 'x.x.x';
   color: #ddd;
   transition: color 0.3s ease;
 }
+
+@media screen and (max-width: 768px) {
+  .social-links {
+  flex-direction: column;
+  align-items: center;
+}
+
+  .roadmap-link {
+  font-size: clamp(10px, 2vw, 20px);;
+}
+
+.footer-text {
+  font-size: clamp(14px, 2vw, 20px);;
+  text-align: center;
+}
+}
+
 </style>
