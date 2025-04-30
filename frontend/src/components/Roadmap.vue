@@ -35,6 +35,7 @@ import { onMounted, ref } from 'vue'
 onMounted(() => window.scrollTo(0, 0));
 
 const releases = ref([
+  { version: 'v1.3.2', items: ['Fix responsive'] },
   { version: 'v1.3.1', items: ['Add Terms of Service', 'Add About us page'] },
   { version: 'v1.3.0', items: ['Add upload video', 'Analyze and scan uploads'] },
   { version: 'v1.2.1', items: ['Fix config.'] },
