@@ -160,6 +160,7 @@ const componentToShow = computed(() => {
 });
 
 onMounted(() => {
+  window.scrollTo(0, 0);
   const articleId = route.params.id;
 
   if (!articleId) {

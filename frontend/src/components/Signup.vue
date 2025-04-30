@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="isDialogVisible" title="Welcome" width="800">
+  <el-dialog v-model="isDialogVisible" title="Welcome" width="95%">
   <div>
     <p>{{ $t('cgu.introduction') }}</p>
     <p><strong>{{ $t('cgu.section1.title') }}</strong></p>
@@ -103,7 +103,7 @@
 
 <script setup>
 import axios from "axios";
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import url from "@/utils/url";
 import { useNavbarStore } from "@/stores/navbar";
@@ -250,6 +250,8 @@ navbarStore.closeTranslation();
 return true;
 }
 };
+
+onMounted(() => window.scrollTo(0, 0));
 </script>
 
 <style scoped>

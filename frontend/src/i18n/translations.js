@@ -27,15 +27,19 @@ const messages = {
                 content: "You may publish articles, videos, music, or other creative works, provided they respect copyright and legal norms. Any illegal, violent, or infringing content may be removed without prior notice."
             },
             section3: {
-                title: "3. Ownership and licensing",
-                content: "You retain ownership of your content. By publishing it on Agorium, you grant us a non-exclusive, worldwide, royalty-free license to display it on our platform."
+                title: "3. External Links and Embedded Content",
+                content: "Users may embed external content (e.g., YouTube videos) using the tools provided for this purpose. It is their responsibility to ensure that this content is shared in compliance with copyright and the terms of use of the source platform. Agorium reserves the right to remove any content that is clearly illicit or violates the site's ethics."
             },
             section4: {
-                title: "4. Moderation and reporting",
-                content: "Agorium uses transparent and human moderation. We do not censor opinions but will act in case of abuse or violation of these terms. Users can report inappropriate content."
+                title: "4. Ownership and licensing",
+                content: "You retain ownership of your content. By publishing it on Agorium, you grant us a non-exclusive, worldwide, royalty-free license to display it on our platform."
             },
             section5: {
-                title: "5. Account suspension or termination",
+                title: "5. Moderation and reporting",
+                content: "Agorium uses transparent and human moderation. We do not censor opinions but will act in case of abuse or violation of these terms. Users can report inappropriate content."
+            },
+            section6: {
+                title: "6. Account suspension or termination",
                 content: "Serious or repeated breaches of these terms may result in suspension or termination of your account. We reserve this right to preserve the platform’s integrity."
             },
             conclusion: "By using Agorium, you agree to these terms. If you do not agree, please do not use the platform."
@@ -118,7 +122,7 @@ const messages = {
         article_detail: {
             state_loading: "Loading article ...",
             state_error: "Unable to load this article",
-            report: "Report article"
+            report: "Report"
         },
         articles: {
             tag_filter: "Filter by tags",
@@ -277,15 +281,19 @@ const messages = {
                 content: "Vous pouvez publier des articles, vidéos, musiques ou autres créations, dans le respect de la loi et des droits d’auteur. Tout contenu incitant à la violence, illégal, ou violant les droits d’un tiers pourra être supprimé sans préavis."
             },
             section3: {
-                title: "3. Propriété et licences",
-                content: "Vous restez propriétaire de votre contenu. En le publiant sur Agorium, vous nous accordez une licence non exclusive, mondiale et gratuite pour le diffuser sur notre plateforme."
+                title: "3. Liens externes et contenus intégrés",
+                content: "Les utilisateurs peuvent intégrer des contenus externes (ex : vidéos YouTube) via les outils prévus à cet effet. Il est de leur responsabilité de s'assurer que ces contenus sont partagés dans le respect des droits d’auteur et des conditions d’utilisation de la plateforme source. Agorium se réserve le droit de retirer tout contenu manifestement illicite ou contrevenant à l’éthique du site."
             },
             section4: {
-                title: "4. Modération et signalement",
-                content: "Agorium applique une modération humaine et transparente. Nous ne censurons pas les opinions, mais intervenons en cas d’abus manifeste ou de non-respect des présentes CGU. Un système de signalement est à disposition des utilisateurs."
+                title: "4. Propriété et licences",
+                content: "Vous restez propriétaire de votre contenu. En le publiant sur Agorium, vous nous accordez une licence non exclusive, mondiale et gratuite pour le diffuser sur notre plateforme."
             },
             section5: {
-                title: "5. Suspension ou suppression de compte",
+                title: "5. Modération et signalement",
+                content: "Agorium applique une modération humaine et transparente. Nous ne censurons pas les opinions, mais intervenons en cas d’abus manifeste ou de non-respect des présentes CGU. Un système de signalement est à disposition des utilisateurs."
+            },
+            section6: {
+                title: "6. Suspension ou suppression de compte",
                 content: "Tout manquement grave ou répété aux CGU peut entraîner la suspension temporaire ou définitive de votre compte. Nous nous réservons ce droit pour préserver l'intégrité de la plateforme."
             },
             conclusion: "L’usage d’Agorium implique l’adhésion à ces conditions. Si vous ne les acceptez pas, merci de ne pas utiliser la plateforme."
@@ -368,7 +376,7 @@ const messages = {
         article_detail: {
             state_loading: "Chargement de l'article ...",
             state_error: "Impossible de charger cet article",
-            report: "Signaler l'article"
+            report: "Signaler"
         },
         articles: {
             tag_filter: "Filtrer par tags",

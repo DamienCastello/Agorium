@@ -13,9 +13,12 @@
   </template>
   
   <script setup>
+  import { onMounted } from 'vue'
   import { useI18n } from 'vue-i18n'
   
   const { t } = useI18n()
+
+  onMounted(() => window.scrollTo(0, 0));
   </script>
   
   <style scoped>

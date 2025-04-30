@@ -68,7 +68,10 @@ onBeforeRouteUpdate((to, from, next) => {
   next();
 });
 
-onMounted(() => fetchUser(route.params.pseudo));
+onMounted(() => {
+    window.scrollTo(0, 0);
+    fetchUser(route.params.pseudo)
+});
 
 
 const getIconClass = (iconCategory) => {

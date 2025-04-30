@@ -242,6 +242,7 @@ const updateVideoThumbnail = (thumbnail) => {
 };
 
 onMounted(() => {
+  window.scrollTo(0, 0);
   axios
     .get(`${url.baseUrl}/api/v1/tags/`, {
       withCredentials: true,
