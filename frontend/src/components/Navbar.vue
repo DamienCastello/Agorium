@@ -92,10 +92,12 @@ const selectedLanguage = ref('fr');
 const changeLanguage = async (lang) => {
   if (lang === 'en') {
     selectedLanguage.value = 'English';
-    locale.value = 'en';
+    localStorage.setItem('lang', 'en');
+    locale.value = lang;
   } else if (lang === 'fr') {
     selectedLanguage.value = 'Français';
-    locale.value = 'fr';
+    localStorage.setItem('lang', 'fr');
+    locale.value = lang;
   }
 
   localStorage.setItem('selectedLanguage', locale.value);

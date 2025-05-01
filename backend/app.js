@@ -47,21 +47,21 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(i18n.init);
+
+app.use(i18n.init); 
 
 app.use((req, res, next) => {
   let lang = req.cookies.lang;
+
   if (!lang) {
-      lang = 'fr';
-      res.cookie('lang', lang, { 
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: 'localhost',
-        path: '/',  
-        sameSite: 'lax' 
-      });
+    lang = 'fr';
+    res.cookie('lang', lang, { 
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+      sameSite: 'lax'
+    });
   }
 
-  req.setLocale(lang);
   i18n.setLocale(req, lang);
   next();
 });
@@ -97,7 +97,6 @@ app.post('/api/v1/set-language', (req, res) => {
 
   res.cookie('lang', language, { 
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    domain: 'localhost',
     path: '/',  
     sameSite: 'lax' 
   });

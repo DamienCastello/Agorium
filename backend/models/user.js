@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true
     },
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },    
     password: DataTypes.STRING,
     isAdmin: DataTypes.BOOLEAN,
     avatar: DataTypes.STRING,

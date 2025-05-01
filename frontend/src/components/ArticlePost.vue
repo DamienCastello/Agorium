@@ -398,11 +398,11 @@ const toggleDropdown = () => {
 <style scoped>
 
 
-::v-deep .el-radio.is-checked .el-radio__input {
+:deep( .el-radio.is-checked .el-radio__input) {
   --el-color-primary: #4040BF !important;
 }
 
-::v-deep .el-radio.is-checked .el-radio__label {
+:deep(.el-radio.is-checked .el-radio__label) {
   --el-color-primary: #4040BF !important;
 }
 
