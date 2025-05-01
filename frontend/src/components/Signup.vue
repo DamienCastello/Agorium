@@ -213,7 +213,7 @@ if (avatarFile.value) {
   formData.append("avatar", avatarFile.value);
 }
 
-await axios.post(`${url.baseUrl}/api/v1/auth/signup`, formData, {
+await axios.post(`${url.baseUrl}/api/v1/auth/signup?lang=${localStorage.getItem('selectedLanguage')}`, formData, {
   headers: {
     "Content-Type": "multipart/form-data",
   },

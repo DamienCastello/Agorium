@@ -5,10 +5,10 @@ import { routes } from './routes';
 import { useAuthStore } from './stores/auth';
 import { createPinia } from 'pinia';
 import Notifications from '@kyvg/vue3-notification';
-import i18n from './i18n/translations'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-
+import ElementPlus from 'element-plus';
+import 'element-plus/dist/index.css';
+import { createI18n } from "vue-i18n";
+import messages from './i18n/translations';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -29,6 +29,19 @@ router.beforeEach((to, from, next) => {
       next();
     }
   });
+
+
+const savedLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+
+const i18n = createI18n({
+  legacy: false,
+  globalInjection: true,
+  locale: savedLanguage,
+  fallbackLocale: 'fr',
+  messages,
+});
+
+i18n.global.locale.value = savedLanguage;
 
 const app = createApp(App);
 app.use(router);

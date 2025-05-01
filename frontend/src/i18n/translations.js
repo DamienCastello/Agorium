@@ -1,5 +1,3 @@
-import { createI18n } from "vue-i18n";
-
 const messages = {
     en: {
         navigation: {
@@ -48,7 +46,9 @@ const messages = {
             login: {
                 title: "Login",
                 field_email: "Email",
-                field_password: "Password"
+                field_password: "Password",
+                forgot_password: "Forgot password",
+                reinitialize_link: "Send the link"
             },
             signup: {
                 title: "Create account",
@@ -62,7 +62,13 @@ const messages = {
                 accept_cgu: "I accept therms of service",
                 accept: "Accept",
                 close: "Close",
-                read_cgu: "Read GT"
+                read_cgu: "Read GT",
+                reinitialize_password: "Update password",
+                reinitialize: "Update",
+                verify_email_title: "Email verification",
+                verify_email_loading: "Verification in progress...",
+                verify_email_success: "Your address has been verified !",
+                verify_email_error: "The link is invalid or expired."
             }
         },
         notification: {
@@ -302,7 +308,9 @@ const messages = {
             login: {
                 title: "Se connecter",
                 field_email: "Email",
-                field_password: "Mot de passe"
+                field_password: "Mot de passe",
+                forgot_password: "Mot de passe oublié",
+                reinitialize_link: "Envoyer le lien"
             },
             signup: {
                 title: "Créer un compte",
@@ -316,7 +324,12 @@ const messages = {
                 accept_cgu: "J'accepte les Conditions Générales d'Utilisation",
                 close: "Fermer",
                 accept: "Accepter",
-                read_cgu: "Lire les CGU"
+                read_cgu: "Lire les CGU",
+                reinitialize_password: "Mise à jour du mot de passe",
+                reinitialize: "Mettre à jour",
+                verify_email_title: "Vérification de l’email",
+                verify_email_loading: "Vérification en cours...",
+                verify_email_success: "Adresse email vérifiée avec succès.",
             }
         },
         notification: {
@@ -468,7 +481,7 @@ const messages = {
         },
         about: {
             title: "Pourquoi Agorium existe",
-            link: "A propos de nous",
+            link: "A propos",
             line1: "Trop souvent, les débats publics sont verrouillés, les médias bâillonnés par les subventions ou les intérêts privés, et les voix critiques sont réduites au silence.",
             line2: "J’ai créé Agorium pour qu’il existe au moins un endroit où l’on peut parler librement.",
             line3: "Parler de santé, de science, de politique, de société. Mettre en lumière ce que d'autres préfèrent taire.",
@@ -511,10 +524,4 @@ const messages = {
     },
 };
 
-const i18n = createI18n({
-    locale: "fr",
-    fallbackLocale: "en",
-    messages,
-});
-
-export default i18n;
+export default messages;
