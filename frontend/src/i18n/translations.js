@@ -69,6 +69,8 @@ const messages = {
                 reinitialize_password: "Update password",
                 reinitialize: "Update",
                 verify_email_title: "Email verification",
+                invalid_link: "Invalid or expired link.",
+                not_verified: "Your email address is not verified.",
                 verify_email_loading: "Verification in progress...",
                 verify_email_success: "Your address has been verified !",
                 verify_email_error: "The link is invalid or expired.",
@@ -107,6 +109,7 @@ const messages = {
             text: {
                 invalid_tags: "Some tag(s) not validated",
                 invalid_fields: "Some field(s) not validated",
+                signup: "Your account has been created. Please check your mails (spam) to validate sign up.",
                 valid_tags: "Tags validated successfully.",
                 error_tags_validation: "Error updating tags validation",
                 valid_article: "Article validated successfully.",
@@ -347,6 +350,8 @@ const messages = {
                 verify_email_title: "Vérification de l’email",
                 verify_email_loading: "Vérification en cours...",
                 verify_email_success: "Adresse email vérifiée avec succès.",
+                invalid_link: "Lien invalide ou expiré.",
+                not_verified: "Votre adresse email n'est pas vérifiée.",
                 update_title: "Mise a jour des informations",
                 update_button: "Mettre à jour",
                 password_mismatch: "Les mots de passe ne correspondent pas.",
@@ -382,6 +387,7 @@ const messages = {
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
                 invalid_fields: "Certains champ(s) ne sont pas validés",
+                signup: "Votre compte a été créé. Veulliez vérifier vos mails (spam) pour valider l'inscription.",
                 valid_tags: "Tags validés avec succès.",
                 error_tags_validation: "Erreur lors de la mise à jour de la validation des tags",
                 valid_article: "Article validé avec succès.",
