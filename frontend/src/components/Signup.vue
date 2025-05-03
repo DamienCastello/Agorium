@@ -216,14 +216,16 @@ const handleSignup = async () => {
       },
       withCredentials: true
     });
-
     notify({
       title: t('notification.title.signup'),
       type: 'success',
-      text: 'Account created successfully !',
+      text: t('notification.text.signup'),
     });
+    setTimeout(() => {
+      router.push("/login");
+        }, 3000);
 
-    router.push("/login");
+
   } catch (error) {
     notify({
       title: t('notification.title.signup'),

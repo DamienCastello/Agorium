@@ -4,8 +4,7 @@
   
       <p v-if="loading">{{ $t('auth.signup.verify_email_loading') }}</p>
       <p v-else-if="success" class="success">✅ {{ $t('auth.signup.verify_email_success') }}</p>
-      <p v-else class="error">❌ {{ $t('auth.signup.invalid_link') }}</p>
-      <p v-else class="error">{{ $t('auth.signup.reset_again') }}</p>
+      <p v-else class="error">❌ {{ $t('auth.signup.not_verified') }}</p>
   
       <button class="login-button" :disabled="!success"><router-link to="/login">{{ $t('auth.login.title') }}</router-link></button>
     </main>
