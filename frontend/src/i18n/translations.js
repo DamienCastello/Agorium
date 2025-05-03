@@ -235,12 +235,12 @@ const messages = {
         about: {
             title: "Why Agorium Exists",
             link: "About us",
-            line1: "Too often, important conversations slip under the radar: some topics become taboo, some content is delisted, taken down, or simply ignored.",
-            line2: "I created Agorium as an independent space where people can speak freely, without having to game the algorithm or water down their words.",
-            line3: "A place to talk about health, science, society, politics… but also to share your creations:",
-            line4: "documentaries, music, games, or any other original content.",
-            line5: "Agorium isn’t meant to please everyone — it aims to offer a sincere space, within legal bounds, free from ads or compromises, and open to nuance.",
-            line6: "It’s a personal project, built alone, with passion, no funding, no sponsors — just the desire to create something different, on a human scale."            
+            line1: "Too often, important conversations slip under the radar: some topics become taboo, some content gets delisted, removed, or ignored.",
+            line2: "I imagined Agorium as an independent space, where people can speak freely without having to outsmart algorithms or tone down their words.",
+            line3: "A place to talk about health, science, society, politics… but also to share one’s creations:",
+            line4: "documentaries, music, games, or other original content.",
+            line5: "It’s a space without ads, without editorial constraints, open to those who want to express themselves sincerely.",
+            line6: "Agorium is a personal project, built alone, out of passion, with the desire to offer something useful."        
           },
         report: {
             title: "Report",
@@ -514,9 +514,9 @@ const messages = {
             line2: "J’ai imaginé Agorium comme un espace indépendant, où l’on peut s’exprimer librement, sans avoir à contourner les algorithmes ou édulcorer ses propos.",
             line3: "Un lieu pour parler de santé, de science, de société, de politique… mais aussi pour partager ses créations: ",
             line4: "documentaires, musiques, jeux ou autres contenus originaux.",
-            line5: "Agorium n’a pas vocation à plaire à tout le monde, mais à offrir un espace sincère, respectueux de la loi, sans publicité ni compromis, et ouvert à la nuance.",
-            line6: "C’est un projet personnel, fait seul, par passion, sans subvention, sans sponsor — avec l’envie de proposer quelque chose de différent, à taille humaine."
-          },    
+            line5: "C’est un espace sans publicité, sans contraintes éditoriales, ouvert à celles et ceux qui veulent s’exprimer avec sincérité.",
+            line6: "Agorium est un projet personnel, fait seul, par passion, avec l’envie de proposer une plateforme utile."
+        },    
         report: {
             title: "Signaler un",
             title_subject_article: "article",
