@@ -113,7 +113,7 @@ module.exports = {
           if (!user) {
             return res.status(404).json({ message: req.t('user_not_found') });
           }
-      
+
           // Supprimer l'avatar s'il n'est pas par défaut
           const oldAvatarPath = user.avatar;
           if (user.avatar && !user.avatar.includes('utilisateur.png')) {
@@ -127,7 +127,7 @@ module.exports = {
             }
           }
       
-          await user.destroy(); // 👈 Attendre la suppression
+          await user.destroy();
       
           return res.status(200).json({ message: req.t('user.deleted') });
         } catch (error) {

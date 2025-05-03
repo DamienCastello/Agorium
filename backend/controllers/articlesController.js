@@ -32,7 +32,7 @@ module.exports = {
           model: Tag,
           as: 'tags',
           attributes: ['id', 'name'],
-          through: { attributes: [] } // Évite de récupérer les métadonnées de la table pivot
+          through: { attributes: [] }
         },
         {
           model: Comment,
