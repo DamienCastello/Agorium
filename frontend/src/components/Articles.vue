@@ -177,7 +177,7 @@ const fetchArticles = async (reset = false) => {
     notify({
       title: t('notification.title.articles_fetch'),
       type: "error",
-      text: error.response?.data?.message || "Erreur de chargement",
+      text: error?.response?.data?.message || "Erreur de chargement",
     });
     state.value = "error";
   } finally {
@@ -210,7 +210,7 @@ onMounted(() => {
       notify({
         title: t('notification.title.articles_fetch'),
         type: "error",
-        text: error.response?.data?.message || "Erreur de chargement",
+        text: error?.response?.data?.message || "Erreur de chargement",
       });
       state.value = "error";
     })

@@ -15,9 +15,9 @@ function loadEnv() {
   
     for (const envPath of candidates) {
       if (fs.existsSync(envPath)) {
-        console.log(`[env] Loaded: ${envPath}`);
+        //console.log(`[env] Loaded: ${envPath}`);
         dotenv.config({ path: envPath });
-        console.log('[env] Loaded variables:', process.env);
+        //console.log('[env] Loaded variables:', process.env);
         return;
       }
     }

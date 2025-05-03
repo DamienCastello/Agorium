@@ -8,6 +8,7 @@ module.exports = async function() {
       pseudo: 'Gamma',
       email: 'gamma@gmail.com',
       password: '$2b$10$XSGruLpgrpym2uuEqfQNw.GfhRVnjPpw4cYxfPVlBZvdXtnL8ZKOG',
+      isVerified: true,
       isAdmin: true,
       avatar: null,
       points: 20

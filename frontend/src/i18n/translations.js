@@ -1,5 +1,3 @@
-import { createI18n } from "vue-i18n";
-
 const messages = {
     en: {
         navigation: {
@@ -10,9 +8,12 @@ const messages = {
             publish: "Publish",
             login: "Login",
             signup: "Signup",
-            account: "Account",
             profile: "My profile",
+            account: "Account",
+            delete_account: "Delete Account",
             logout: "Logout",
+            yes: 'yes',
+            no: 'no'
         },
         cgu: {
             title: "Terms of Service",
@@ -48,7 +49,9 @@ const messages = {
             login: {
                 title: "Login",
                 field_email: "Email",
-                field_password: "Password"
+                field_password: "Password",
+                forgot_password: "Forgot password",
+                reinitialize_link: "Send the link"
             },
             signup: {
                 title: "Create account",
@@ -62,7 +65,16 @@ const messages = {
                 accept_cgu: "I accept therms of service",
                 accept: "Accept",
                 close: "Close",
-                read_cgu: "Read GT"
+                read_cgu: "Read GT",
+                reinitialize_password: "Update password",
+                reinitialize: "Update",
+                verify_email_title: "Email verification",
+                verify_email_loading: "Verification in progress...",
+                verify_email_success: "Your address has been verified !",
+                verify_email_error: "The link is invalid or expired.",
+                update_title: "Update my informations",
+                update_button: "Update",
+                password_mismatch: "The passwords do not match.",
             }
         },
         notification: {
@@ -89,6 +101,8 @@ const messages = {
                 profile_error_avatar_update: "Error Updating Avatar",
                 report_reason: "Report Reason",
                 report_create: "Report",
+                delete_account: "Delete Account",
+                update_user: "Update Account"
             },
             text: {
                 invalid_tags: "Some tag(s) not validated",
@@ -116,7 +130,9 @@ const messages = {
                 report_article_create: "Article reported successfully.",
                 report_comment_create: "Comment reported successfully.",
                 report_error: "An error occurs, please retry.",
-                log_error_language: "Error back side when changing language: "
+                log_error_language: "Error back side when changing language: ",
+                delete_account_success: "Your account has been deleted.",
+                delete_account_error: "Error while deleting. Please try again.",
             }
         },
         article_detail: {
@@ -210,17 +226,21 @@ const messages = {
         profile: {
             title: "profile",
             state_loading: "Loading data ...",
-            label_articles_treatment: "Posted articles being processed"
+            label_articles_treatment: "Posted articles being processed",
+            informations: "Modify my informations",
+            delete_title: "Deleting account",
+            delete_answer: "Are you sure you want to delete your account ?",
+            delete_warning: "This action is irreversible and all your data will be lost (articles, comments, uploads). "
         },
         about: {
             title: "Why Agorium Exists",
             link: "About us",
-            line1: "Too often, public debate is locked down, the media silenced by subsidies or private interests, and critical voices pushed aside.",
-            line2: "I created Agorium so that at least one place exists where we can speak freely.",
-            line3: "Talk about health, science, politics, and society. Expose what others prefer to hide.",
-            line4: "But also to share your documentaries, music, games, or any original content — as long as it's within legal boundaries.",
-            line5: "Agorium is a free media space for those who want to inform, awaken, and sometimes provoke — but always consciously.",
-            line6: "This is a personal, ongoing project — built alone, without funding, just with passion."            
+            line1: "Too often, important conversations slip under the radar: some topics become taboo, some content gets delisted, removed, or ignored.",
+            line2: "I imagined Agorium as an independent space, where people can speak freely without having to outsmart algorithms or tone down their words.",
+            line3: "A place to talk about health, science, society, politics… but also to share one’s creations:",
+            line4: "documentaries, music, games, or other original content.",
+            line5: "It’s a space without ads, without editorial constraints, open to those who want to express themselves sincerely.",
+            line6: "Agorium is a personal project, built alone, out of passion, with the desire to offer something useful."        
           },
         report: {
             title: "Report",
@@ -264,9 +284,12 @@ const messages = {
             publish: "Publier",
             login: "Se connecter",
             signup: "S'inscrire",
-            account: "Compte",
             profile: "Mon profil",
+            account: "Compte",
+            delete_account: "Supprimer mon compte",
             logout: "Se déconnecter",
+            yes: 'oui',
+            no: 'non'
         },
         cgu: {
             title: "Conditions Générales d'Utilisation",
@@ -302,7 +325,9 @@ const messages = {
             login: {
                 title: "Se connecter",
                 field_email: "Email",
-                field_password: "Mot de passe"
+                field_password: "Mot de passe",
+                forgot_password: "Mot de passe oublié",
+                reinitialize_link: "Envoyer le lien"
             },
             signup: {
                 title: "Créer un compte",
@@ -316,7 +341,15 @@ const messages = {
                 accept_cgu: "J'accepte les Conditions Générales d'Utilisation",
                 close: "Fermer",
                 accept: "Accepter",
-                read_cgu: "Lire les CGU"
+                read_cgu: "Lire les CGU",
+                reinitialize_password: "Mise à jour du mot de passe",
+                reinitialize: "Mettre à jour",
+                verify_email_title: "Vérification de l’email",
+                verify_email_loading: "Vérification en cours...",
+                verify_email_success: "Adresse email vérifiée avec succès.",
+                update_title: "Mise a jour des informations",
+                update_button: "Mettre à jour",
+                password_mismatch: "Les mots de passe ne correspondent pas.",
             }
         },
         notification: {
@@ -342,7 +375,9 @@ const messages = {
                 profile_error_user_fetch: "Erreur lors de la récupération de l'utilisateur",
                 profile_error_avatar_update: "Erreur lors de la mise à jour de l'avatar",
                 report_reason: "Motif du signalement",
-                report_create: "Signalement"
+                report_create: "Signalement",
+                delete_account: "Supprimer le compte",
+                update_user: "Mise à jour du compte"
             },
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
@@ -370,7 +405,9 @@ const messages = {
                 report_article_create: "Article signalé avec succès.",
                 report_comment_create: "Commentaire signalé avec succès.",
                 report_error: "Une erreur s'est produite, veuillez réessayer.",
-                log_error_language: "Erreur lors du changement de langue côté serveur"
+                log_error_language: "Erreur lors du changement de langue côté serveur",
+                delete_account_success: "Votre compte a été supprimé.",
+                delete_account_error: "Erreur lors de la suprression. Veuillez réesssayer.",
             }
         },
         article_detail: {
@@ -464,18 +501,22 @@ const messages = {
         profile: {
             title: "Profil de",
             state_loading: "Chargement des données ...",
-            label_articles_treatment: "Articles postés en cours de traitement"
+            label_articles_treatment: "Articles postés en cours de traitement",
+            informations: 'Modifier mes informations',
+            delete_title: "Suppression du compte",
+            delete_answer: "Êtes vous sur de vouloir supprimer votre compte ?",
+            delete_warning: "Cette action est irréversible et toute vos données seront perdues (articles, commentaires, uploads). ",
         },
         about: {
             title: "Pourquoi Agorium existe",
-            link: "A propos de nous",
-            line1: "Trop souvent, les débats publics sont verrouillés, les médias bâillonnés par les subventions ou les intérêts privés, et les voix critiques sont réduites au silence.",
-            line2: "J’ai créé Agorium pour qu’il existe au moins un endroit où l’on peut parler librement.",
-            line3: "Parler de santé, de science, de politique, de société. Mettre en lumière ce que d'autres préfèrent taire.",
-            line4: "Mais aussi pour partager vos documentaires, musiques, jeux ou tout autre contenu original, tant que les règles légales sont respectées.",
-            line5: "Agorium est un média libre, fait pour celles et ceux qui veulent informer, éveiller, déranger parfois — mais toujours en conscience.",
-            line6: "C’est un projet personnel, en cours de développement, sans financement, sans équipe, fait seul et par passion."
-          },    
+            link: "A propos",
+            line1: "Trop souvent, les discussions importantes disparaissent des radars : certains sujets deviennent tabous, certains contenus sont déréférencés, supprimés ou ignorés.",
+            line2: "J’ai imaginé Agorium comme un espace indépendant, où l’on peut s’exprimer librement, sans avoir à contourner les algorithmes ou édulcorer ses propos.",
+            line3: "Un lieu pour parler de santé, de science, de société, de politique… mais aussi pour partager ses créations: ",
+            line4: "documentaires, musiques, jeux ou autres contenus originaux.",
+            line5: "C’est un espace sans publicité, sans contraintes éditoriales, ouvert à celles et ceux qui veulent s’exprimer avec sincérité.",
+            line6: "Agorium est un projet personnel, fait seul, par passion, avec l’envie de proposer une plateforme utile."
+        },    
         report: {
             title: "Signaler un",
             title_subject_article: "article",
@@ -511,10 +552,4 @@ const messages = {
     },
 };
 
-const i18n = createI18n({
-    locale: "fr",
-    fallbackLocale: "en",
-    messages,
-});
-
-export default i18n;
+export default messages;

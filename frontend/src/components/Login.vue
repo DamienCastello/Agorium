@@ -11,7 +11,13 @@
           <label for="password">{{ $t('auth.login.field_password') }}:</label>
           <input id="password" v-model="password" type="password" />
         </fieldset>
-        <button :disabled="navbarStore.isMenuOpen" type="submit">{{ $t('auth.login.title') }}</button>
+        <p>
+          <RouterLink to="/forgot-password">
+            {{ $t('auth.login.forgot_password') }}
+          </RouterLink>
+        </p>
+
+        <button :disabled="!password || navbarStore.isMenuOpen" type="submit">{{ $t('auth.login.title') }}</button>
       </form>
     </div>
     <notifications position="bottom right" />
@@ -37,13 +43,18 @@ const { t } = useI18n();
 
 const handleLogin = async () => {
   try {
-    await authStore.login({ email: email.value, password: password.value });
-    router.push('/articles');
+    const user = await authStore.login({ email: email.value, password: password.value });
+    if (user.emailVerified) {
+      router.push('/articles');
+    } else {
+      router.push('/verify-email');
+    }
+
   } catch (error) {
     notify({
       title: t('notification.title.login'),
       type: 'error',
-      text: error.response.data.message,
+      text: error?.response?.data?.message,
     });
   }
 };

@@ -64,6 +64,11 @@
             <li>
               <button @click="logout">{{ $t('navigation.logout') }}</button>
             </li>
+            <li>
+              <button class="delete-button" @click="deleteAccount">{{ $t('navigation.delete_account') }}</button>
+            </li>
+            <li>
+            </li>
           </ul>
         </details>
       </li>
@@ -79,31 +84,43 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import url from '@/utils/url';
 import axios from 'axios';
-
-const { locale, t } = useI18n();
+import { useNotification } from "@kyvg/vue3-notification";
 
 defineProps(['isAuthenticated', 'isAdmin']);
+
 const navbarStore = useNavbarStore();
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const selectedLanguage = ref('fr');
+const { locale, t } = useI18n();
+const { notify } = useNotification();
+
 
 const changeLanguage = async (lang) => {
   if (lang === 'en') {
     selectedLanguage.value = 'English';
-    locale.value = 'en';
+    localStorage.setItem('lang', 'en');
+    locale.value = lang;
   } else if (lang === 'fr') {
     selectedLanguage.value = 'Français';
-    locale.value = 'fr';
+    localStorage.setItem('lang', 'fr');
+    locale.value = lang;
   }
-
-  localStorage.setItem('selectedLanguage', locale.value);
 
   try {
     await axios.post(`${url.baseUrl}/api/v1/set-language`, { language: locale.value }, { withCredentials: true });
+    notify({
+            title: t('notification.title.login'),
+            type: 'success',
+            text: response.data.message,
+        });
   } catch (error) {
-    console.error(t('notification.text.log_error_language'), error);
+    notify({
+            title: t('notification.title.login'),
+            type: 'error',
+            text: error.response.data.message,
+        });
   }
 
   navbarStore.closeTranslation();
@@ -115,8 +132,12 @@ const handleClick = (event) => {
 };
 
 const logout = () => {
-  authStore.logout()
+  authStore.logout();
   router.push(`/login`);
+};
+
+const deleteAccount = () => {
+  router.push(`/profile/${authStore.user?.pseudo}/informations`);
 };
 
 // Helper function to detect the active route
@@ -347,6 +368,16 @@ const handleClickOutsideNavbar = (event) => {
   justify-content: center;
   align-items: center;
   max-height: 70px;
+}
+
+.delete-button {
+  background-color: darkred;
+  border: 2px solid brown;
+}
+
+.delete-button:hover {
+  background-color: rgb(112, 0, 0);
+  border: 2px solid brown;
 }
 
 @media screen and (max-width: 768px) and (orientation: landscape) {

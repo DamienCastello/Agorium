@@ -2,6 +2,7 @@ const models = require('../models');
 const User = models.User;
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 module.exports = {
     index: function (req, res, next) {
@@ -62,46 +63,76 @@ module.exports = {
                 res.status(500).json({ message: req.t('error') });
             })
     },
-    update: function (req, res, next) {
+    update: async function (req, res, next) {
         const newAvatarPath = req.uploadedFiles ? req.uploadedFiles.avatars : null;
     
-        models.User.findByPk(req.params.id)
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).json({ message: req.t('user.not_found') });
-                }
+        try {
+            const user = await models.User.findByPk(req.params.id);
+            if (!user) {
+                return res.status(404).json({ message: req.t('user.not_found') });
+            }
     
-                // Si un nouvel avatar est fourni et que l'ancien n'est pas celui par défaut
-                if (newAvatarPath && user.avatar && !user.avatar.includes('utilisateur.png')) {
-                    const oldAvatarPath = path.join('/app/public', user.avatar);
-                    fs.unlink(oldAvatarPath, (err) => {
-                        if (err && err.code !== 'ENOENT') {
-                            console.warn('Could not delete old avatar:', err.message);
-                        }
-                    });                    
+            // Supprimer l'ancien avatar s'il existe
+            const oldAvatarPath = user.avatar;
+            if (newAvatarPath && user.avatar && !user.avatar.includes('utilisateur.png')) {
+                const oldFullAvatarPath = process.env.NODE_ENV === 'development'
+                    ? path.resolve(oldAvatarPath)
+                    : path.join('/app/public', oldAvatarPath);
+                if (fs.existsSync(oldFullAvatarPath)) {
+                    fs.unlinkSync(oldFullAvatarPath);
                 }
-
-                // Construire les données à mettre à jour
-                const updateData = {};
-                if (req.params.pseudo) updateData.pseudo = req.params.pseudo;
-                if (newAvatarPath) updateData.avatar = newAvatarPath;
+            }
     
-                return user.update(updateData);
-            })
-            .then((updatedUser) => {
-                res.json({ updatedUser });
-            })
-            .catch((error) => {
-                console.log('error:', error.message);
-                res.status(500).json({ message: req.t('user.error_label') });
-            });
+            const updateData = {};
+    
+            if (req.body.pseudo) {
+                updateData.pseudo = req.body.pseudo;
+            }
+    
+            if (req.body.password) {
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(req.body.password, salt);
+                updateData.password = hashedPassword;
+            }
+    
+            if (newAvatarPath) {
+                updateData.avatar = newAvatarPath;
+            }
+    
+            const updatedUser = await user.update(updateData);
+            res.status(200).json({ updatedUser, message: newAvatarPath ? req.t('user.avatar') : req.t('user.updated') });
+    
+        } catch (error) {
+            console.log('error:', error.message);
+            res.status(500).json({ message: req.t('user.error_label') });
+        }
     },
-    delete: function (req, res, next) {
-        User.findByPk(req.params.id)
-            .then((user) => { user.destroy() })
-            .catch((error) => {
-                console.log('error: ', error.message);
-                res.status(500).json({ message: req.t('error') });
-            })
-    }
+    delete: async function (req, res, next) {
+        try {
+          const user = await User.findByPk(req.params.id);
+          if (!user) {
+            return res.status(404).json({ message: req.t('user_not_found') });
+          }
+      
+          // Supprimer l'avatar s'il n'est pas par défaut
+          const oldAvatarPath = user.avatar;
+          if (user.avatar && !user.avatar.includes('utilisateur.png')) {
+            const oldFullAvatarPath =
+              process.env.NODE_ENV === 'development'
+                ? path.resolve(oldAvatarPath)
+                : path.join('/app/public', oldAvatarPath);
+      
+            if (fs.existsSync(oldFullAvatarPath)) {
+              fs.unlinkSync(oldFullAvatarPath);
+            }
+          }
+      
+          await user.destroy(); // 👈 Attendre la suppression
+      
+          return res.status(200).json({ message: req.t('user.deleted') });
+        } catch (error) {
+          console.error('error:', error.message);
+          return res.status(500).json({ message: req.t('error') });
+        }
+      }
 }

@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.Article, { through: 'Like', foreignKey: 'userId' });
       User.belongsToMany(models.Achievement, { 
         through: models.UserAchievement, 
+        onDelete: 'CASCADE',
         as: 'achievements',
         foreignKey: 'userId' 
       });
@@ -33,6 +34,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true
     },
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },    
     password: DataTypes.STRING,
     isAdmin: DataTypes.BOOLEAN,
     avatar: DataTypes.STRING,

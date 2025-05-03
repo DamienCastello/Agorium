@@ -1,90 +1,108 @@
 {
-    "user": {
-        "error_label": "Error while updating user."
-    },
-    "auth": {
-        "error_fields_required": "Email & password are required.",
-        "login": {
-            "success": "You have logged in successfully.",
-            "not_found": "User not found.",
-            "error_label": "Error while connecting:",
-            "error_field_password": "Invalid password."
-        },
-        "signup": {
-            "password_mismatch": "The passwords do not match.",
-            "error_label": "Error while creating user:",
-            "error_email_format": "Invalid email format."
-        }
-    },
-    "article": {
-        "fields_required": "Title and description are required.",
-        "title_length": "Title must be at least 3 characters long.",
-        "invalid_tags": "Invalid tags format.",
-        "tag_required": "At least one tag is required.",
-        "user_required": "User is required.",
-        "user_not_logged": "User not authenticated.",
-        "not_found": "Article not found.",
-        "error_unliking": "Error while unliking article.",
-        "error_achievements": "Error processing achievement.",
-        "error_liking": "Error while liking article.",
-        "error_likes": "Error checking like status.",
-        "error_fetch": "Error fetching article.",
-        "reported": "Article reported.",
-        "reason_title": "Title refusal reason must have a value.",
-        "reason_description": "Description refusal reason must have a value.",
-        "reason_preview": "Preview refusal reason must have a value.",
-        "reason_youtube": "Youtube vidéo content refusal reason must have a value.",
-        "reason_overall": "Article overall refusal reason must have a value.",
-        "not_authorized": "You are not authorized to validate this article.",
-        "error_validation": "Error validating article.",
-        "deleted": "deleted"
-    },
-    "comment": {
-        "not_authenticated": "User not authenticated.",
-        "user_not_found": "User not found.",
-        "not_found": "Comment not found.",
-        "error_unliking": "Error while unliking comment.",
-        "error_achievements": "Error processing achievement.",
-        "error_liking": "Error while liking comment.",
-        "error_likes": "Error checking like status.",
-        "error_fetch": "Error fetching comment.",
-        "error_user": "Error fetching user.",
-        "error_update": "Error while updating comment.",
-        "reported": "Comment reported.",
-        "subject_delete": "Comment",
-        "deleted": "deleted"
-    },
-    "achievement": {
-        "error_fetch_all": "An error occurred while fetching achievements.",
-        "not_found": "Achievement not found.",
-        "error_fetch": "An error occurred while fetching the achievement.",
-        "name_required": "The 'name' information is required.",
-        "description_required": "The 'description' information is required.",
-        "points_required": "The 'points' information is required.",
-        "isReusable_required": "The 'isReusable' information is required.",
-        "isEventBased_required": "The 'isEventBased' information is required.",
-        "error_create": "An error occurred while creating the achievement.",
-        "error_update": "Error while updating achivement."
-    },
-    "report": {
-        "subject_delete": "Report",
-        "deleted": "deleted"
-    },
-    "tag": {
-        "error_fetch_all": "An error occurred while fetching tags.",
-        "not_found": "Tag not found.",
-        "error_fetch": "An error occurred while fetching the tag.",
-        "name_required": "The 'name' information is required.",
-        "error_create": "An error occurred while creating the tag.",
-        "error_associate": "The tag cannot be updated because it has no associated articles.",
-        "authorized": "Only the tag creator or an admin can update the tag.",
-        "error_update": "Error while updating tag.",
-        "error_find": "An error occurred while finding the tag.",
-        "validation_admin": "Only an admin can validate a tag.",
-        "refusal_reason": "Tag refusal reason must have a value.",
-        "validation_required": "Tag validation must have a value.",
-        "error_validation": "An error occurred while validating the tag.",
-        "error_delete": "An error occurred while deleting the tag."
-    },
-    "error": "Internal server error."
+	"user": {
+		"error_label": "Error while updating user.",
+		"avatar": "Avatar updated successfully.",
+		"updated": "User updated successfully.",
+		"deleted": "User deleted successfully."
+	},
+	"auth": {
+		"error_fields_required": "Email & password are required.",
+		"login": {
+			"success": "You have logged in successfully.",
+			"not_found": "User not found.",
+			"error_label": "Error while connecting:",
+			"error_field_password": "Invalid password.",
+			"invalid_link": "Invalid or expired link.",
+			"password_updated": "Password updated successfully."
+		},
+		"signup": {
+			"password_mismatch": "The passwords do not match.",
+			"error_label": "Error while creating user:",
+			"error_email_format": "Invali email format.",
+			"reinitialize_email": "Reset email sent.",
+			"reinitialize_error": "Error sending email.",
+			"invalid_link": "Invalid or expired link.",
+			"reset_again": "You need to recreate a valid link in forgot password.",
+			"verify_email_success": "Email verified successfully."
+		},
+		"mailer_verification": {
+			"subject": "Verifying your email address",
+			"html": "<h1>Welcome to Agorium!</h1><br><p>Thank you for signing up. Click the link below to verify your email address:</p>"
+		},
+		"mailer_reset": {
+			"subject": "Reinitialize password",
+			"html": "<p>Click here to reset your password:"
+		}
+	},
+	"article": {
+		"fields_required": "Title and description are required.",
+		"title_length": "Title must be at least 3 characters long.",
+		"invalid_tags": "Invalid tags format.",
+		"tag_required": "At least one tag is required.",
+		"user_required": "User is required.",
+		"user_not_logged": "User not authenticated.",
+		"not_found": "Article not found.",
+		"error_unliking": "Error while unliking article.",
+		"error_achievements": "Error processing achievement.",
+		"error_liking": "Error while liking article.",
+		"error_likes": "Error checking like status.",
+		"error_fetch": "Error fetching article.",
+		"reported": "Article reported.",
+		"reason_title": "Title refusal reason must have a value.",
+		"reason_description": "Description refusal reason must have a value.",
+		"reason_preview": "Preview refusal reason must have a value.",
+		"reason_youtube": "Youtube vidéo content refusal reason must have a value.",
+		"reason_overall": "Article overall refusal reason must have a value.",
+		"not_authorized": "You are not authorized to validate this article.",
+		"error_validation": "Error validating article.",
+		"deleted": "deleted"
+	},
+	"comment": {
+		"not_authenticated": "User not authenticated.",
+		"user_not_found": "User not found.",
+		"not_found": "Comment not found.",
+		"error_unliking": "Error while unliking comment.",
+		"error_achievements": "Error processing achievement.",
+		"error_liking": "Error while liking comment.",
+		"error_likes": "Error checking like status.",
+		"error_fetch": "Error fetching comment.",
+		"error_user": "Error fetching user.",
+		"error_update": "Error while updating comment.",
+		"reported": "Comment reported.",
+		"subject_delete": "Comment",
+		"deleted": "deleted"
+	},
+	"achievement": {
+		"error_fetch_all": "An error occurred while fetching achievements.",
+		"not_found": "Achievement not found.",
+		"error_fetch": "An error occurred while fetching the achievement.",
+		"name_required": "The 'name' information is required.",
+		"description_required": "The 'description' information is required.",
+		"points_required": "The 'points' information is required.",
+		"isReusable_required": "The 'isReusable' information is required.",
+		"isEventBased_required": "The 'isEventBased' information is required.",
+		"error_create": "An error occurred while creating the achievement.",
+		"error_update": "Error while updating achivement."
+	},
+	"report": {
+		"subject_delete": "Report",
+		"deleted": "deleted"
+	},
+	"tag": {
+		"error_fetch_all": "An error occurred while fetching tags.",
+		"not_found": "Tag not found.",
+		"error_fetch": "An error occurred while fetching the tag.",
+		"name_required": "The 'name' information is required.",
+		"error_create": "An error occurred while creating the tag.",
+		"error_associate": "The tag cannot be updated because it has no associated articles.",
+		"authorized": "Only the tag creator or an admin can update the tag.",
+		"error_update": "Error while updating tag.",
+		"error_find": "An error occurred while finding the tag.",
+		"validation_admin": "Only an admin can validate a tag.",
+		"refusal_reason": "Tag refusal reason must have a value.",
+		"validation_required": "Tag validation must have a value.",
+		"error_validation": "An error occurred while validating the tag.",
+		"error_delete": "An error occurred while deleting the tag."
+	},
+	"error": "Internal server error."
 }
