@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsToMany(models.Article, { through: 'Like', foreignKey: 'userId' });
       User.belongsToMany(models.Achievement, { 
         through: models.UserAchievement, 
+        onDelete: 'CASCADE',
         as: 'achievements',
         foreignKey: 'userId' 
       });

@@ -34,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
       delete axios.defaults.headers.common['Authorization'];
     },
     isAuthenticated() {
-      return !!this.token;
+      return !!this.token || !!this.user?.emailVerified;
     },
     isAdmin() {
       return this.user?.isAdmin;

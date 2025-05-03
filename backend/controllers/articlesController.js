@@ -581,7 +581,7 @@ module.exports = {
   
       const oldVideoPath = article.video;
       const oldThumbnailPath = article.thumbnail;
-      const oldPreviewPath = article.preview; // ⬅️ Je récupère aussi l'ancien preview ici
+      const oldPreviewPath = article.preview; 
   
       let previewPath = null;
       let videoPath = null;
@@ -605,8 +605,8 @@ module.exports = {
       const updatedArticle = await article.update({
         title,
         description,
-        preview: previewPath || article.preview,  // ⬅️ pour garder l'ancien preview si pas uploadé
-        video: videoPath || article.video,          // ⬅️ pour garder l'ancienne vidéo si pas uploadée
+        preview: previewPath || article.preview,
+        video: videoPath || article.video,
         thumbnail: thumbnailPath,
         urlYoutube: urlYoutube || article.urlYoutube,
         refusalReasons: JSON.stringify({

@@ -8,6 +8,7 @@ import ArticleDetail from "./components/ArticleDetail.vue";
 import ArticleUpdate from "./components/ArticleUpdate.vue";
 import Report from './components/Report.vue';
 import Profile from './components/Profile.vue';
+import Informations from './components/Informations.vue';
 import NotFound from "./components/NotFound.vue";
 import Roadmap from './components/Roadmap.vue';
 import AboutUs from './components/AboutUs.vue';
@@ -41,6 +42,7 @@ export const routes = [
     { path: '/validations/:id(\\d+)', name: 'Validate', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/new-article', name: 'ArticlePost', component: ArticlePost, meta: { requiresAuth: true } },
     { path: '/profile/:pseudo', name: 'Profile', component: Profile },
+    { path: '/profile/:pseudo/informations', name: 'Informations', component: Informations },
     { path: '/roadmap', name: 'Roadmap', component: Roadmap, meta: { public: true } },
     { path: '/about-us', name: 'AboutUs', component: AboutUs, meta: { public: true } },
     { path: '/general-therms-service', name: 'GeneralTherms', component: GeneralTherms, meta: { public: true } },

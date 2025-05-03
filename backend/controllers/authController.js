@@ -80,7 +80,7 @@ module.exports = {
       };
 
       const verificationToken = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-      const verificationLink = `${process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : process.env.VITE_BASE_URL}/verify-email?token=${verificationToken}`;
+      const verificationLink = `http${process.env.NODE_ENV === 'development' ? '' : 's'}://${process.env.NODE_ENV === 'development' ? 'localhost:5173' : process.env.SERVER_NAME}/verify-email?token=${verificationToken}`;
 
       const { sendVerificationEmail } = require('../services/mailer');
 
@@ -110,7 +110,6 @@ module.exports = {
   forgotPassword: async function (req, res) {
     const { email } = req.body;
     const { lang } = req.query;
-    console.log("check ehckc : ", lang)
 
 
     try {
@@ -120,7 +119,7 @@ module.exports = {
       }
 
       const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      const resetLink = `${process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : process.env.VITE_BASE_URL}/reset-password?token=${resetToken}`;
+      const resetLink = `http${process.env.NODE_ENV === 'development' ? '' : 's'}://${process.env.NODE_ENV === 'development' ? 'localhost:5173' : process.env.SERVER_NAME}/reset-password?token=${resetToken}`;
 
       const { sendPasswordResetEmail } = require('../services/mailer');
       await sendPasswordResetEmail(email, resetLink, lang);
