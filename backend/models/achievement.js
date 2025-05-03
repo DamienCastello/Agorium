@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Achievement.belongsToMany(models.User, {
         through: models.UserAchievement,
+        
         as: 'users',
         foreignKey: 'achievementId',
       });

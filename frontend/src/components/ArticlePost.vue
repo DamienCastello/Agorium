@@ -375,7 +375,6 @@ const handleSubmit = () => {
         }, 2000);
       })
       .catch((error) => {
-        console.log("error : ", error)
         notify({
           title: t('notification.title.article_create'),
           type: 'error',

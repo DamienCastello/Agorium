@@ -4,7 +4,8 @@
   
       <p v-if="loading">{{ $t('auth.signup.verify_email_loading') }}</p>
       <p v-else-if="success" class="success">✅ {{ $t('auth.signup.verify_email_success') }}</p>
-      <p v-else class="error">❌ {{ $t('auth.signup.verify_email_error') }}</p>
+      <p v-else class="error">❌ {{ $t('auth.signup.invalid_link') }}</p>
+      <p v-else class="error">{{ $t('auth.signup.reset_again') }}</p>
   
       <button class="login-button" :disabled="!success"><router-link to="/login">{{ $t('auth.login.title') }}</router-link></button>
     </main>
@@ -14,12 +15,11 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import axios from 'axios'
-  import { useI18n } from 'vue-i18n'
   import { useNavbarStore } from '@/stores/navbar'
+  import url from '@/utils/url'
   
   const route = useRoute()
   const navbarStore = useNavbarStore();
-  const { t } = useI18n();
   
   const loading = ref(true)
   const success = ref(false)
@@ -48,7 +48,7 @@
     }
   
     try {
-      const res = await axios.get(`${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : process.env.VITE_BASE_URL}/api/v1/auth/verify-email?token=${token}`)
+      const res = await axios.get(`${url.baseUrl}/api/v1/auth/verify-email?token=${token}`)
       if (res.status === 200) {
         success.value = true
       }

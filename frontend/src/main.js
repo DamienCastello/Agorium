@@ -31,7 +31,8 @@ router.beforeEach((to, from, next) => {
   });
 
 
-const savedLanguage = localStorage.getItem('selectedLanguage') || 'fr';
+const savedLanguage = localStorage.getItem('lang') || 'fr';
+if(!savedLanguage) localStorage.setItem('lang', 'fr')
 
 const i18n = createI18n({
   legacy: false,

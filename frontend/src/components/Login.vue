@@ -44,7 +44,6 @@ const { t } = useI18n();
 const handleLogin = async () => {
   try {
     const user = await authStore.login({ email: email.value, password: password.value });
-    console.log("user :", user)
     if (user.emailVerified) {
       router.push('/articles');
     } else {
@@ -55,7 +54,7 @@ const handleLogin = async () => {
     notify({
       title: t('notification.title.login'),
       type: 'error',
-      text: error.response.data.message,
+      text: error?.response?.data?.message,
     });
   }
 };

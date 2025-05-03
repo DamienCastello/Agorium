@@ -1,6 +1,9 @@
 {
 	"user": {
-		"error_label": "Error while updating user."
+		"error_label": "Error while updating user.",
+		"avatar": "Avatar updated successfully.",
+		"updated": "User updated successfully.",
+		"deleted": "User deleted successfully."
 	},
 	"auth": {
 		"error_fields_required": "Email & password are required.",
@@ -19,6 +22,7 @@
 			"reinitialize_email": "Reset email sent.",
 			"reinitialize_error": "Error sending email.",
 			"invalid_link": "Invalid or expired link.",
+			"reset_again": "You need to recreate a valid link in forgot password.",
 			"verify_email_success": "Email verified successfully."
 		},
 		"mailer_verification": {

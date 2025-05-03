@@ -27,16 +27,13 @@ const { locale } = useI18n();
 const authStore = useAuthStore();
 
 onMounted(() => {
-    // 🔥 Corrige le problème de reset de langue au reload
-    const savedLang = localStorage.getItem('lang') || 'fr';
+  //Corrige le problème de reset de langue au reload
+  const savedLang = localStorage.getItem('lang') || 'fr';
   locale.value = savedLang;
 
-  console.log('savedLang:', savedLang);
-console.log('current locale.value before:', locale.value);
-locale.value = savedLang;
-console.log('locale.value after set:', locale.value);
+  locale.value = savedLang;
 
-  // Optionnel : re-synchronise le cookie si absent
+  //re-synchronise le cookie si absent
   const cookies = document.cookie.split(';').map(c => c.trim());
   const hasLangCookie = cookies.some(c => c.startsWith('lang='));
   if (!hasLangCookie) {
