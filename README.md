@@ -1,4 +1,4 @@
-# Agorium Project v1.4.0
+# Agorium Project v1.4.1
 
 ## Project Philosophy
 Agorium is a platform dedicated to empowering free expression and sharing alternative perspectives on vital societal issues. It enables users to post articles, images, videos, and more, fostering dialogue on topics often censored or ignored by mainstream narratives. While encouraging open discussion, the platform uses moderation to block illegal content, offering a space for independent voices to question mainstream views and inform others.
@@ -48,7 +48,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
    Create a `.env` file in the root folder with the following parameters:
    ```env
     JWT_SECRET=agorium_secret
-    VITE_AGORIUM_VERSION=1.4.0
+    VITE_AGORIUM_VERSION=1.4.1
     ```
 
     Create a `.env.dev` file in the root folder with the following parameters:
@@ -67,7 +67,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_BASE_URL=http://localhost
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=5173
-    VITE_AGORIUM_VERSION=1.4.0
+    VITE_AGORIUM_VERSION=1.4.1
 
 
     SMTP_HOST=sandbox.smtp.mailtrap.io
@@ -94,7 +94,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
     VITE_APP_MODE=preprod
-    VITE_AGORIUM_VERSION=1.4.0
+    VITE_AGORIUM_VERSION=1.4.1
 
 
     SMTP_HOST=smtp.gmail.com
@@ -120,7 +120,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_BASE_URL=https://agorium-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
-    VITE_AGORIUM_VERSION=1.4.0
+    VITE_AGORIUM_VERSION=1.4.1
 
 
     SMTP_HOST=smtp.gmail.com

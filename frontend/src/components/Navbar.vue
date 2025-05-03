@@ -136,7 +136,9 @@ const logout = () => {
   router.push(`/login`);
 };
 
-const deleteAccount = () => {
+const deleteAccount = (event) => {
+  toggleMenu();
+  closeDropdown(event);
   router.push(`/profile/${authStore.user?.pseudo}/informations`);
 };
 
