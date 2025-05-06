@@ -65,7 +65,7 @@
               <button @click="logout">{{ $t('navigation.logout') }}</button>
             </li>
             <li>
-              <button class="delete-button" @click="deleteAccount">{{ $t('navigation.delete_account') }}</button>
+              <button class="delete-button" @click="deleteAccount($event)">{{ $t('navigation.delete_account') }}</button>
             </li>
             <li>
             </li>
@@ -137,7 +137,6 @@ const logout = () => {
 };
 
 const deleteAccount = (event) => {
-  toggleMenu();
   closeDropdown(event);
   router.push(`/profile/${authStore.user?.pseudo}/informations`);
 };
@@ -398,6 +397,19 @@ const handleClickOutsideNavbar = (event) => {
 @media screen and (max-width: 768px) and (orientation: portrait) {
   .navbar-links.open {
     padding: 5px;
+  }
+}
+
+.dropdown[open] ul li button {
+  font-size: clamp(12px, 2vw, 18px);
+}
+
+@media (min-width: 768px) and (max-width: 1450px) {
+  .dropdown[open] ul {
+    left: -130px !important;
+  }
+  .dropdown[open] ul li {
+    text-align: clamp(110px, 2vw, 130px);
   }
 }
 

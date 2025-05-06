@@ -251,6 +251,7 @@ onBeforeRouteUpdate((to, from, next) => {
 
 onMounted(() => {
     window.scrollTo(0, 0);
+    navbarStore.closeMenu();
     fetchUser(route.params.pseudo)
 });
 
