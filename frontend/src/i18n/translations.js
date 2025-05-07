@@ -105,7 +105,8 @@ const messages = {
                 report_create: "Report",
                 delete_account: "Delete Account",
                 update_user: "Update Account",
-                delete_article: "Delete Article"
+                delete_article: "Delete Article",
+                delete_tag: "Delete Tag"
             },
             text: {
                 invalid_tags: "Some tag(s) not validated",
@@ -177,7 +178,8 @@ const messages = {
             th_refuse: "Refuse",
             th_reason: "Reason",
             th_save: "Save",
-            placeholder_tags: "Reason for refusal of tags"
+            placeholder_tags: "Reason for refusal of tags",
+            delete_button: 'Delete'
         },
         publish: {
             placeholder_file: "No file selected",
@@ -388,7 +390,8 @@ const messages = {
                 report_create: "Signalement",
                 delete_account: "Supprimer le compte",
                 update_user: "Mise à jour du compte",
-                delete_article: "Supprimer l'article"
+                delete_article: "Supprimer l'article",
+                delete_tag: "Supprimer le tag"
             },
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
@@ -460,7 +463,8 @@ const messages = {
             th_refuse: "Refuser",
             th_reason: "Raison",
             th_save: "Enregistrer",
-            placeholder_tags: "Motif du refus des tags"
+            placeholder_tags: "Motif du refus des tags",
+            delete_button: 'Supprimer'
         },
         publish: {
             placeholder_file: "Aucun fichier choisi",

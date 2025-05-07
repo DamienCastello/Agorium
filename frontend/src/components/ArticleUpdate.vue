@@ -64,7 +64,7 @@
                                 <input id="new-tag" type="text" :placeholder="$t('update.placeholder_tag')"
                                     v-model="newTag" @keyup.enter="addTag" class="new-tag-input" />
                                 <button @click="addTag" type="button" class="add-tag-button">{{ $t('update.add_button')
-                                }}</button>
+                                    }}</button>
                             </div>
                         </div>
                     </div>
@@ -94,8 +94,8 @@
         </div>
     </div>
     <el-button @click="showConfirmDialog" :disabled="isDropdownOpen || navbarStore.isMenuOpen">
-                {{ $t('update.delete') }}
-            </el-button>
+        {{ $t('update.delete') }}
+    </el-button>
     <notifications position="bottom right" />
 </template>
 
@@ -307,15 +307,75 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside);
 });
 
+const addTag = () => {
+    if (!newTag.value.trim()) return;
+
+    const tagExists = tags.value.some((tag) => tag.name.toLowerCase() === newTag.value.toLowerCase());
+    if (tagExists) {
+        notify({
+            title: t('notification.title.tag_exists'),
+            type: 'warn',
+            text: t('notification.text.tag_exists'),
+        });
+        newTag.value = "";
+        return;
+    }
+
+    const newTagObject = { name: newTag.value, isValid: false };
+
+    state.value = "loading";
+
+    axios
+        .post(`${url.baseUrl}/api/v1/tags/`, newTagObject, {
+            withCredentials: true,
+            headers: {
+                "Authorization": `Bearer ${authStore.token}`,
+                "Content-Type": "application/json",
+            },
+        })
+        .then(() => {
+            notify({
+                title: t('notification.title.tag_create'),
+                type: 'success',
+                text: t('notification.text.tag_create'),
+            });
+
+            return axios.get(`${url.baseUrl}/api/v1/tags/`, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+            });
+        })
+        .then((response) => {
+            if (response.data && response.data.tags) {
+                tags.value = response.data.tags;
+            }
+
+            newTag.value = "";
+            state.value = "idle";
+        })
+        .catch((error) => {
+            notify({
+                title: t('notification.title.error_tag_create'),
+                type: 'error',
+                text: error.response.data.message,
+            });
+            state.value = "error";
+        });
+};
+
 const handleSubmit = async () => {
     state.value = 'loading';
 
-    if ((!selectedFile.value && mediaType !== 'youtube') || (!form.value.urlYoutube && mediaType === 'youtube')) {
+    if ((!selectedFile.value && (mediaType.value === 'image' || mediaType.value === 'video')) || (!form.value.urlYoutube && mediaType.value === 'youtube')) {
         notify({
             title: t('notification.title.field_media_required'),
             type: 'warn',
             text: t('notification.text.field_media_required'),
         });
+        state.value = 'idle';
         return;
     }
 
@@ -356,6 +416,7 @@ const handleSubmit = async () => {
         .put(`${url.baseUrl}/api/v1/articles/${route.params.id}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${authStore.token}`
             },
         })
         .then(() => {
@@ -473,10 +534,10 @@ const deleteArticle = async (id) => {
         } catch (error) {
             console.log("error: ", error)
             notify({
-            title: t('notification.title.delete_article'),
-            type: 'error',
-            text: error.response?.data?.message || 'Delete failed.',
-        });
+                title: t('notification.title.delete_article'),
+                type: 'error',
+                text: error.response?.data?.message || 'Delete failed.',
+            });
         }
     }
 };

@@ -37,7 +37,7 @@
           }}
         </p>
         <div class="badge-container">
-          <span class="badge" v-for="(tag, index) in article.tags" :key="index">
+          <span class="badge" :class="{'invalid': !tag.isValid}" v-for="(tag, index) in article.tags" :key="index">
             {{ tag.name }}
           </span>
         </div>
@@ -221,6 +221,10 @@ onMounted(() => {
   padding: 2px 2px;
   border-radius: 999px;
   font-size: clamp(7px, 1.3vw, 9px) !important;
+}
+
+.invalid {
+  background-color: #e4a100;
 }
 
 /* Orientation landscape: réduire un peu les tailles */

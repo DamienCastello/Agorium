@@ -253,8 +253,6 @@ onMounted(() => {
     fetchUser(route.params.pseudo)
 });
 
-
-
 const handleClickOutsideNavbar = (event) => {
     if (navbarStore.isMenuOpen) {
         event.preventDefault();
