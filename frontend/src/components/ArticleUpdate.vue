@@ -77,10 +77,11 @@
                 <p v-if="!refusalReasons.preview.isValid" class="validation-message">{{
                     refusalReasons.preview.value }}</p>
                 <FadeSlideTransition>
-                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'" :imagePreview="imagePreview"
-                        @update:videoThumbnail="updateVideoThumbnail" :videoThumbnail="videoThumbnail"
-                        @update:imagePreview="updateImagePreview" :videoPreview="videoPreview"
-                        @update:videoPreview="updateVideoPreview" @update:selectedFile="updateSelectedFile" />
+                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'"
+                        :imagePreview="imagePreview" @update:videoThumbnail="updateVideoThumbnail"
+                        :videoThumbnail="videoThumbnail" @update:imagePreview="updateImagePreview"
+                        :videoPreview="videoPreview" @update:videoPreview="updateVideoPreview"
+                        @update:selectedFile="updateSelectedFile" />
                 </FadeSlideTransition>
                 <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('update.tag_required') }}</p>
                 <p v-if="overallReasonForRefusal" class="validation-message">{{ overallReasonForRefusal }}
@@ -92,6 +93,9 @@
             </form>
         </div>
     </div>
+    <el-button @click="showConfirmDialog" :disabled="isDropdownOpen || navbarStore.isMenuOpen">
+                {{ $t('update.delete') }}
+            </el-button>
     <notifications position="bottom right" />
 </template>
 
@@ -111,6 +115,7 @@ import { useNavbarStore } from "../stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
 import extractVideoId from "@/utils/extractYoutubeUrl";
 import { useI18n } from "vue-i18n";
+import { ElMessageBox } from 'element-plus';
 
 const route = useRoute();
 const articleId = route.params.id;
@@ -125,11 +130,11 @@ const state = ref("loading");
 const tags = ref([]);
 const selectedTags = ref([]);
 const refusalReasons = ref({
-  title: { isValid: true, value: "" },
-  description: { isValid: true, value: "" },
-  preview: { isValid: true, value: "" },
-  videoContent: { isValid: true, value: "" },
-  videoFile: { isValid: true, value: "" }
+    title: { isValid: true, value: "" },
+    description: { isValid: true, value: "" },
+    preview: { isValid: true, value: "" },
+    videoContent: { isValid: true, value: "" },
+    videoFile: { isValid: true, value: "" }
 });;
 const overallReasonForRefusal = ref(null);
 const selectedFile = ref(null);
@@ -138,6 +143,8 @@ const videoPreview = ref(null);
 const videoThumbnail = ref(null);
 const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
+const isConfirmedDelete = ref(false);
+const isDialogVisible = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
 
@@ -415,6 +422,64 @@ const toggleDropdown = () => {
 
     isDropdownOpen.value = !isDropdownOpen.value;
 };
+
+const showConfirmDialog = () => {
+    ElMessageBox.confirm(
+        t('update.delete_warning') + t('update.delete_answer'),
+        t('update.delete_title'),
+
+        {
+            confirmButtonText: t('navigation.yes'),
+            cancelButtonText: t('navigation.no'),
+            type: 'warning',
+            center: true,
+        }
+    )
+        .then(() => {
+            confirmDelete()
+        })
+        .catch(() => {
+            // annulé
+        })
+}
+
+const confirmDelete = () => {
+    isConfirmedDelete.value = true;
+    isDialogVisible.value = false;
+    deleteArticle();
+};
+
+const deleteArticle = async (id) => {
+    if (isConfirmedDelete) {
+        try {
+            const response = await axios.delete(`${url.baseUrl}/api/v1/articles/${route.params.id}`, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "Authorization": `Bearer ${authStore.token}`,
+                },
+                withCredentials: true
+            })
+
+            notify({
+                title: t('notification.title.delete_article'),
+                type: 'success',
+                text: response.data.message,
+            });
+
+            setTimeout(() => {
+                router.push(`/profile/${authStore.user.pseudo}`)
+            }, 3000)
+
+        } catch (error) {
+            console.log("error: ", error)
+            notify({
+            title: t('notification.title.delete_article'),
+            type: 'error',
+            text: error.response?.data?.message || 'Delete failed.',
+        });
+        }
+    }
+};
 </script>
 
 <style scoped>
@@ -592,5 +657,16 @@ const toggleDropdown = () => {
 
 .add-tag-button:hover {
     background-color: #4b00b3;
+}
+
+.el-button {
+    border-color: #ff4d4d;
+    color: red;
+}
+
+.el-button:hover {
+    background-color: #ff4d4d77;
+    border-color: #ff4d4d;
+    color: red;
 }
 </style>

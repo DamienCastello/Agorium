@@ -157,8 +157,6 @@ const confirmDelete = () => {
     isConfirmedDelete.value = true;
     isDialogVisible.value = false;
     deleteAccount();
-    authStore.logout();
-    router.push(`/articles`);
 };
 
 const changeType = (field) => {

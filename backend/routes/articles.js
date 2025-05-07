@@ -59,6 +59,6 @@ async (req, res, next) => {
 //validate
 router.put('/:id/validate', authenticateJwt, isAdmin, articlesController.validate);
 //delete
-router.delete('/:id', authenticateJwt, isAdmin, articlesController.delete);
+router.delete('/:id', authenticateJwt, articlesController.delete);
 
 module.exports = router;

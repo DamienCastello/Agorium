@@ -360,6 +360,7 @@ const handleSubmit = () => {
       .post(`${url.baseUrl}/api/v1/articles/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${authStore.token}`
         },
       })
       .then(() => {

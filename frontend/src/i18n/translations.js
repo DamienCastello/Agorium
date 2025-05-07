@@ -104,7 +104,8 @@ const messages = {
                 report_reason: "Report Reason",
                 report_create: "Report",
                 delete_account: "Delete Account",
-                update_user: "Update Account"
+                update_user: "Update Account",
+                delete_article: "Delete Article"
             },
             text: {
                 invalid_tags: "Some tag(s) not validated",
@@ -216,7 +217,11 @@ const messages = {
             placeholder_tag: "Some tag",
             add_button: "Add",
             tag_required: "Select at least one tag.",
-            submit_button: "Update"
+            submit_button: "Update",
+            delete: "Delete",
+            delete_title: "Deleting article",
+            delete_answer: "Are you sure you want to delete this article ?",
+            delete_warning: "This action is irreversible. "
         },
         comments: {
             title: "Comments",
@@ -382,7 +387,8 @@ const messages = {
                 report_reason: "Motif du signalement",
                 report_create: "Signalement",
                 delete_account: "Supprimer le compte",
-                update_user: "Mise à jour du compte"
+                update_user: "Mise à jour du compte",
+                delete_article: "Supprimer l'article"
             },
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
@@ -494,7 +500,11 @@ const messages = {
             placeholder_tag: "un tag",
             add_button: "Ajouter",
             tag_required: "Sélectionnez au moins un tag.",
-            submit_button: "Mettre à jour"
+            submit_button: "Mettre à jour",
+            delete: "Supprimer",
+            delete_title: "Suppression de l'article",
+            delete_answer: "Êtes vous sur de vouloir supprimer cet article ?",
+            delete_warning: "Cette action est irréversible. ",
         },
         comments: {
             title: "Commentaires",
