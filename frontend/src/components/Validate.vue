@@ -672,6 +672,7 @@ const updateArticle = (article) => {
 
         axios.put(`${url.baseUrl}/api/v1/articles/${article.id}/validate`, updatedArticle, {
             withCredentials: true,
+            "Authorization": `Bearer ${authStore.token}`
         }).then(response => {
             notify({
                 title: t('notification.title.validation'),

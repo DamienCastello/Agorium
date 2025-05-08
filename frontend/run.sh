@@ -12,6 +12,7 @@ fi
 # Créer le fichier env.json avec les valeurs dynamiques
 cat > /usr/share/nginx/html/env.json << EOF
 {
+  "VITE_SERVER_NAME": "${VITE_SERVER_NAME}",
   "VITE_BACKEND_URL": "${BACKEND_URL}",
   "VITE_PORT_BACK": "${VITE_PORT_BACK}",
   "VITE_AGORIUM_VERSION": "${VITE_AGORIUM_VERSION}",

@@ -39,6 +39,11 @@ export const useAuthStore = defineStore('auth', {
     },
     isAdmin() {
       return this.user?.isAdmin;
+    },
+    initialize() {
+      if (this.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+      }
     }
   }
 });

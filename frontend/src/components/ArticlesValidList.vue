@@ -1,33 +1,18 @@
-
-  <template>
-    <h1>{{ $t('profile.label_articles_treatment') }}</h1>
-  <div
-  ref="scrollRef"
-  class="scroll-container pico"
-  v-infinite-scroll="loadMore"
-  :infinite-scroll-disabled="isFetching || state === 'end'"
-  :infinite-scroll-delay="300"
-  >
-    <div class="article-card" v-for="(article, index) in articles" :key="index" @click="navigateToArticle(article.id)">
-      <img
-        v-if="article.urlYoutube"
-        :src="getYoutubeThumbnail(article.urlYoutube)"
-        alt="Preview"
-        class="card-image"
-      />
-      <img
-        v-else-if="article.preview"
-        :src="`${url.baseUrl}/${article.preview}`"
-        alt="Preview"
-        class="card-image"
-      />
-      <img
-        v-else-if="article.video"
-        :src="`${url.baseUrl}/${article.thumbnail}`"
-        alt="Preview"
-        class="card-image"
-      />
+<template>
+  <h1>{{ $t('profile.label_articles_valid_by_user') }}</h1>
+  <div ref="scrollRef" class="scroll-container pico" v-infinite-scroll="loadMore"
+    :infinite-scroll-disabled="isFetching || state === 'end'" :infinite-scroll-delay="300">
+    <div class="article-card" v-for="(article, index) in articles" :key="index" @click="navigateToArticle(article)">
+      <img v-if="article.urlYoutube" :src="getYoutubeThumbnail(article.urlYoutube)" alt="Preview" class="card-image" />
+      <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview" class="card-image" />
+      <img v-else-if="article.video" :src="`${url.baseUrl}/${article.thumbnail}`" alt="Preview" class="card-image" />
       <div class="card-content">
+        <div v-if="article.isPrivate" class="private-icon">
+          <LockIcon />
+        </div>
+        <div v-if="!article.isPrivate" class="private-icon">
+          <UnlockIcon />
+        </div>
         <h3>{{ article.title }}</h3>
         <p class="description">
           {{
@@ -37,7 +22,7 @@
           }}
         </p>
         <div class="badge-container">
-          <span class="badge" :class="{'invalid': !tag.isValid}" v-for="(tag, index) in article.tags" :key="index">
+          <span class="badge" v-for="(tag, index) in article.tags" :key="index">
             {{ tag.name }}
           </span>
         </div>
@@ -47,8 +32,6 @@
   </div>
 </template>
 
-
-  
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -60,7 +43,8 @@ import { useAuthStore } from '@/stores/auth';
 import getYoutubeThumbnail from '@/utils/getYoutubeThumbnail';
 import { useI18n } from 'vue-i18n';
 import { ElInfiniteScroll } from 'element-plus'
-
+import LockIcon from './icons/LockIcon.vue';
+import UnlockIcon from './icons/UnlockIcon.vue';
 
 const articles = ref([]);
 const state = ref('loading');
@@ -87,7 +71,7 @@ const fetchArticles = async () => {
   isFetching.value = true;
 
   try {
-    const res = await axios.get(`${url.baseUrl}/api/v1/articles/invalid/user/${authStore.user.id}`, {
+    const res = await axios.get(`${url.baseUrl}/api/v1/articles/valid/user/${authStore.user.id}`, {
       params: { limit: limit.value, offset: offset.value },
       withCredentials: true,
     });
@@ -110,10 +94,13 @@ const fetchArticles = async () => {
   }
 };
 
-const navigateToArticle = (id) => {
-  router.push(`/articles/edit/${id}`);
+const navigateToArticle = (article) => {
+  if (article.isPrivate) {
+    router.push(`/articles/private/${article.privateLink}`);
+  } else {
+    router.push(`/articles/${article.id}`);
+  }
 };
-
 onMounted(() => {
   window.scrollTo(0, 0);
   fetchArticles();
@@ -170,7 +157,7 @@ onMounted(() => {
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s ease;
   flex-shrink: 0;
@@ -227,6 +214,15 @@ onMounted(() => {
   background-color: #e4a100;
 }
 
+.private-icon {
+  text-align: end;
+  font-size: 10px;
+}
+
+h1 {
+  margin-top: 20px;
+}
+
 /* Orientation landscape: réduire un peu les tailles */
 @media (max-width: 600px) and (orientation: landscape) {
   .scroll-container {
@@ -239,4 +235,3 @@ onMounted(() => {
   }
 }
 </style>
-

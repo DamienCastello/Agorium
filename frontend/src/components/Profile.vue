@@ -21,7 +21,9 @@
             </div>
         </div>
 
-        <ArticlesTreatment v-if="authStore.user?.id === user.id" />
+        <ArticlesTreatmentList v-if="authStore.user?.id === user.id" />
+
+        <ArticlesValidList v-if="authStore.user?.id === user.id" />
 
     </div>
 
@@ -41,7 +43,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useNotification } from "@kyvg/vue3-notification";
 import BadgeIcon from './icons/BadgeIcon.vue';
 import UserIcon from './icons/UserIcon.vue';
-import ArticlesTreatment from './ArticlesTreatment.vue';
+import ArticlesTreatmentList from './ArticlesTreatmentList.vue';
+import ArticlesValidList from './ArticlesValidList.vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
 

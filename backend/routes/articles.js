@@ -14,8 +14,12 @@ router.get('/', articlesController.indexValidated);
 router.get('/invalid', articlesController.indexNotValidated);
 /* GET invalidated articles listing. */
 router.get('/invalid/user/:id', articlesController.indexNotValidatedByUser);
+/* GET validated articles listing. */
+router.get('/valid/user/:id', articlesController.indexValidatedByUser);
 //show
 router.get('/:id', articlesController.show);
+//show private
+router.get('/private/:privateLink', articlesController.showPrivate);
 //like/unlike
 router.post('/:id/like', authenticateJwt, articlesController.like);
 //create

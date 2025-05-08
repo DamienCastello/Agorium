@@ -8,6 +8,10 @@
 
 
             <form @submit.prevent="handleSubmit">
+                <el-radio-group v-model="form.isPrivate">
+                    <el-radio value="public">{{ $t('publish.option_public') }}</el-radio>
+                    <el-radio value="private">{{ $t('publish.option_private') }}</el-radio>
+                </el-radio-group>
                 <fieldset>
                     <label for="title">{{ $t('update.label_title') }}<span style="color: red">*</span></label>
                     <p v-if="!refusalReasons.title.isValid" class="validation-message">{{ refusalReasons.title.value }}
@@ -64,7 +68,7 @@
                                 <input id="new-tag" type="text" :placeholder="$t('update.placeholder_tag')"
                                     v-model="newTag" @keyup.enter="addTag" class="new-tag-input" />
                                 <button @click="addTag" type="button" class="add-tag-button">{{ $t('update.add_button')
-                                    }}</button>
+                                }}</button>
                             </div>
                         </div>
                     </div>
@@ -118,7 +122,6 @@ import { useI18n } from "vue-i18n";
 import { ElMessageBox } from 'element-plus';
 
 const route = useRoute();
-const articleId = route.params.id;
 const authStore = useAuthStore();
 const navbarStore = useNavbarStore();
 const router = useRouter();
@@ -147,11 +150,13 @@ const isConfirmedDelete = ref(false);
 const isDialogVisible = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
+const articleId = ref(null);
 
 const form = ref({
     title: "",
     description: "",
-    urlYoutube: ""
+    urlYoutube: "",
+    isPrivate: 'public'
 });
 
 const isFormValid = computed(() => {
@@ -216,15 +221,16 @@ const updateVideoThumbnail = (thumbnail) => {
 };
 
 const fetchArticle = async () => {
-    axios(`${url.baseUrl}/api/v1/articles/${articleId}`, {
-        withCredentials: true,
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-    })
-        .then((response) => {
+    try {
+        let response;
+        if (route.params.privateLink) {
+        response = await axios.get(`${url.baseUrl}/api/v1/articles/private/${route.params.privateLink}`);
+        } else {
+        response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
+        }
+        if (response.data && response.data.article) {
             const article = response.data.article
+            articleId.value = article.id;
             if (article.video) mediaType.value = 'video'
             if (article.preview) mediaType.value = 'image'
             if (article.urlYoutube) mediaType.value = 'youtube'
@@ -232,12 +238,15 @@ const fetchArticle = async () => {
             overallReasonForRefusal.value = article.overallReasonForRefusal
             selectedTags.value = article.tags;
 
+            const isPrivateOption = article.isPrivate ? "private" : "public"
+
             if (mediaType.value === 'youtube') {
                 form.value = {
                     title: article.title,
                     description: article.description,
                     urlYoutube: article.urlYoutube,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
             } else if (mediaType.value === 'image') {
                 imagePreview.value = `${article.preview}`;
@@ -245,30 +254,34 @@ const fetchArticle = async () => {
                     title: article.title,
                     description: article.description,
                     preview: article.preview,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
             } else if (mediaType.value === 'video') {
                 form.value = {
                     title: article.title,
                     description: article.description,
                     video: article.video,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
                 if (mediaType.value === 'video' && article.video) {
                     videoPreview.value = `${article.video}`;
                     videoThumbnail.value = `${article.thumbnail}`;
                 }
             }
-        })
-        .catch((error) => {
-            notify({
+        } else {
+            state.value = "error";
+        }
+    } catch (error) {
+        console.log("alo: ", error)
+        notify({
                 title: "Fetching Article",
                 type: 'error',
-                text: error.response.data.message,
+                text: error?.response?.data?.message,
             });
             state.value = "error";
-        });
-
+    }
 };
 
 onMounted(() => {
@@ -388,6 +401,7 @@ const handleSubmit = async () => {
 
     formData.append("title", form.value.title);
     formData.append("description", form.value.description);
+    formData.append("isPrivate", form.value.isPrivate !== 'public' ? true : false);
     if (mediaType.value === "youtube") {
         // Verify youtube ID is valid
         const isValidYoutubeId = extractVideoId(form.value.urlYoutube ?? '')
@@ -413,7 +427,7 @@ const handleSubmit = async () => {
     formData.append("tags", JSON.stringify(cleanedTags));
 
     axios
-        .put(`${url.baseUrl}/api/v1/articles/${route.params.id}`, formData, {
+        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 "Authorization": `Bearer ${authStore.token}`

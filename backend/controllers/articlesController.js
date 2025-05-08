@@ -10,6 +10,12 @@ module.exports = {
 
       const whereClause = { isValid: true };
 
+      if (!req.user?.isAdmin) {
+        whereClause[Op.and] = [
+          { isPrivate: false },
+        ];
+      }
+
       if (search) {
         whereClause[Op.or] = [
           { title: { [Op.like]: `%${search}%` } },
@@ -78,15 +84,24 @@ module.exports = {
   indexNotValidated: function (req, res, next) {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
+    const whereClause = {
+      [Op.or]: [
+        { isValid: false },
+        { isValid: null }
+      ]
+    };
+
+
+    if (!req.user?.isAdmin) {
+      whereClause[Op.and] = [
+        { isPrivate: false },
+      ];
+    }
+
     Article.findAll({
-      offset: offset,
-      limit: limit,
-      where: {
-        [Op.or]: [
-          { isValid: false },
-          { isValid: null }
-        ]
-      },
+      offset,
+      limit,
+      where: whereClause,
       include: [
         {
           model: models.Like,
@@ -173,14 +188,27 @@ module.exports = {
         },
       ]
     })
-      .then((articles) => { res.json({ articles }); })
+      .then((articles) => {
+        res.status(200).json({ articles });
+      })
       .catch((error) => {
         console.log("error: ", error);
         res.status(500).json({ message: req.t('error') });
       });
   },
-  show: function (req, res, next) {
-    Article.findByPk(req.params.id, {
+  indexValidatedByUser: function (req, res, next) {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    Article.findAll({
+      offset: offset,
+      limit: limit,
+      where: {
+        userId: req.params.id,
+        [Op.or]: [
+          { isValid: true },
+        ]
+      },
       include: [
         {
           model: models.Like,
@@ -214,17 +242,117 @@ module.exports = {
         },
       ]
     })
-      .then((article) => {
-        res.json({ article });
+      .then((articles) => {
+        res.status(200).json({ articles });
       })
       .catch((error) => {
-        console.error("Message Error fetching tracks: ", error.message);
+        console.log("error: ", error);
         res.status(500).json({ message: req.t('error') });
       });
   },
+  show: async function (req, res, next) {
+    try {
+      const article = await Article.findByPk(req.params.id, {
+        include: [
+          {
+            model: models.Like,
+            as: 'likes',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              }
+            ]
+          },
+          {
+            model: models.Tag,
+            as: 'tags',
+          },
+          {
+            model: models.Comment,
+            as: 'comments',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              },
+              {
+                model: models.Like,
+                as: 'likes',
+              },
+            ]
+          },
+        ]
+      });
+
+      if (!article) {
+        return res.status(404).json({ message: req.t('notFound') });
+      }
+
+      if (article.isPrivate && (article.userId !== req.user?.id || !req.user?.isAdmin)) {
+        return res.status(403).json({ message: req.t('article_detail.private_access_denied') });
+      }
+
+      res.status(200).json({ article });
+
+    } catch (error) {
+      console.error("Error fetching article:", error.message);
+      res.status(500).json({ message: req.t('error') });
+    }
+  },
+  showPrivate: async function (req, res, next) {
+    try {
+      const article = await Article.findOne({
+        where: { privateLink: req.params.privateLink },
+        include: [
+          {
+            model: models.Like,
+            as: 'likes',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              }
+            ]
+          },
+          {
+            model: models.Tag,
+            as: 'tags',
+          },
+          {
+            model: models.Comment,
+            as: 'comments',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              },
+              {
+                model: models.Like,
+                as: 'likes',
+              },
+            ]
+          },
+        ]
+      });
+
+      if (!article || !article.isPrivate) {
+        return res.status(404).json({ message: req.t('notFound') });
+      }
+
+      res.status(200).json({ article });
+    } catch (error) {
+      console.error("Error fetching private article:", error.message);
+      res.status(500).json({ message: req.t('error') });
+    }
+  },
   create: async function (req, res, next) {
     try {
-      const { title, description, urlYoutube, tags } = req.body;
+      const { title, description, urlYoutube, tags, isPrivate } = req.body;
 
       if (!title || !description) {
         return res.status(400).json({ message: req.t('article.fields_required') });
@@ -248,8 +376,15 @@ module.exports = {
 
       const userId = req.user.id;
 
+      let privateLink = null;
       let previewPath = null;
       let videoPath = null;
+
+      if (isPrivate) {
+        const crypto = require('crypto');
+
+        privateLink = crypto.randomBytes(16).toString('hex');
+      }
 
 
       if (req.files?.preview?.[0]) {
@@ -278,6 +413,8 @@ module.exports = {
         preview: previewPath,
         video: videoPath,
         thumbnail: '',
+        isPrivate,
+        privateLink,
         urlYoutube: urlYoutube || null,
         refusalReasons: JSON.stringify({
           title: {
@@ -324,7 +461,7 @@ module.exports = {
         let fullVideoPath = null;
 
         fullVideoPath = path.join('/app/public', videoPath);
-        if(process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development') {
           fullVideoPath = path.resolve(videoPath);
         }
 
@@ -337,11 +474,11 @@ module.exports = {
 
         const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
         const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
-        
+
         if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
           fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
         }
-        
+
         await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
         await scanForNSFW(thumbnailFullPath);
 
@@ -546,16 +683,16 @@ module.exports = {
   },
   update: async function (req, res, next) {
     try {
-      const { title, description, urlYoutube, tags: rawTags } = req.body;
-  
+      const { title, description, urlYoutube, tags: rawTags, isPrivate } = req.body;
+
       if (!title || !description) {
         return res.status(400).json({ message: req.t('article.fields_required') });
       }
-  
+
       if (title.length < 3) {
         return res.status(400).json({ message: req.t('article.title_length') });
       }
-  
+
       let tags = rawTags;
       if (typeof tags === 'string') {
         try {
@@ -564,44 +701,67 @@ module.exports = {
           return res.status(400).json({ message: req.t('article.invalid_tags') });
         }
       }
-  
+
       if (!tags || !Array.isArray(tags) || tags.length === 0) {
         return res.status(400).json({ message: req.t('article.tag_required') });
       }
-  
+
       const userId = req.user.id;
       if (!userId) {
         return res.status(400).json({ message: req.t('article.user_required') });
       }
-  
+
       const article = await Article.findByPk(req.params.id);
       if (!article) {
         return res.status(404).json({ message: req.t('article.not_found') });
       }
-  
+
+      if (!req.user.isAdmin && article.userId !== req.user.id && req.body.hasOwnProperty('isPrivate')) {
+        return res.status(403).json({ message: req.t('unauthorized') });
+      }
+      console.log('check: ', isPrivate, article.isPrivate)
+
+      const isPrivateBool = isPrivate === 'true' || isPrivate === true;
+      const isPrivateChanged = isPrivateBool !== article.isPrivate;
+      console.log('check 1: ', isPrivateChanged)
+
+      let privateLink = article.privateLink;
+      
+      if (isPrivateChanged) {
+        if (isPrivateBool === true) {
+          console.log('enter');
+          const crypto = require('crypto');
+          privateLink = crypto.randomBytes(16).toString('hex');
+          console.log('check 2: ', privateLink);
+        } else {
+          privateLink = null;
+        }
+      }
+      console.log('check 3: ', privateLink)
+
       const oldVideoPath = article.video;
       const oldThumbnailPath = article.thumbnail;
-      const oldPreviewPath = article.preview; 
-  
+      const oldPreviewPath = article.preview;
+
       let previewPath = null;
       let videoPath = null;
-  
+
       if (req.files?.preview?.[0]) {
         previewPath = req.uploadedFiles.preview.replace('/app/public', '');
         if (process.env.NODE_ENV === 'development') {
           previewPath = `uploads/previews/${req.files.preview[0].filename}`;
         }
       }
-  
+
       if (req.files?.video?.[0]) {
         videoPath = req.uploadedFiles.video.replace('/app/public', '');
         if (process.env.NODE_ENV === 'development') {
           videoPath = `uploads/videos/${req.files.video[0].filename}`;
         }
       }
-  
+
       let thumbnailPath = article.thumbnail;
-  
+
       const updatedArticle = await article.update({
         title,
         description,
@@ -617,19 +777,21 @@ module.exports = {
           preview: { value: '', isValid: null, validatedBy: null },
         }),
         overallReasonForRefusal: null,
-        isValid: false,
-        userId
+        isValid: article.isValid,
+        userId,
+        isPrivate,
+        privateLink
       });
-  
+
       if (tags && Array.isArray(tags)) {
         const tagIds = tags.map(tag => tag.id);
         const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
         await updatedArticle.setTags(tagsToAssociate);
       }
-  
+
       const fs = require('fs');
       const path = require('path');
-  
+
       // Suppression de l'ancien preview si un nouveau preview a été uploadé
       if (previewPath && oldPreviewPath) {
         const oldFullPreviewPath = process.env.NODE_ENV === 'development'
@@ -639,7 +801,7 @@ module.exports = {
           fs.unlinkSync(oldFullPreviewPath);
         }
       }
-  
+
       if (req.files?.video?.[0]) {
         const {
           isExecutableFile,
@@ -647,27 +809,27 @@ module.exports = {
           extractFrameFromVideo,
           scanForNSFW
         } = require('../services/video');
-  
+
         let fullVideoPath = path.join('/app/public', videoPath);
         if (process.env.NODE_ENV === 'development') {
           fullVideoPath = path.resolve(videoPath);
         }
-  
+
         await isExecutableFile(fullVideoPath);
         await analyzeVideo(fullVideoPath);
-  
+
         const { getUploadPath } = require('../utils/getUploadPath');
         const { v4: uuidv4 } = require('uuid');
         const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
         const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
-  
+
         if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
           fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
         }
-  
+
         await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
         await scanForNSFW(thumbnailFullPath);
-  
+
         if (oldVideoPath) {
           const oldFullVideoPath = process.env.NODE_ENV === 'development'
             ? path.resolve(oldVideoPath)
@@ -676,7 +838,7 @@ module.exports = {
             fs.unlinkSync(oldFullVideoPath);
           }
         }
-  
+
         if (oldThumbnailPath) {
           const oldFullThumbnailPath = process.env.NODE_ENV === 'development'
             ? path.resolve(oldThumbnailPath)
@@ -685,19 +847,19 @@ module.exports = {
             fs.unlinkSync(oldFullThumbnailPath);
           }
         }
-  
+
         await article.update({
           video: videoPath,
           thumbnail: thumbnailDbPath
         });
       }
-  
+
       return res.json({ updatedArticle });
     } catch (error) {
       console.error("Error updating article:", error.message);
       return res.status(500).json({ message: req.t('error') });
     }
-  },  
+  },
   validate: function (req, res, next) {
     const user = req.user;
 
