@@ -4,7 +4,7 @@
       <p>{{ $t('articles.state_error') }}</p>
     </div>
     <div v-else class="articles-grid" :aria-busy="state === 'loading'">
-      <div v-for="(article, index) in articles" :key="index" class="card" @click="navigateToValidation(article.id)">
+      <div v-for="(article, index) in articles" :key="index" class="card" @click="navigateToValidation(article)">
         <img v-if="article.urlYoutube" :src="getYoutubeThumbnail(article.urlYoutube)" alt="Preview"
           class="card-image" />
         <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview" class="card-image" />
@@ -109,9 +109,13 @@ onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 
-const navigateToValidation = (id) => {
+const navigateToValidation = (article) => {
   handleNavbar(() => {
-    router.push(`/validations/${id}`);
+    if (article.isPrivate) {
+      router.push(`/validations/private/${article.privateLink}`);
+    } else {
+      router.push(`/validations/${article.id}`);
+    }
   });
 };
 </script>

@@ -87,7 +87,6 @@ const agoriumVersion = window.environment?.VITE_AGORIUM_VERSION || 'x.x.x';
 
 @media screen and (max-width: 768px) {
   .social-links {
-  flex-direction: column;
   align-items: center;
 }
 

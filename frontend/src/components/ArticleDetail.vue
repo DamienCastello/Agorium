@@ -33,7 +33,7 @@
         </video>
 
       </div>
-      <div v-else-if="article.preview">
+      <div v-else-if="article.preview" class="player">
         <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
       </div>
       <div class="action-container">

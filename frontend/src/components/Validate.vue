@@ -30,7 +30,7 @@
                         <div class="tag-actions">
                             <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{
                                 $t('validate.save_button')
-                            }}</button>
+                                }}</button>
                             <button class="delete-button" :disabled="tag.isValid || navbarStore.isMenuOpen"
                                 @click="deleteTag(tag)">{{
                                     $t('validate.delete_button')
@@ -491,6 +491,8 @@ const router = useRouter();
 const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
 const { t } = useI18n();
+const privateLink = route.params.privateLink;
+const articleId = route.params.id;
 
 const checkWindowSize = () => {
     if (window.innerWidth <= 768) {
@@ -719,7 +721,54 @@ const deleteTag = async (tag) => {
     }
 };
 
-onMounted(() => {
+const fetchArticle = async () => {
+    if (!articleId && !privateLink) {
+        state.value = "error";
+        return;
+    }
+
+    try {
+        let response;
+        if (privateLink) {
+            response = await axios.get(`${url.baseUrl}/api/v1/articles/private/${route.params.privateLink}`);
+        } else {
+            response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
+        }
+        if (response.data && response.data.article) {
+            const fetchedArticle = response.data.article;
+            if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
+                try {
+                    fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
+                } catch (e) {
+                    notify({
+                        title: t('notification.titile.article_fetch'),
+                        type: 'error',
+                        text: `${t('notification.text.error_parse_refusalReasons')}: ${e.message}`,
+                    });
+                    fetchedArticle.refusalReasons = {};
+                }
+                article.value = fetchedArticle;
+                tags.value = fetchedArticle.tags;
+                state.value = "idle";
+            } else {
+                article.value = response.data.article;
+                tags.value = response.data.article.tags;
+                state.value = "idle";
+            }
+        } else {
+            state.value = "error";
+        }
+    } catch (error) {
+        notify({
+            title: t('notification.titile.validation_fetch'),
+            type: 'error',
+            text: `${t('notification.text.error_article_fetch')}: ${error.response.data.message}`,
+        });
+        state.value = "error";
+    }
+}
+
+onMounted(async () => {
     checkWindowSize();
 
     window.addEventListener('resize', () => {
@@ -727,47 +776,7 @@ onMounted(() => {
     });
     window.scrollTo(0, 0);
 
-    const articleId = route.params.id;
-
-    axios.get(`${url.baseUrl}/api/v1/articles/${articleId}`, {
-        withCredentials: true,
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-    })
-        .then((response) => {
-            if (response.data && response.data.article) {
-                const fetchedArticle = response.data.article;
-                if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
-                    try {
-                        fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
-                    } catch (e) {
-                        notify({
-                            title: t('notification.titile.article_fetch'),
-                            type: 'error',
-                            text: `${t('notification.text.error_parse_refusalReasons')}: ${e.message}`,
-                        });
-                        fetchedArticle.refusalReasons = {};
-                    }
-                    article.value = fetchedArticle;
-                    tags.value = fetchedArticle.tags;
-                    state.value = "idle";
-                } else {
-                    article.value = response.data.article;
-                    tags.value = response.data.article.tags;
-                    state.value = "idle";
-                }
-            }
-        })
-        .catch((error) => {
-            notify({
-                title: t('notification.titile.validation_fetch'),
-                type: 'error',
-                text: `${t('notification.text.error_article_fetch')}: ${error.response.data.message}`,
-            });
-            state.value = "error";
-        })
+    fetchArticle();
 });
 
 onBeforeUnmount(() => {

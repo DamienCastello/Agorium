@@ -64,6 +64,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     HOST=backend:3000
 
     # Frontend
+    VITE_SERVER_NAME=localhost
     VITE_BASE_URL=http://localhost
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=5173
@@ -90,6 +91,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     HOST=agorium-preprod-backend.castello.ovh:3000
 
     # Frontend
+    VITE_SERVER_NAME=agorium-preprod.castello.ovh
     VITE_BASE_URL=http://agorium-preprod-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080
@@ -117,6 +119,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     HOST=agorium-backend.castello.ovh:3000
 
     # Frontend
+    VITE_SERVER_NAME=agorium.castello.ovh
     VITE_BASE_URL=https://agorium-backend.castello.ovh
     VITE_PORT_BACK=3000
     VITE_PORT_FRONT=8080

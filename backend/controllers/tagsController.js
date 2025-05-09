@@ -135,8 +135,8 @@ module.exports = {
             });
     },
     delete: function (req, res, next) {
-        const user = req.user; // user signed with JWT
-
+        const user = req.user;
+    
         Tag.findByPk(req.params.id, {
             include: [
                 {
@@ -154,23 +154,24 @@ module.exports = {
         })
             .then((tag) => {
                 if (!tag) {
-                    return res.status(404).json({ message: req.t('tag.not_found') });
+                    res.status(404).json({ message: req.t('tag.not_found') });
+                    return;
                 }
-
+    
                 const canDelete = user.isAdmin || tag.articles.some((article) => article.user.id === user.id);
-
+    
                 if (!canDelete) {
-                    return res.status(403).json({ message: req.t('tag.authorized') });
+                    res.status(403).json({ message: req.t('tag.authorized') });
+                    return;
                 }
-
-                return tag.destroy();
-            })
-            .then(() => {
-                res.status(204).send(); // No content
+    
+                return tag.destroy().then(() => {
+                    res.status(204).send();
+                });
             })
             .catch((error) => {
                 console.error('Error deleting tag: ', error.message);
                 res.status(500).json({ message: req.t('tag.error_delete') });
             });
-    },
+    }
 };

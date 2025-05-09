@@ -85,19 +85,16 @@ module.exports = {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
     const whereClause = {
-      [Op.or]: [
-        { isValid: false },
-        { isValid: null }
+      [Op.and]: [
+        {
+          [Op.or]: [
+            { isValid: false },
+            { isValid: null }
+          ]
+        },
       ]
     };
-
-
-    if (!req.user?.isAdmin) {
-      whereClause[Op.and] = [
-        { isPrivate: false },
-      ];
-    }
-
+    
     Article.findAll({
       offset,
       limit,

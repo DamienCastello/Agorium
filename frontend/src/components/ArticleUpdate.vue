@@ -91,7 +91,7 @@
                 <p v-if="overallReasonForRefusal" class="validation-message">{{ overallReasonForRefusal }}
                 </p>
                 <button type="submit"
-                    :disabled="!isFormValid || selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
+                    :disabled="selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
                     {{ $t('update.submit_button') }}
                 </button>
             </form>
@@ -159,19 +159,6 @@ const form = ref({
     isPrivate: 'public'
 });
 
-const isFormValid = computed(() => {
-    if (!form.value.title || !form.value.description) return false;
-
-    switch (mediaType.value) {
-        case "youtube":
-            return form.value.urlYoutube.length > 0;
-        case "image":
-        case "video":
-            return selectedFile.value !== null;
-        default:
-            return false;
-    }
-});
 
 const handleSelectedTagClick = (tag, event) => {
     // Empêche la fermeture du dropdown si clic dans la sélection
@@ -380,16 +367,6 @@ const addTag = () => {
 
 const handleSubmit = async () => {
     state.value = 'loading';
-
-    if ((!selectedFile.value && (mediaType.value === 'image' || mediaType.value === 'video')) || (!form.value.urlYoutube && mediaType.value === 'youtube')) {
-        notify({
-            title: t('notification.title.field_media_required'),
-            type: 'warn',
-            text: t('notification.text.field_media_required'),
-        });
-        state.value = 'idle';
-        return;
-    }
 
     const cleanedTags = selectedTags.value.map(tag => {
         const { createdAt, updatedAt, ...cleanTag } = tag;
