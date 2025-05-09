@@ -8,6 +8,10 @@
 
 
             <form @submit.prevent="handleSubmit">
+                <el-radio-group v-model="form.isPrivate">
+                    <el-radio value="public">{{ $t('publish.option_public') }}</el-radio>
+                    <el-radio value="private">{{ $t('publish.option_private') }}</el-radio>
+                </el-radio-group>
                 <fieldset>
                     <label for="title">{{ $t('update.label_title') }}<span style="color: red">*</span></label>
                     <p v-if="!refusalReasons.title.isValid" class="validation-message">{{ refusalReasons.title.value }}
@@ -77,10 +81,11 @@
                 <p v-if="!refusalReasons.preview.isValid" class="validation-message">{{
                     refusalReasons.preview.value }}</p>
                 <FadeSlideTransition>
-                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'" :imagePreview="imagePreview"
-                        @update:videoThumbnail="updateVideoThumbnail" :videoThumbnail="videoThumbnail"
-                        @update:imagePreview="updateImagePreview" :videoPreview="videoPreview"
-                        @update:videoPreview="updateVideoPreview" @update:selectedFile="updateSelectedFile" />
+                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'"
+                        :imagePreview="imagePreview" @update:videoThumbnail="updateVideoThumbnail"
+                        :videoThumbnail="videoThumbnail" @update:imagePreview="updateImagePreview"
+                        :videoPreview="videoPreview" @update:videoPreview="updateVideoPreview"
+                        @update:selectedFile="updateSelectedFile" />
                 </FadeSlideTransition>
                 <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('update.tag_required') }}</p>
                 <p v-if="overallReasonForRefusal" class="validation-message">{{ overallReasonForRefusal }}
@@ -92,6 +97,9 @@
             </form>
         </div>
     </div>
+    <el-button @click="showConfirmDialog" :disabled="isDropdownOpen || navbarStore.isMenuOpen">
+        {{ $t('update.delete') }}
+    </el-button>
     <notifications position="bottom right" />
 </template>
 
@@ -111,9 +119,9 @@ import { useNavbarStore } from "../stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
 import extractVideoId from "@/utils/extractYoutubeUrl";
 import { useI18n } from "vue-i18n";
+import { ElMessageBox } from 'element-plus';
 
 const route = useRoute();
-const articleId = route.params.id;
 const authStore = useAuthStore();
 const navbarStore = useNavbarStore();
 const router = useRouter();
@@ -125,11 +133,11 @@ const state = ref("loading");
 const tags = ref([]);
 const selectedTags = ref([]);
 const refusalReasons = ref({
-  title: { isValid: true, value: "" },
-  description: { isValid: true, value: "" },
-  preview: { isValid: true, value: "" },
-  videoContent: { isValid: true, value: "" },
-  videoFile: { isValid: true, value: "" }
+    title: { isValid: true, value: "" },
+    description: { isValid: true, value: "" },
+    preview: { isValid: true, value: "" },
+    videoContent: { isValid: true, value: "" },
+    videoFile: { isValid: true, value: "" }
 });;
 const overallReasonForRefusal = ref(null);
 const selectedFile = ref(null);
@@ -138,13 +146,17 @@ const videoPreview = ref(null);
 const videoThumbnail = ref(null);
 const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
+const isConfirmedDelete = ref(false);
+const isDialogVisible = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
+const articleId = ref(null);
 
 const form = ref({
     title: "",
     description: "",
-    urlYoutube: ""
+    urlYoutube: "",
+    isPrivate: 'public'
 });
 
 const isFormValid = computed(() => {
@@ -209,15 +221,16 @@ const updateVideoThumbnail = (thumbnail) => {
 };
 
 const fetchArticle = async () => {
-    axios(`${url.baseUrl}/api/v1/articles/${articleId}`, {
-        withCredentials: true,
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-    })
-        .then((response) => {
+    try {
+        let response;
+        if (route.params.privateLink) {
+        response = await axios.get(`${url.baseUrl}/api/v1/articles/private/${route.params.privateLink}`);
+        } else {
+        response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
+        }
+        if (response.data && response.data.article) {
             const article = response.data.article
+            articleId.value = article.id;
             if (article.video) mediaType.value = 'video'
             if (article.preview) mediaType.value = 'image'
             if (article.urlYoutube) mediaType.value = 'youtube'
@@ -225,12 +238,15 @@ const fetchArticle = async () => {
             overallReasonForRefusal.value = article.overallReasonForRefusal
             selectedTags.value = article.tags;
 
+            const isPrivateOption = article.isPrivate ? "private" : "public"
+
             if (mediaType.value === 'youtube') {
                 form.value = {
                     title: article.title,
                     description: article.description,
                     urlYoutube: article.urlYoutube,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
             } else if (mediaType.value === 'image') {
                 imagePreview.value = `${article.preview}`;
@@ -238,30 +254,33 @@ const fetchArticle = async () => {
                     title: article.title,
                     description: article.description,
                     preview: article.preview,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
             } else if (mediaType.value === 'video') {
                 form.value = {
                     title: article.title,
                     description: article.description,
                     video: article.video,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
                 if (mediaType.value === 'video' && article.video) {
                     videoPreview.value = `${article.video}`;
                     videoThumbnail.value = `${article.thumbnail}`;
                 }
             }
-        })
-        .catch((error) => {
-            notify({
+        } else {
+            state.value = "error";
+        }
+    } catch (error) {
+        notify({
                 title: "Fetching Article",
                 type: 'error',
-                text: error.response.data.message,
+                text: error?.response?.data?.message,
             });
             state.value = "error";
-        });
-
+    }
 };
 
 onMounted(() => {
@@ -300,15 +319,75 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside);
 });
 
+const addTag = () => {
+    if (!newTag.value.trim()) return;
+
+    const tagExists = tags.value.some((tag) => tag.name.toLowerCase() === newTag.value.toLowerCase());
+    if (tagExists) {
+        notify({
+            title: t('notification.title.tag_exists'),
+            type: 'warn',
+            text: t('notification.text.tag_exists'),
+        });
+        newTag.value = "";
+        return;
+    }
+
+    const newTagObject = { name: newTag.value, isValid: false };
+
+    state.value = "loading";
+
+    axios
+        .post(`${url.baseUrl}/api/v1/tags/`, newTagObject, {
+            withCredentials: true,
+            headers: {
+                "Authorization": `Bearer ${authStore.token}`,
+                "Content-Type": "application/json",
+            },
+        })
+        .then(() => {
+            notify({
+                title: t('notification.title.tag_create'),
+                type: 'success',
+                text: t('notification.text.tag_create'),
+            });
+
+            return axios.get(`${url.baseUrl}/api/v1/tags/`, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+            });
+        })
+        .then((response) => {
+            if (response.data && response.data.tags) {
+                tags.value = response.data.tags;
+            }
+
+            newTag.value = "";
+            state.value = "idle";
+        })
+        .catch((error) => {
+            notify({
+                title: t('notification.title.error_tag_create'),
+                type: 'error',
+                text: error.response.data.message,
+            });
+            state.value = "error";
+        });
+};
+
 const handleSubmit = async () => {
     state.value = 'loading';
 
-    if ((!selectedFile.value && mediaType !== 'youtube') || (!form.value.urlYoutube && mediaType === 'youtube')) {
+    if ((!selectedFile.value && (mediaType.value === 'image' || mediaType.value === 'video')) || (!form.value.urlYoutube && mediaType.value === 'youtube')) {
         notify({
             title: t('notification.title.field_media_required'),
             type: 'warn',
             text: t('notification.text.field_media_required'),
         });
+        state.value = 'idle';
         return;
     }
 
@@ -321,6 +400,7 @@ const handleSubmit = async () => {
 
     formData.append("title", form.value.title);
     formData.append("description", form.value.description);
+    formData.append("isPrivate", form.value.isPrivate !== 'public' ? true : false);
     if (mediaType.value === "youtube") {
         // Verify youtube ID is valid
         const isValidYoutubeId = extractVideoId(form.value.urlYoutube ?? '')
@@ -346,9 +426,10 @@ const handleSubmit = async () => {
     formData.append("tags", JSON.stringify(cleanedTags));
 
     axios
-        .put(`${url.baseUrl}/api/v1/articles/${route.params.id}`, formData, {
+        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${authStore.token}`
             },
         })
         .then(() => {
@@ -414,6 +495,64 @@ const toggleDropdown = () => {
     }
 
     isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+const showConfirmDialog = () => {
+    ElMessageBox.confirm(
+        t('update.delete_warning') + t('update.delete_answer'),
+        t('update.delete_title'),
+
+        {
+            confirmButtonText: t('navigation.yes'),
+            cancelButtonText: t('navigation.no'),
+            type: 'warning',
+            center: true,
+        }
+    )
+        .then(() => {
+            confirmDelete()
+        })
+        .catch(() => {
+            // annulé
+        })
+}
+
+const confirmDelete = () => {
+    isConfirmedDelete.value = true;
+    isDialogVisible.value = false;
+    deleteArticle();
+};
+
+const deleteArticle = async (id) => {
+    if (isConfirmedDelete) {
+        try {
+            const response = await axios.delete(`${url.baseUrl}/api/v1/articles/${route.params.id}`, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "Authorization": `Bearer ${authStore.token}`,
+                },
+                withCredentials: true
+            })
+
+            notify({
+                title: t('notification.title.delete_article'),
+                type: 'success',
+                text: response.data.message,
+            });
+
+            setTimeout(() => {
+                router.push(`/profile/${authStore.user.pseudo}`)
+            }, 3000)
+
+        } catch (error) {
+            console.log("error: ", error)
+            notify({
+                title: t('notification.title.delete_article'),
+                type: 'error',
+                text: error.response?.data?.message || 'Delete failed.',
+            });
+        }
+    }
 };
 </script>
 
@@ -592,5 +731,16 @@ const toggleDropdown = () => {
 
 .add-tag-button:hover {
     background-color: #4b00b3;
+}
+
+.el-button {
+    border-color: #ff4d4d;
+    color: red;
+}
+
+.el-button:hover {
+    background-color: #ff4d4d77;
+    border-color: #ff4d4d;
+    color: red;
 }
 </style>

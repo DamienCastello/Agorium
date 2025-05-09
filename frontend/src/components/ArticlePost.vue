@@ -20,6 +20,12 @@
 
       <form @submit.prevent="handleSubmit">
         <fieldset>
+        <el-radio-group v-model="form.isPrivate">
+          <el-radio value="public">{{ $t('publish.option_public') }}</el-radio>
+          <el-radio value="private">{{ $t('publish.option_private') }}</el-radio>
+        </el-radio-group>
+      </fieldset>
+        <fieldset>
           <label for="title">{{ $t('publish.label_title') }}<span style="color: red">*</span></label>
           <input id="title" type="text" :placeholder="$t('publish.placeholder_title')" v-model="form.title" />
         </fieldset>
@@ -108,7 +114,8 @@ const lorem =
 const form = ref({
   title: "",
   description: "",
-  urlYoutube: ""
+  urlYoutube: "",
+  isPrivate: 'public'
 });
 
 const authStore = useAuthStore();
@@ -334,6 +341,7 @@ const handleSubmit = () => {
 
   formData.append("title", form.value.title);
   formData.append("description", form.value.description);
+  formData.append("isPrivate", form.value.isPrivate !== 'public' ? true : false);
   if (mediaType.value === "youtube") {
     if (!isValidYoutubeId) {
       notify({
@@ -360,6 +368,7 @@ const handleSubmit = () => {
       .post(`${url.baseUrl}/api/v1/articles/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${authStore.token}`
         },
       })
       .then(() => {

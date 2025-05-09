@@ -7,6 +7,7 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
   }),
+  persist: true,
   actions: {
     async login(credentials) {
       try {
@@ -38,6 +39,11 @@ export const useAuthStore = defineStore('auth', {
     },
     isAdmin() {
       return this.user?.isAdmin;
+    },
+    initialize() {
+      if (this.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
+      }
     }
   }
 });

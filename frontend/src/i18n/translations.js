@@ -104,7 +104,10 @@ const messages = {
                 report_reason: "Report Reason",
                 report_create: "Report",
                 delete_account: "Delete Account",
-                update_user: "Update Account"
+                update_user: "Update Account",
+                delete_article: "Delete Article",
+                delete_tag: "Delete Tag",
+                share_link: "Share link"
             },
             text: {
                 invalid_tags: "Some tag(s) not validated",
@@ -136,12 +139,18 @@ const messages = {
                 log_error_language: "Error back side when changing language: ",
                 delete_account_success: "Your account has been deleted.",
                 delete_account_error: "Error while deleting. Please try again.",
+                share_link_success: "Link copied to clipboard.",
+                share_link_error: "Impossible to copy link."
             }
         },
         article_detail: {
             state_loading: "Loading article ...",
             state_error: "Unable to load this article",
-            report: "Report"
+            report: "Report",
+            modify: "Modify",
+            share: "Share",
+            private: "private",
+            public: "public"
         },
         articles: {
             tag_filter: "Filter by tags",
@@ -176,7 +185,8 @@ const messages = {
             th_refuse: "Refuse",
             th_reason: "Reason",
             th_save: "Save",
-            placeholder_tags: "Reason for refusal of tags"
+            placeholder_tags: "Reason for refusal of tags",
+            delete_button: 'Delete'
         },
         publish: {
             placeholder_file: "No file selected",
@@ -198,7 +208,9 @@ const messages = {
             media_type: "Media type",
             option_image: "Image",
             option_video: "Vidéo",
-            option_youtube: "Youtube link"
+            option_youtube: "Youtube link",
+            option_public: "Public",
+            option_private: "Private"
         },
         update: {
             placeholder_file: "No file selected",
@@ -216,7 +228,11 @@ const messages = {
             placeholder_tag: "Some tag",
             add_button: "Add",
             tag_required: "Select at least one tag.",
-            submit_button: "Update"
+            submit_button: "Update",
+            delete: "Delete",
+            delete_title: "Deleting article",
+            delete_answer: "Are you sure you want to delete this article ?",
+            delete_warning: "This action is irreversible. "
         },
         comments: {
             title: "Comments",
@@ -229,11 +245,12 @@ const messages = {
         profile: {
             title: "profile",
             state_loading: "Loading data ...",
-            label_articles_treatment: "Posted articles being processed",
+            label_articles_treatment: "Published articles being processed",
             informations: "Modify my informations",
             delete_title: "Deleting account",
             delete_answer: "Are you sure you want to delete your account ?",
-            delete_warning: "This action is irreversible and all your data will be lost (articles, comments, uploads). "
+            delete_warning: "This action is irreversible and all your data will be lost (articles, comments, uploads). ",
+            label_articles_valid_by_user: "Validated published articles"
         },
         about: {
             title: "Why Agorium Exists",
@@ -382,7 +399,10 @@ const messages = {
                 report_reason: "Motif du signalement",
                 report_create: "Signalement",
                 delete_account: "Supprimer le compte",
-                update_user: "Mise à jour du compte"
+                update_user: "Mise à jour du compte",
+                delete_article: "Supprimer l'article",
+                delete_tag: "Supprimer le tag",
+                share_link: "Partage du lien"
             },
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
@@ -414,12 +434,18 @@ const messages = {
                 log_error_language: "Erreur lors du changement de langue côté serveur",
                 delete_account_success: "Votre compte a été supprimé.",
                 delete_account_error: "Erreur lors de la suprression. Veuillez réesssayer.",
+                share_link_success: "Lien copié dans le presse-papiers.",
+                share_link_error: "Impossible de copier le lien."
             }
         },
         article_detail: {
             state_loading: "Chargement de l'article ...",
             state_error: "Impossible de charger cet article",
-            report: "Signaler"
+            report: "Signaler",
+            modify: "Modifier",
+            share: "Partager",
+            private: "privé",
+            public: "publique"
         },
         articles: {
             tag_filter: "Filtrer par tags",
@@ -454,7 +480,8 @@ const messages = {
             th_refuse: "Refuser",
             th_reason: "Raison",
             th_save: "Enregistrer",
-            placeholder_tags: "Motif du refus des tags"
+            placeholder_tags: "Motif du refus des tags",
+            delete_button: 'Supprimer'
         },
         publish: {
             placeholder_file: "Aucun fichier choisi",
@@ -476,7 +503,9 @@ const messages = {
             media_type: "Type de média",
             option_image: "Image",
             option_video: "Vidéo",
-            option_youtube: "Lien YouTube"
+            option_youtube: "Lien YouTube",
+            option_public: "Publique",
+            option_private: "Privé"
         },
         update: {
             placeholder_file: "Aucun fichier choisi",
@@ -494,7 +523,11 @@ const messages = {
             placeholder_tag: "un tag",
             add_button: "Ajouter",
             tag_required: "Sélectionnez au moins un tag.",
-            submit_button: "Mettre à jour"
+            submit_button: "Mettre à jour",
+            delete: "Supprimer",
+            delete_title: "Suppression de l'article",
+            delete_answer: "Êtes vous sur de vouloir supprimer cet article ?",
+            delete_warning: "Cette action est irréversible. ",
         },
         comments: {
             title: "Commentaires",
@@ -512,6 +545,7 @@ const messages = {
             delete_title: "Suppression du compte",
             delete_answer: "Êtes vous sur de vouloir supprimer votre compte ?",
             delete_warning: "Cette action est irréversible et toute vos données seront perdues (articles, commentaires, uploads). ",
+            label_articles_valid_by_user: "Articles postés validés"
         },
         about: {
             title: "Pourquoi Agorium existe",

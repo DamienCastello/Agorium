@@ -36,9 +36,15 @@ export const routes = [
     { path: '/signup', name: 'Signup', component: Signup },
     { path: '/login', name: 'Login', component: Login, meta: { public: true } },
     { path: '/articles', name: 'Articles', component: Articles, meta: { public: true } },
+    {
+        path: '/articles/private/:privateLink',
+        name: 'ArticlePrivate',
+        component: ArticleDetail
+      },
     { path: '/validations', name: 'Validations', component: Validations, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/articles/:id(\\d+)', name: 'ArticleDetail', component: ArticleDetail, meta: { public: true } },
     { path: '/articles/edit/:id(\\d+)', name: 'ArticleUpdate', component: ArticleUpdate, meta: { requiresAuth: true } },
+    { path: '/articles/private/edit/:privateLink(\\d+)', name: 'ArticlePrivateUpdate', component: ArticleUpdate, meta: { requiresAuth: true } },
     { path: '/validations/:id(\\d+)', name: 'Validate', component: Validate, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/new-article', name: 'ArticlePost', component: ArticlePost, meta: { requiresAuth: true } },
     { path: '/profile/:pseudo', name: 'Profile', component: Profile },

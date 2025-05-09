@@ -83,31 +83,16 @@ onMounted(() => {
     transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
-.icon-container .badge-name {
-    visibility: hidden;
-    top: 105%;
-    left: -35%;
-    font-size: 14px;
-    padding: 1px 2px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    position: absolute;
-    z-index: 10;
-    min-width: 180px;
-}
-
 
 .icon-container:hover {
     transform: scale(1.05);
     background-color: #d1d1d1;
+    z-index: 2 !important;
 }
 
 .icon-container i {
     font-size: clamp(30px, 8vw, 60px);
     color: white;
-    z-index: 2;
 }
 
 .icon-text {
@@ -125,10 +110,10 @@ onMounted(() => {
 .badge-name {
     visibility: hidden;
     position: absolute;
-    top: 105%;
+    bottom: 50%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: clamp(12px, 1vw, 16px);
+    font-size: clamp(8px, 10vw, 14px);
     padding: 2px 4px;
     background-color: black;
     color: white;

@@ -76,6 +76,16 @@ module.exports = (sequelize, DataTypes) => {
     validatedBy: {
       type: DataTypes.INTEGER,
       allowNull: true
+    },
+    isPrivate: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    privateLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
     }
   }, {
     sequelize,

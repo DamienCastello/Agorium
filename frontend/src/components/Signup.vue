@@ -334,4 +334,19 @@ onMounted(() => window.scrollTo(0, 0));
   margin-bottom: 15px;
   border: 1px solid grey;
 }
+
+.el-checkbox.cgu {
+  display: flex;
+  white-space: normal;
+  max-width: 90%;
+  margin-left: 10px;
+  
+}
+
+@media (max-width: 500px) {
+  .signup-container {
+  max-width: 300px;
+}
+
+}
 </style>

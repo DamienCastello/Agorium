@@ -48,7 +48,7 @@ const closeNavbar = () => {
   padding: 0 0.5rem;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 8;
 }
 
 main {

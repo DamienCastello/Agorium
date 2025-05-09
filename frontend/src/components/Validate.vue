@@ -10,41 +10,53 @@
             <div v-if="isMobile">
                 <!-- Mobile View -->
                 <h3>{{ $t('validate.title') }}</h3>
-                <div v-for="tag in article.tags" :key="tag.id" class="tag-container">
+                <div v-for="tag in article.tags" :key="tag.id" class="tag-container card">
                     <div class="tag-row">
                         <span class="tag-name">{{ tag.name }}</span>
                         <div class="tag-actions">
-                            <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')"
-                                class="mobile-icon-tag">
-                                <CheckIcon class="icon-check" />
-                            </span>
-                            <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')"
-                                class="mobile-icon-tag">
-                                <CrossIcon class="icon-cross" />
-                            </span>
+                            <div class="action-container-mobile">
+                                <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')"
+                                    class="mobile-icon-tag">
+                                    <CheckIcon class="icon-check" />
+                                </span>
+                                <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')"
+                                    class="mobile-icon-tag">
+                                    <CrossIcon class="icon-cross" />
+                                </span>
+                            </div>
                         </div>
                         <textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                             placeholder="Motif du refus du tag"></textarea>
-                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{ $t('validate.save_button')
-                        }}</button>
+                        <div class="tag-actions">
+                            <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{
+                                $t('validate.save_button')
+                            }}</button>
+                            <button class="delete-button" :disabled="tag.isValid || navbarStore.isMenuOpen"
+                                @click="deleteTag(tag)">{{
+                                    $t('validate.delete_button')
+                                }}</button>
+                        </div>
                     </div>
+
                 </div>
 
                 <h3>{{ $t('validate.sub_title') }}</h3>
-                <div class="field">
-                    <label>{{ $t('validate.label_title') }}: </label>
-                    <span>{{ article.title }}</span>
-                </div>
-                <div class="group">
+
+                <div class="group card">
+                    <div class="field">
+                        <p>{{ $t('validate.label_title') }}: <span>{{ article.title }}</span></p>
+                    </div>
                     <div class="field-row">
-                        <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.title.isValid }"
-                            @click="accept(article, 'title')">
-                            <CheckIcon />
-                        </div>
-                        <div class="icon-fields-mobile"
-                            :class="{ refused: article.refusalReasons.title.isValid === false }"
-                            @click="refuse(article, 'title')">
-                            <CrossIcon />
+                        <div class="action-container-mobile">
+                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.title.isValid }"
+                                @click="accept(article, 'title')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.title.isValid === false }"
+                                @click="refuse(article, 'title')">
+                                <CrossIcon />
+                            </div>
                         </div>
                         <textarea :disabled="article.refusalReasons.title.isValid"
                             v-model="article.refusalReasons.title.value"
@@ -54,24 +66,26 @@
 
                 <hr />
                 <div v-if="article.video">
-                    <div class="field">
-                        <label>{{ $t('validate.label_video') }}: </label>
-                    </div>
-                    <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
-                        <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="group">
+                    <div class="group card">
+                        <div class="field">
+                            <p>{{ $t('validate.label_video') }}: </p>
+                        </div>
+                        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                            <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                         <div class="field-row">
-                            <div class="icon-fields-mobile"
-                                :class="{ validated: article.refusalReasons.videoFile.isValid }"
-                                @click="accept(article, 'videoFile')">
-                                <CheckIcon />
-                            </div>
-                            <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.videoFile.isValid === false }"
-                                @click="refuse(article, 'videoFile')">
-                                <CrossIcon />
+                            <div class="action-container-mobile">
+                                <div class="icon-fields-mobile"
+                                    :class="{ validated: article.refusalReasons.videoFile.isValid }"
+                                    @click="accept(article, 'videoFile')">
+                                    <CheckIcon />
+                                </div>
+                                <div class="icon-fields-mobile"
+                                    :class="{ refused: article.refusalReasons.videoFile.isValid === false }"
+                                    @click="refuse(article, 'videoFile')">
+                                    <CrossIcon />
+                                </div>
                             </div>
                             <textarea :disabled="article.refusalReasons.videoFile.isValid"
                                 v-model="article.refusalReasons.videoFile.value"
@@ -81,23 +95,24 @@
                 </div>
 
                 <div v-if="article.urlYoutube">
-                    <div class="field">
-                        <label>{{ $t('validate.label_video') }}: </label>
-                    </div>
-                    <div class="preview-container">
+                    <div class="group card">
+                        <div class="field">
+                            <p>{{ $t('validate.label_video') }}: </p>
+                        </div>
                         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
-                    </div>
-                    <div class="group">
-                        <div class="field-row">
-                            <div class="icon-fields-mobile"
-                                :class="{ validated: article.refusalReasons.videoContent.isValid }"
-                                @click="accept(article, 'videoContent')">
-                                <CheckIcon />
-                            </div>
-                            <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.videoContent.isValid === false }"
-                                @click="refuse(article, 'videoContent')">
-                                <CrossIcon />
+
+                        <div class="field-row mt20">
+                            <div class="action-container-mobile">
+                                <div class="icon-fields-mobile"
+                                    :class="{ validated: article.refusalReasons.videoContent.isValid }"
+                                    @click="accept(article, 'videoContent')">
+                                    <CheckIcon />
+                                </div>
+                                <div class="icon-fields-mobile"
+                                    :class="{ refused: article.refusalReasons.videoContent.isValid === false }"
+                                    @click="refuse(article, 'videoContent')">
+                                    <CrossIcon />
+                                </div>
                             </div>
                             <textarea :disabled="article.refusalReasons.videoContent.isValid"
                                 v-model="article.refusalReasons.videoContent.value"
@@ -106,21 +121,23 @@
                     </div>
                 </div>
                 <div v-else-if="article.preview">
-                    <div class="field">
-                        <label>{{ $t('validate.label_preview') }}: </label>
-                    </div>
-                    <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
-                    <div class="group">
+                    <div class="group card">
+                        <div class="field">
+                            <p>{{ $t('validate.label_preview') }}: </p>
+                        </div>
+                        <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
                         <div class="field-row">
-                            <div class="icon-fields-mobile"
-                                :class="{ validated: article.refusalReasons.preview.isValid }"
-                                @click="accept(article, 'preview')">
-                                <CheckIcon />
-                            </div>
-                            <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.preview.isValid === false }"
-                                @click="refuse(article, 'preview')">
-                                <CrossIcon />
+                            <div class="action-container-mobile">
+                                <div class="icon-fields-mobile"
+                                    :class="{ validated: article.refusalReasons.preview.isValid }"
+                                    @click="accept(article, 'preview')">
+                                    <CheckIcon />
+                                </div>
+                                <div class="icon-fields-mobile"
+                                    :class="{ refused: article.refusalReasons.preview.isValid === false }"
+                                    @click="refuse(article, 'preview')">
+                                    <CrossIcon />
+                                </div>
                             </div>
                             <textarea :disabled="article.refusalReasons.preview.isValid"
                                 v-model="article.refusalReasons.preview.value"
@@ -131,21 +148,23 @@
 
                 <hr />
 
-                <div class="field">
-                    <label>{{ $t('validate.label_description') }}: </label>
-                    <span>{{ article.description }}</span>
-                </div>
-                <div class="group">
+
+                <div class="group card">
+                    <div class="field">
+                        <p>{{ $t('validate.label_description') }}: <span>{{ article.description }}</span></p>
+                    </div>
                     <div class="field-row">
-                        <div class="icon-fields-mobile"
-                            :class="{ validated: article.refusalReasons.description.isValid }"
-                            @click="accept(article, 'description')">
-                            <CheckIcon />
-                        </div>
-                        <div class="icon-fields-mobile"
-                            :class="{ refused: article.refusalReasons.description.isValid === false }"
-                            @click="refuse(article, 'description')">
-                            <CrossIcon />
+                        <div class="action-container-mobile">
+                            <div class="icon-fields-mobile"
+                                :class="{ validated: article.refusalReasons.description.isValid }"
+                                @click="accept(article, 'description')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.description.isValid === false }"
+                                @click="refuse(article, 'description')">
+                                <CrossIcon />
+                            </div>
                         </div>
                         <textarea :disabled="article.refusalReasons.description.isValid"
                             v-model="article.refusalReasons.description.value"
@@ -154,15 +173,17 @@
                 </div>
 
                 <h3>{{ $t('validate.sub_title_final') }}</h3>
-                <div class="group">
+                <div class="group card">
                     <div class="field-row">
-                        <div class="icon-fields-mobile" :class="{ validated: article.isValid }"
-                            @click="accept(article, 'overall')">
-                            <CheckIcon />
-                        </div>
-                        <div class="icon-fields-mobile" :class="{ refused: article.isValid === false }"
-                            @click="refuse(article, 'overall')">
-                            <CrossIcon />
+                        <div class="action-container-mobile">
+                            <div class="icon-fields-mobile" :class="{ validated: article.isValid }"
+                                @click="accept(article, 'overall')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile" :class="{ refused: article.isValid === false }"
+                                @click="refuse(article, 'overall')">
+                                <CrossIcon />
+                            </div>
                         </div>
                         <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
                             :placeholder="$t('validate.placeholder_final')" class="final-textarea"></textarea>
@@ -183,6 +204,7 @@
                             <th scope="col">{{ $t('validate.th_refuse') }}</th>
                             <th scope="col">{{ $t('validate.th_reason') }}</th>
                             <th scope="col">{{ $t('validate.th_save') }}</th>
+                            <th scope="col">{{ $t('validate.delete_button') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -200,8 +222,12 @@
                             <td><textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                                     :placeholder="$t('validate.placeholder_tags')"></textarea>
                             </td>
-                            <td class="tag-submit"><button @click="updateTag(tag)">{{ $t('validate.save_button')
-                            }}</button></td>
+                            <td class="tag-submit"><button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{
+                                $t('validate.save_button')
+                                    }}</button></td>
+                            <td><button class="delete-button" :disabled="tag.isValid || navbarStore.isMenuOpen"
+                                    @click="deleteTag(tag)">{{ $t('validate.delete_button')
+                                    }}</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -646,6 +672,7 @@ const updateArticle = (article) => {
 
         axios.put(`${url.baseUrl}/api/v1/articles/${article.id}/validate`, updatedArticle, {
             withCredentials: true,
+            "Authorization": `Bearer ${authStore.token}`
         }).then(response => {
             notify({
                 title: t('notification.title.validation'),
@@ -663,6 +690,33 @@ const updateArticle = (article) => {
             });
         });
     })
+};
+
+const deleteTag = async (tag) => {
+    try {
+        await axios.delete(`${url.baseUrl}/api/v1/tags/${tag.id}`, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${authStore.token}`,
+            },
+            withCredentials: true
+        })
+        notify({
+            title: t('notification.title.delete_tag'),
+            type: 'success',
+            text: response?.data?.message,
+        });
+
+        setTimeout(() => {
+            router.push('/validations')
+        }, 3000)
+    } catch (error) {
+        notify({
+            title: t('notification.title.delete_tag'),
+            type: 'error',
+            text: error?.respons?.data?.message,
+        });
+    }
 };
 
 onMounted(() => {
@@ -752,6 +806,14 @@ label {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.preview-container-mobile {
+    margin-bottom: 15px;
+}
+
+.mt20 {
+    margin-top: 20px;
 }
 
 .icon-check {
@@ -862,7 +924,17 @@ td button {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 10px;
+}
+
+.group {
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.card {
+    background-color: #ebebeb;
+    border: 1px solid #ccc;
+    border-radius: 15px;
 }
 
 .tag-container {
@@ -919,14 +991,21 @@ textarea {
     min-height: 80px;
 }
 
+.action-container-mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .icon-fields-mobile {
     cursor: pointer;
     width: 60px !important;
     font-size: 30px;
     text-align: center;
     border: 1px solid grey;
-    margin-bottom: 2px;
+    margin-bottom: 10px;
     border-radius: 10px;
+    margin-right: 15px;
 }
 
 .mobile-icon-tag {
@@ -944,6 +1023,18 @@ button {
     padding: 6px;
 }
 
+.delete-button {
+    border-color: #ff4d4d !important;
+    background-color: #ccc !important;
+    color: red !important;
+}
+
+.delete-button:hover {
+    background-color: #ff4d4d77 !important;
+    border-color: #ff4d4d !important;
+    color: red !important;
+}
+
 @media (max-width: 768px) {
     h3 {
         text-align: center;
@@ -952,6 +1043,7 @@ button {
     .tag-row {
         display: block;
         text-align: center;
+        margin-bottom: 10px;
     }
 
     .tag-actions {

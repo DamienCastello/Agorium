@@ -104,5 +104,9 @@
 		"error_validation": "Erreur lors de la validation du tag",
 		"error_delete": "Erreur lors de la suppression du tag."
 	},
-	"error": "Erreur serveur interne."
+	"error": "Erreur serveur interne.",
+	"unauthorized": "unauthorized",
+	"article_detail": {
+		"private_access_denied": "article_detail.private_access_denied"
+	}
 }
