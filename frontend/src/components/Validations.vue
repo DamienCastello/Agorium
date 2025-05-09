@@ -214,4 +214,28 @@ const navigateToValidation = (id) => {
   font-size: 15px;
 }
 
+@media (max-width: 1250px) {
+  .container {
+    width: 90%;
+  }
+}
+
+@media (max-width: 660px) {
+  .container {
+    width: 90%;
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 350px) {
+  .container {
+  max-width: 320px;
+}
+
+.card {
+  max-width: 280px;
+}
+
+}
+
 </style>

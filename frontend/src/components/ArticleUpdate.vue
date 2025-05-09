@@ -274,7 +274,6 @@ const fetchArticle = async () => {
             state.value = "error";
         }
     } catch (error) {
-        console.log("alo: ", error)
         notify({
                 title: "Fetching Article",
                 type: 'error',

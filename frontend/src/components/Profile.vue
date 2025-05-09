@@ -47,6 +47,7 @@ import ArticlesTreatmentList from './ArticlesTreatmentList.vue';
 import ArticlesValidList from './ArticlesValidList.vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, onBeforeRouteUpdate } from 'vue-router';
+import { useNavbarHandler } from '@/composables/useNavbarHandler';
 
 const authStore = useAuthStore();
 const { notify } = useNotification();
@@ -55,6 +56,8 @@ const avatarInput = ref(null);
 const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const { handleNavbar } = useNavbarHandler();
+
 
 
 const fetchUser = async (pseudo) => {
@@ -67,7 +70,7 @@ const fetchUser = async (pseudo) => {
 };
 
 const goInformations = () => {
-    router.push(`/profile/${authStore.user.pseudo}/informations`)
+    handleNavbar(() => router.push(`/profile/${authStore.user.pseudo}/informations`))
 }
 
 onBeforeRouteUpdate((to, from, next) => {

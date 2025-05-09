@@ -45,6 +45,7 @@ import { useI18n } from 'vue-i18n';
 import { ElInfiniteScroll } from 'element-plus'
 import LockIcon from './icons/LockIcon.vue';
 import UnlockIcon from './icons/UnlockIcon.vue';
+import { useNavbarHandler } from '@/composables/useNavbarHandler';
 
 const articles = ref([]);
 const state = ref('loading');
@@ -56,6 +57,7 @@ const router = useRouter();
 const { notify } = useNotification();
 const authStore = useAuthStore();
 const { t } = useI18n();
+const { handleNavbar } = useNavbarHandler();
 
 defineExpose({ ElInfiniteScroll })
 
@@ -95,11 +97,13 @@ const fetchArticles = async () => {
 };
 
 const navigateToArticle = (article) => {
-  if (article.isPrivate) {
-    router.push(`/articles/private/${article.privateLink}`);
-  } else {
-    router.push(`/articles/${article.id}`);
-  }
+  handleNavbar(() => {
+    if (article.isPrivate) {
+      router.push(`/articles/private/${article.privateLink}`);
+    } else {
+      router.push(`/articles/${article.id}`);
+    }
+  })
 };
 onMounted(() => {
   window.scrollTo(0, 0);

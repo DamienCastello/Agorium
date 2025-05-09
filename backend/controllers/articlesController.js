@@ -719,25 +719,20 @@ module.exports = {
       if (!req.user.isAdmin && article.userId !== req.user.id && req.body.hasOwnProperty('isPrivate')) {
         return res.status(403).json({ message: req.t('unauthorized') });
       }
-      console.log('check: ', isPrivate, article.isPrivate)
 
       const isPrivateBool = isPrivate === 'true' || isPrivate === true;
       const isPrivateChanged = isPrivateBool !== article.isPrivate;
-      console.log('check 1: ', isPrivateChanged)
 
       let privateLink = article.privateLink;
       
       if (isPrivateChanged) {
         if (isPrivateBool === true) {
-          console.log('enter');
           const crypto = require('crypto');
           privateLink = crypto.randomBytes(16).toString('hex');
-          console.log('check 2: ', privateLink);
         } else {
           privateLink = null;
         }
       }
-      console.log('check 3: ', privateLink)
 
       const oldVideoPath = article.video;
       const oldThumbnailPath = article.thumbnail;

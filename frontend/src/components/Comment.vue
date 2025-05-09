@@ -5,9 +5,10 @@
         </div>
         <div class="actions-comment">
             <div class="action-comment-like" @click="toggleLike">
-                {{ likeNumber }} <FadeSlideTransition>
+                <FadeSlideTransition>
                     <component :is="componentToShow" />
                 </FadeSlideTransition>
+                {{ likeNumber }}
             </div>
             <div class="action-comment-report" @click="navigateToReport(props.comment.id)">
                 <ReportIcon class="icon" />
@@ -96,6 +97,7 @@ const toggleLike = () => {
 };
 
 const navigateToReport = (id) => {
+    handleNavbar(() => {
     if (!authStore.user) {
       notify({
         title: t('notification.title.like_article'),
@@ -105,7 +107,7 @@ const navigateToReport = (id) => {
     return;
   }
   
-    handleNavbar(() => {
+    
         router.push({
             name: 'ReportComment',
             params: { commentId: id, entity: 'comments' }
@@ -155,7 +157,6 @@ span {
     background-color: #e7e7e7;
     cursor: pointer;
     margin: 5px 5px 0px 5px;
-    font-size: 12px;
     text-align: center;
 }
 
@@ -175,13 +176,13 @@ span {
     cursor: pointer;
 }
 
+.icon {
+  font-size: 40px;
+}
+
 @media (max-width: 768px) {
     span {
         margin-right: 4px;
-    }
-
-    .comment-container {
-        flex-direction: column !important;
     }
 
     .comment {
@@ -189,7 +190,11 @@ span {
     }
 
     .actions-comment {
+        flex-direction: column;
         justify-content: center;
+    }
+    .icon {
+    font-size: 35px;
     }
 }
 </style>

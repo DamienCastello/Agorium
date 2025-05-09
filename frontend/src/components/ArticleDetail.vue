@@ -44,9 +44,15 @@
             alt="author-avatar" class="author-avatar" />
         </RouterLink>
         <div class="action-like" @click="toggleLike">
-          {{ likeNumber }} <FadeSlideTransition>
+          <FadeSlideTransition>
             <component :is="componentToShow" />
           </FadeSlideTransition>
+          {{ likeNumber }}
+        </div>
+        <div v-if="authStore.user && authStore.user.id === article.userId" class="action-share"
+          @click="copyPrivateLinkToClipboard(article)">
+          <ShareIcon class="icon" />
+          {{ $t('article_detail.share') }}
         </div>
         <div class="action-report" @click="navigateToReport(article.id)">
           <ReportIcon class="icon" />
@@ -57,15 +63,11 @@
           <PencilIcon class="icon" />
           {{ $t('article_detail.modify') }}
         </div>
-        <div v-if="authStore.user && authStore.user.id === article.userId" class="action-share"
-          @click="copyPrivateLinkToClipboard(article)">
-          <ShareIcon class="icon" />
-          {{ $t('article_detail.share') }}
-        </div>
       </div>
+
       <p>{{ article.description }}</p>
       <hr />
-        <Comments :article="article" :refreshComments="fetchArticle" />
+      <Comments :article="article" :refreshComments="fetchArticle" />
     </div>
   </div>
   <notifications position="bottom right" />
@@ -253,7 +255,7 @@ const navigateToReport = (id) => {
   handleNavbar(() => {
     if (!authStore.user) {
       notify({
-        title: "Liking Article",
+        title: "Report Article",
         type: 'error',
         text: "You must be authenticated to report an article.",
       });
@@ -283,11 +285,12 @@ const navigateToModify = (article) => {
 };
 
 const copyPrivateLinkToClipboard = () => {
+handleNavbar(() => {
   const link = `${url.frontUrl}/articles/private/${article.value.privateLink}`;
   navigator.clipboard.writeText(link)
     .then(() => {
       notify({
-        title:  t('notification.title.share_link'),
+        title: t('notification.title.share_link'),
         type: 'success',
         text: t('notification.title.share_link_success'),
       });
@@ -299,10 +302,11 @@ const copyPrivateLinkToClipboard = () => {
         text: t('notification.title.share_link_error'),
       });
     });
+})
 }
 </script>
 
-<style>
+<style scoped>
 .container {
   width: 100%;
   max-width: 800px;
@@ -375,22 +379,24 @@ span {
   align-items: center;
   border: 2px solid rgb(70, 70, 70);
   border-radius: 10px;
-  padding: 10px;
+  padding: clamp(4px, 2vw, 6px);
   background-color: #e7e7e7;
   cursor: pointer;
+  width: clamp(70px, 10vw, 100px);
+  height: clamp(90px, 10vw, 120px);
 }
 
 .action-like {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 35px;
   border: 2px solid rgb(70, 70, 70);
   border-radius: 10px;
-  padding: 10px;
   background-color: #e7e7e7;
   cursor: pointer;
+  width: clamp(70px, 10vw, 100px);
+  height: clamp(90px, 10vw, 120px);
 }
 
 .action-modify {
@@ -398,17 +404,13 @@ span {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 35px;
   border: 2px solid rgb(70, 70, 70);
   border-radius: 10px;
-  padding: 10px;
+  padding: clamp(4px, 2vw, 6px);
   background-color: #e7e7e7;
   cursor: pointer;
-}
-
-.action-modify:hover {
-  background-color: #d1d1d1;
-  transform: scale(1.05);
+  width: clamp(70px, 10vw, 100px);
+  height: clamp(90px, 10vw, 120px);
 }
 
 .action-share {
@@ -416,12 +418,18 @@ span {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 35px;
   border: 2px solid rgb(70, 70, 70);
   border-radius: 10px;
-  padding: 10px;
+  padding: clamp(4px, 2vw, 6px);
   background-color: #e7e7e7;
   cursor: pointer;
+  width: clamp(70px, 10vw, 100px);
+  height: clamp(90px, 10vw, 120px);
+}
+
+.action-modify:hover {
+  background-color: #d1d1d1;
+  transform: scale(1.05);
 }
 
 .action-share:hover {
@@ -448,7 +456,7 @@ span {
 
 .icon {
   cursor: pointer;
-  font-size: 50px;
+  font-size: clamp(25px, 8vw, 40px);
 }
 
 .author {
@@ -490,12 +498,51 @@ span {
     min-width: 300px;
   }
 
-  .action-report {
-    margin-top: 5px;
-  }
-
   h1 {
     font-size: 20px;
   }
+
+  .action-like {
+    font-size: clamp(10px, 2vw, 10px);
+    padding: clamp(2px, 1.5vw, 5px);
+    width: clamp(50px, 2vw, 70px);
+    height: clamp(50px, 1.5vw, 70px);
+  }
+
+  .action-report {
+    font-size: clamp(10px, 2vw, 10px);
+    padding: clamp(2px, 1.5vw, 5px);
+    margin-left: 2px;
+    width: clamp(50px, 2vw, 70px);
+    height: clamp(50px, 1.5vw, 70px);
+  }
+
+  .action-modify {
+    font-size: clamp(10px, 2vw, 10px);
+    padding: clamp(2px, 1.5vw, 5px);
+    margin-left: 2px;
+    width: clamp(50px, 2vw, 70px);
+    height: clamp(50px, 1.5vw, 70px);
+  }
+
+  .action-share {
+    font-size: clamp(10px, 2vw, 10px);
+    padding: clamp(2px, 1.5vw, 5px);
+    margin-left: 2px;
+    width: clamp(50px, 2vw, 70px);
+    height: clamp(50px, 1.5vw, 70px);
+  }
+
+  .icon {
+    font-size: clamp(16px, 1.5vw, 22px);
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+  }
+
 }
 </style>

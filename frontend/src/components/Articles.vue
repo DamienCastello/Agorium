@@ -460,8 +460,22 @@ const navigateToArticle = (id) => {
 
   .sort-selector {
     min-width: 150px;
-    max-width: 200px;
+    max-width: 180px;
     font-size: 10px;
   }
+}
+
+@media (max-width: 350px) {
+  .container {
+  max-width: 320px;
+}
+
+.card {
+  max-width: 280px;
+}
+
+.filters {
+  max-width: 280px;
+}
 }
 </style>
