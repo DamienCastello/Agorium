@@ -15,6 +15,8 @@ var authRouter = require('./routes/auth');
 
 const { localAuthStrategy } = require('./routes/strategies/local');
 const { jwtAuthStrategy } = require('./routes/strategies/jwt');
+const multer = require('multer');
+
 
 var app = express();
 
@@ -87,6 +89,16 @@ app.use('/api/v1/comments', commentsRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/tags', tagsRouter);
 app.use('/api/v1/achievements', achievementsRouter);
+
+
+// Gestion des erreurs Multer
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ message: `Erreur de téléversement : ${err.message}` });
+  }
+
+  next(err);
+});
 
 app.post('/api/v1/set-language', (req, res) => {
   const { language } = req.body;

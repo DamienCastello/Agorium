@@ -390,6 +390,11 @@ const handleSubmit = () => {
           text: error.response.data.message,
         });
         state.value = 'error';
+        setTimeout(() => {
+          // Improve it by call after navigation ...
+          state.value = 'idle';
+          router.push("/articles");
+        }, 3000);
       });
 
 };
