@@ -102,7 +102,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     SMTP_HOST=smtp.gmail.com
     SMTP_PORT=587
     SMTP_USER=zanmato.13200@gmail.com
-    SMTP_PASS=********
+    SMTP_PASS=****************
     EMAIL_FROM=zanmato.13200@gmail.com
     ```
 
@@ -129,7 +129,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     SMTP_HOST=smtp.gmail.com
     SMTP_PORT=587
     SMTP_USER=zanmato.13200@gmail.com
-    SMTP_PASS=********
+    SMTP_PASS=****************
     EMAIL_FROM=zanmato.13200@gmail.com
     ```
 
