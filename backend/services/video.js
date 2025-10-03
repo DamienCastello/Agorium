@@ -57,6 +57,7 @@ function analyzeVideo(filePath) {
             const audioDuration = audioStream ? audioStream.duration : 0;
 
             // Vérification des critères
+            //TODO: Check après implémentation du traitement backend (transcodage vidéos)
             if (bitrate && bitrate > 5000000 && (width > 1920 || height > 1080)) {
                 return reject(new Error('Bitrate trop élevé pour cette vidéo.'));
             }

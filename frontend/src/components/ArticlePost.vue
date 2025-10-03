@@ -1,4 +1,14 @@
 <template>
+<el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px">
+  <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
+  <el-progress :percentage="uploadProgress" :stroke-width="12" />
+  <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
+    {{ uploadProgress }}%
+  </p>
+  <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
+    <i class="el-icon-loading"></i> {{ $t('publish.processing_file') }}
+  </p>
+</el-dialog>
   <div v-if="state === 'error'">
     <p>{{ $t('publish.state_error') }}</p>
   </div>
@@ -135,6 +145,8 @@ const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
+const uploading = ref(false);
+const uploadProgress = ref(0);
 
 const isFormValid = computed(() => {
   if (!form.value.title || !form.value.description) return false;
@@ -249,6 +261,7 @@ const updateVideoThumbnail = (thumbnail) => {
 };
 
 onMounted(() => {
+  state.value = 'loading';
   window.scrollTo(0, 0);
   axios
     .get(`${url.baseUrl}/api/v1/tags/`, {
@@ -317,15 +330,12 @@ const handleClickOutsideNavbar = (event) => {
 };
 
 const handleSubmit = () => {
-  state.value = 'loading';
-
   if ((!selectedFile.value && (mediaType.value === 'image' || mediaType.value === 'video')) || (!form.value.urlYoutube && mediaType.value === 'youtube')) {
     notify({
       title: t('notification.title.field_media_required'),
       type: 'warn',
       text: t('notification.text.field_media_required'),
     });
-    state.value = 'idle';
     return;
   }
 
@@ -358,6 +368,8 @@ const handleSubmit = () => {
   } else if (mediaType.value === "image") {
     formData.append("preview", selectedFile.value)
   } else if (mediaType.value === "video") {
+    uploading.value = true;
+    uploadProgress.value = 0;
     formData.append("video", selectedFile.value)
   }
 
@@ -370,6 +382,12 @@ const handleSubmit = () => {
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${authStore.token}`
         },
+        onUploadProgress: (event) => {
+          if (event.total) {
+            uploadProgress.value = Math.round((event.loaded * 100) / event.total);
+          }
+        },
+
       })
       .then(() => {
         notify({
@@ -379,7 +397,6 @@ const handleSubmit = () => {
         });
         setTimeout(() => {
           // Improve it by call after navigation ...
-          state.value = 'idle';
           router.push("/articles");
         }, 2000);
       })
@@ -389,14 +406,15 @@ const handleSubmit = () => {
           type: 'error',
           text: error.response.data.message,
         });
-        state.value = 'error';
         setTimeout(() => {
           // Improve it by call after navigation ...
-          state.value = 'idle';
           router.push("/articles");
         }, 3000);
+      })
+      .finally(() => {
+        uploading.value = false;
+        uploadProgress.value = 0;
       });
-
 };
 
 const toggleDropdown = () => {
