@@ -45,6 +45,35 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
    ```
 
 3. **Configure the environment**:
+    Create a `.env` file in the backend folder with the following parameters:
+   ```env
+    JWT_SECRET=agorium_secret
+    NODE_ENV=development
+
+    # Backend
+    DB_USERNAME=admin
+    DB_PASSWORD=azerty
+    DB_PORT=3306
+    DB_NAME=agorium_db_dev
+    DB_HOSTNAME=localhost
+
+    HOST=localhost:3000
+
+    # Frontend
+    VITE_BASE_URL=http://localhost
+    VITE_PORT_BACK=3000
+    VITE_PORT_FRONT=5173
+
+    SMTP_HOST=sandbox.smtp.mailtrap.io
+    SMTP_PORT=2525
+    SMTP_USER=ea0dedca063ecb
+    SMTP_PASS=33b31adaece03c
+    EMAIL_FROM=no-reply@agorium.local
+
+    REDIS_HOST=127.0.0.1
+    REDIS_PORT=6379
+    ```
+
    Create a `.env` file in the root folder with the following parameters:
    ```env
     JWT_SECRET=agorium_secret
@@ -76,6 +105,9 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     SMTP_USER=ea0dedca063ecb
     SMTP_PASS=33b31adaece03c
     EMAIL_FROM=no-reply@agorium.local
+
+    REDIS_HOST=127.0.0.1
+    REDIS_PORT=6379
     ```
 
     Create a `.env.preprod` file in the root folder with the following parameters:
@@ -98,12 +130,16 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_APP_MODE=preprod
     VITE_AGORIUM_VERSION=1.4.1
 
-
+    # Mailer
     SMTP_HOST=smtp.gmail.com
     SMTP_PORT=587
     SMTP_USER=zanmato.13200@gmail.com
     SMTP_PASS=****************
     EMAIL_FROM=zanmato.13200@gmail.com
+
+    # Redis
+    REDIS_HOST=agorium-redis-preprod
+    REDIS_PORT=6379
     ```
 
     Create a `.env.prod` file in the root folder with the following parameters:
@@ -125,12 +161,16 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     VITE_PORT_FRONT=8080
     VITE_AGORIUM_VERSION=1.4.1
 
-
+    # Mailer
     SMTP_HOST=smtp.gmail.com
     SMTP_PORT=587
     SMTP_USER=zanmato.13200@gmail.com
     SMTP_PASS=****************
     EMAIL_FROM=zanmato.13200@gmail.com
+
+    # Redis
+    REDIS_HOST=agorium-redis-prod
+    REDIS_PORT=6379
     ```
 
     Mailtrap is used to test email sent in local.
@@ -142,7 +182,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     ```
 5. **Access the application**:
     - Frontend: http://localhost:8080
-    - Backend API: http://localhost:5000
+    - Backend API: http://localhost:3000
 
 6. **Useful Docker commands**:
     - Restart all services:
@@ -155,7 +195,11 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     ```
     - Open a shell in a container (e.g., backend):
     ```shell
-    docker compose exec agorium-backend sh
+    docker compose exec -it agorium-backend sh
+    ```
+    - launch the preprod container:
+    ```shell
+    sudo docker compose -f docker-compose.preprod.yml up --build -d
     ```
 
 ## Backend Node.js
@@ -165,6 +209,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 - npm >= 10.7.0
 - sequelize-cli
 - mysql
+- redis-server
 
 first run `npm install`
 
@@ -188,7 +233,7 @@ VITE_PORT_BACK=3000
 VITE_PORT_FRONT=5173
 ```
 
-after you can run
+after you can run from backend folder
 ```shell
 npx sequelize-cli db:create # Run db creation
 npx sequelize-cli db:migrate # Run migrations
@@ -197,7 +242,22 @@ node seeds/01_users.js && node seeds/02_tags.js && node seeds/03_articles.js && 
 
 nodemon # Start server
 ```
+
+To use redis, open another terminal and run (close terminal after & and redis will launch automatically on startup )
+```shell
+sudo apt-get update
+sudo apt-get install redis-server
+sudo service redis-server start
+```
+
+To use redis, open another terminal from backend folder and run
+```shell
+node services/videoWorker.js
+```
+
+
 Now you are ready to use this backend project
+
 
 ## Frontend Vue3
 ⚠️ Docker is recommended, but here’s how to run manually if needed.

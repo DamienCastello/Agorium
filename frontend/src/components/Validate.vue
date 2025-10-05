@@ -9,7 +9,28 @@
         <div v-else class="article-container">
             <div v-if="isMobile">
                 <!-- Mobile View -->
-                <h3>{{ $t('validate.title') }}</h3>
+                <h3>{{ $t('validate.processing_state') }}</h3>
+                <div class="badge-container">
+                    <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+                        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+                        <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+                        <span v-if="Number.isFinite(article.processingProgress)"> - {{ article.processingProgress }}%</span>
+                    </p>
+                    <p v-if="article.processingStatus === 'ready'" class="ready-badge">
+                        <ReadyIcon /> {{ $t('validate.fileState_ready') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+                        <FailedIcon /> {{ $t('validate.fileState_failed') }}
+                    </p>
+                </div>
+                <div v-if="article.processingStatus === 'failed'" class="processing-actions">
+                    <button @click="retryProcessing" :disabled="loadingRetry || article.processingStatus === 'queued' || article.processingStatus === 'processing'">
+                        {{ loadingRetry ? 'Retry...' : 'Retry' }}
+                    </button>
+                </div>
+                <h3>{{ $t('validate.tags_title') }}</h3>
                 <div v-for="tag in article.tags" :key="tag.id" class="tag-container card">
                     <div class="tag-row">
                         <span class="tag-name">{{ tag.name }}</span>
@@ -195,6 +216,28 @@
 
             <div v-else>
                 <!-- PC View -->
+
+                <h3>{{ $t('validate.processing_state') }}</h3>
+                <div class="badge-container">
+                    <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+                        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+                        <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+                        <span v-if="Number.isFinite(article.processingProgress)"> - {{ article.processingProgress }}%</span>
+                    </p>
+                    <p v-if="article.processingStatus === 'ready'" class="ready-badge">
+                        <ReadyIcon /> {{ $t('validate.fileState_ready') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+                        <FailedIcon /> {{ $t('validate.fileState_failed') }}
+                    </p>
+                </div>
+                <div v-if="article.processingStatus === 'failed'" class="processing-actions">
+                    <button @click="retryProcessing" :disabled="loadingRetry || article.processingStatus === 'queued' || article.processingStatus === 'processing'">
+                        {{ loadingRetry ? 'Retry...' : 'Retry processing file' }}
+                    </button>
+                </div>
                 <h3>{{ $t('validate.tags_title') }}</h3>
                 <table>
                     <thead>
@@ -479,6 +522,10 @@ import { useNavbarStore } from "../stores/navbar";
 import { useNavbarHandler } from "../composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
 import { useI18n } from "vue-i18n";
+import QueuedIcon from "./icons/QueuedIcon.vue";
+import ProcessingIcon from "./icons/ProcessingIcon.vue";
+import ReadyIcon from "./icons/ReadyIcon.vue";
+import FailedIcon from "./icons/FailedIcon.vue";
 
 const isMobile = ref(false);
 const article = ref(null);
@@ -493,6 +540,73 @@ const { notify } = useNotification();
 const { t } = useI18n();
 const privateLink = route.params.privateLink;
 const articleId = route.params.id;
+const loadingRetry = ref(false)
+let statusTimer = null
+const isPollingStatus = ref(false)
+
+function startStatusPolling() {
+  stopStatusPolling()
+  isPollingStatus.value = true
+  statusTimer = setInterval(async () => {
+    try {
+      const id = article.value?.id
+      if (!id) return
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${id}/status`, {
+        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+        params: { ts: Date.now() }
+      })
+      
+      article.value.processingStatus = data.status
+      article.value.processingProgress = data.progress ?? 0
+
+      if (data.status === 'ready') {
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+        stopStatusPolling()
+      }
+      if (data.status === 'failed') {
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_failed') })
+        stopStatusPolling()
+      }
+    } catch (e) {
+      console.warn('status poll error', e?.message || e)
+    }
+  }, 1500)
+}
+
+function stopStatusPolling() {
+  isPollingStatus.value = false
+  if (statusTimer) {
+    clearInterval(statusTimer)
+    statusTimer = null
+  }
+}
+
+async function retryProcessing() {
+  if (!article.value?.id) return
+  loadingRetry.value = true
+  try {
+    await axios.post(
+      `${url.baseUrl}/api/v1/articles/${article.value.id}/retry`,
+      {},
+      { headers: { Authorization: `Bearer ${authStore.token}` } }
+    )
+
+    article.value.processingStatus = 'queued'
+    article.value.processingProgress = 0
+
+    startStatusPolling()
+
+    notify({ title: t('notification.title.retry_process'), type: 'success', text: t('notification.text.retry_process') })
+  } catch (e) {
+    notify({
+      title: 'Retry',
+      type: 'error',
+      text: e?.response?.data?.message || e?.message || 'Erreur lors du retry'
+    })
+  } finally {
+    loadingRetry.value = false
+  }
+}
 
 const checkWindowSize = () => {
     if (window.innerWidth <= 768) {
@@ -781,6 +895,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', checkWindowSize);
+    stopStatusPolling()
 });
 </script>
 
@@ -804,6 +919,62 @@ fieldset legend label {
 
 .field span {
     font-weight: normal;
+}
+
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: 15px;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.ready-badge {
+  background-color: rgb(31, 177, 43);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.failed-badge {
+  background-color: rgb(189, 26, 26);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-actions {
+    margin-bottom: 20px;
 }
 
 label {

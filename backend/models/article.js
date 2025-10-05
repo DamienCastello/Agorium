@@ -86,7 +86,37 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
       unique: true,
-    }
+    },
+    processingStatus: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      defaultValue: 'queued',
+      validate: {
+        isIn: [['queued', 'processing', 'ready', 'failed']],
+      },
+    },
+    processingProgress: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
+    originalVideo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    processingError: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    processingRetries: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   }, {
     sequelize,
     modelName: 'Article',

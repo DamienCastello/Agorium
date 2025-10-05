@@ -21,11 +21,14 @@ services:
     container_name: agorium-backend-preprod
     depends_on:
       - mysql
+      - redis
     env_file:
       - .env          # Chargement du fichier d'environnement principal
       - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
     environment:
       - NODE_ENV=preprod  # Définition spécifique à cet environnement
+      - REDIS_HOST=agorium-redis-preprod
+      - REDIS_PORT=6379
     networks:
       - proxy
     volumes:

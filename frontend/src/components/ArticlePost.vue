@@ -6,7 +6,9 @@
     {{ uploadProgress }}%
   </p>
   <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
-    <i class="el-icon-loading"></i> {{ $t('publish.processing_file') }}
+    <i class="el-icon-loading"></i>
+    {{ $t('publish.processing_file') }}
+    <span v-if="processing.progress > 0">— {{ processing.progress }}%</span>
   </p>
 </el-dialog>
   <div v-if="state === 'error'">
@@ -107,6 +109,7 @@
 import axios from "axios";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useProcessingStore } from '@/stores/processing'
 import url from "@/utils/url";
 import UrlYoutubeFieldset from "./UrlYoutubeFieldset.vue";
 import ImageSelector from "./ImageSelector.vue";
@@ -147,6 +150,84 @@ const dropdownRef = ref(null);
 const newTag = ref("");
 const uploading = ref(false);
 const uploadProgress = ref(0);
+
+const processing = useProcessingStore() // central state for processing
+
+// timer for backend polling
+let processingTimer = null
+
+// Start polling the backend for processing status
+function startProcessingPolling(articleId) {
+  // Tell the store to track this article
+  processing.start(articleId)
+
+  // Reuse the upload modal for the processing phase
+  uploading.value = true
+  uploadProgress.value = 100 // template shows "Processing..." when 100%
+
+  // Safety: ensure we don't start multiple intervals
+  stopProcessingPolling()
+
+  processingTimer = setInterval(async () => {
+    try {
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${processing.articleId}/status`, 
+      {
+        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+        params: { ts: Date.now() } // cache-buster
+      })
+
+      // Update store from backend response
+      processing.update({
+        status: data.status,
+        progress: typeof data.progress === 'number' ? data.progress : 0,
+      })
+
+      if (processing.status === 'ready') {
+        // ✅ Finished
+        stopProcessingPolling()
+        processing.done()
+        uploading.value = false
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+        notify({
+          title: t('notification.title.article_create'),
+          type: 'success',
+          text: t('notification.text.article_create'),
+        });
+        setTimeout(() => router.push("/articles"), 5000);
+      } else if (processing.status === 'failed') {
+        // ❌ Failed
+        stopProcessingPolling()
+        processing.fail()
+        uploading.value = false
+        notify({ title: t('notification.title.article_process'), type: 'error', text: t('notification.text.article_process_failed') })
+        setTimeout(() => router.push(`/articles/edit/${processing.articleId}`), 5000);
+      }
+    } catch (e) {
+      console.warn('poll error', e?.message || e)
+    }
+  }, 1500) // poll every 1.5s
+}
+
+// Stop and cleanup the polling timer
+function stopProcessingPolling() {
+  if (processingTimer) {
+    clearInterval(processingTimer)
+    processingTimer = null
+  }
+}
+
+// Warn user if they try to close/refresh during upload
+let beforeUnloadHandler = null
+function attachBeforeUnload() {
+  if (beforeUnloadHandler) return
+  beforeUnloadHandler = (e) => { e.preventDefault(); e.returnValue = '' }
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+}
+function detachBeforeUnload() {
+  if (!beforeUnloadHandler) return
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+  beforeUnloadHandler = null
+}
 
 const isFormValid = computed(() => {
   if (!form.value.title || !form.value.description) return false;
@@ -263,6 +344,7 @@ const updateVideoThumbnail = (thumbnail) => {
 onMounted(() => {
   state.value = 'loading';
   window.scrollTo(0, 0);
+
   axios
     .get(`${url.baseUrl}/api/v1/tags/`, {
       withCredentials: true,
@@ -294,6 +376,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
+  stopProcessingPolling() // avoid orphan timers
+  detachBeforeUnload()
 });
 
 const handleClickOutside = (event) => {
@@ -346,30 +430,28 @@ const handleSubmit = () => {
 
   const formData = new FormData();
 
-  // Verify youtube ID is valid
-  const isValidYoutubeId = extractVideoId(form.value.urlYoutube)
-
   formData.append("title", form.value.title);
   formData.append("description", form.value.description);
   formData.append("isPrivate", form.value.isPrivate !== 'public' ? true : false);
   if (mediaType.value === "youtube") {
+    // Verify youtube ID is valid
+    const isValidYoutubeId = !!extractVideoId(form.value.urlYoutube);
+    
     if (!isValidYoutubeId) {
       notify({
         title: t('notification.title.field_media_required'),
         type: 'warn',
         text: t('notification.text.field_media_url'),
       });
+      return;
     }
-    if (isValidYoutubeId) {
-      formData.append("urlYoutube", form.value.urlYoutube);
-    } else {
-      return
-    }
+  formData.append("urlYoutube", form.value.urlYoutube);
   } else if (mediaType.value === "image") {
     formData.append("preview", selectedFile.value)
   } else if (mediaType.value === "video") {
     uploading.value = true;
     uploadProgress.value = 0;
+    attachBeforeUnload()            // start guard as soon as upload begins
     formData.append("video", selectedFile.value)
   }
 
@@ -389,31 +471,45 @@ const handleSubmit = () => {
         },
 
       })
-      .then(() => {
+      .then((response) => {
         notify({
-          title: t('notification.title.article_create'),
+          title: t('notification.title.file_upload'),
           type: 'success',
-          text: t('notification.text.article_create'),
+          text: t('notification.text.file_upload'),
         });
-        setTimeout(() => {
-          // Improve it by call after navigation ...
-          router.push("/articles");
-        }, 2000);
+
+        // Extract the created article id from backend response
+        const createdArticleId =
+          response?.data?.article?.id ??
+          response?.data?.articleId
+
+        if (mediaType.value === 'video' && selectedFile.value && createdArticleId) {
+          // Switch to backend processing phase
+          uploadProgress.value = 100
+          startProcessingPolling(createdArticleId)
+        } else {
+          // For image/youtube flows, former quick redirect
+          setTimeout(() => router.push("/articles"), 5000);
+        }
       })
       .catch((error) => {
         notify({
           title: t('notification.title.article_create'),
           type: 'error',
-          text: error.response.data.message,
+          text: error?.response?.data?.message || error?.message || 'Error',
         });
-        setTimeout(() => {
-          // Improve it by call after navigation ...
-          router.push("/articles");
-        }, 3000);
+        // Close modal and clear processing state on error
+        uploading.value = false
+        uploadProgress.value = 0
+        processing.clear()
+        setTimeout(() => router.push("/articles"), 5000);
       })
       .finally(() => {
-        uploading.value = false;
-        uploadProgress.value = 0;
+        if (!(mediaType.value === 'video' && selectedFile.value)) {
+          uploading.value = false
+          uploadProgress.value = 0
+        }
+        detachBeforeUnload() // always remove guard when upload request ends
       });
 };
 
