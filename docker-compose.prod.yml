@@ -1,18 +1,21 @@
 services:
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     container_name: agorium-redis-prod
     restart: always
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis-data-prod:/data
     networks:
       - proxy
-      
+
   mysql:
     image: mysql:8.0
     container_name: agorium-db-prod
     restart: always
     env_file:
-      - .env      # Chargement du fichier d'environnement principal
-      - .env.prod # Chargement du fichier d'environnement spécifique à prod
+      - .env
+      - .env.prod
     environment:
       MYSQL_ROOT_PASSWORD: caS>13200.ago
       MYSQL_DATABASE: agorium_db_prod
@@ -30,11 +33,11 @@ services:
       - mysql
       - redis
     env_file:
-      - .env          # Chargement du fichier d'environnement principal
-      - .env.prod # Chargement du fichier d'environnement spécifique à prod
+      - .env
+      - .env.prod
     environment:
-      - NODE_ENV=production  # Définition spécifique à cet environnement
-      - REDIS_HOST=agorium-redis-prod
+      - NODE_ENV=production
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
     networks:
       - proxy
@@ -44,7 +47,7 @@ services:
     command: >
       sh -c "
         npm install &&
-        dockerize -wait tcp://agorium-db-prod:3306 -timeout 60s &&
+        dockerize -wait tcp://agorium-db-prod:3306 -wait tcp://redis:6379 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
@@ -53,14 +56,14 @@ services:
     container_name: agorium-worker-prod
     restart: always
     depends_on:
-      - redis
       - mysql
+      - redis
     env_file:
       - .env
       - .env.prod
     environment:
       - NODE_ENV=production
-      - REDIS_HOST=agorium-redis-prod
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
     volumes:
       - ./backend:/app
@@ -78,13 +81,14 @@ services:
     depends_on:
       - backend
     env_file:
-      - .env      # Chargement du fichier d'environnement principal
-      - .env.prod # Chargement du fichier d'environnement spécifique à prod
+      - .env
+      - .env.prod
     networks:
       - proxy
 
 volumes:
   mysql-data-prod:
+  redis-data-prod:
 
 networks:
   proxy:
