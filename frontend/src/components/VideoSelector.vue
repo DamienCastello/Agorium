@@ -5,18 +5,21 @@
         <div>
           <div v-if="mode === 'update'">
             <p>Vidéo actuelle:</p>
-            <video :src="getSrc(videoPreview)" :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
-              alt="Preview" class="preview" />
+            <video  :src="getSrc(videoPreview)" 
+                    :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
+              alt="Preview" class="preview" preload="metadata"/>
           </div>
           <div v-if="mode === 'create' && videoPreview">
-            <video :src="getSrc(videoPreview)" :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
-              alt="Preview" class="preview" />
+            <video  :src="getSrc(videoPreview)" 
+                    :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
+              alt="Preview" class="preview" preload="metadata"/>
 
           </div>
         </div>
       </FadeSlideTransition>
+      
       <label for="avatar">{{ $t('publish.preview_video') }} <span style="color: red">*</span></label>
-      <input type="file" id="fileInput" hidden @change="handleFileUpload"
+      <input type="file" id="fileInput" hidden @change="handleFileUpload" accept="video/*"
         :disabled="navbarStore.isMenuOpen || navbarStore.isTranslationOpen" />
       <label for="fileInput" class="custom-label"
         :class="{ 'disabled': navbarStore.isMenuOpen || navbarStore.isTranslationOpen }"
@@ -33,33 +36,55 @@ import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useNavbarStore } from "@/stores/navbar";
 import url from "@/utils/url";
 import getSrc from "@/utils/getSrc";
+import { onBeforeUnmount } from "vue";
 
 const navbarStore = useNavbarStore();
 const props = defineProps({
   mode: String,
   videoThumbnail: String || null,
-  videoPreview: String
+  videoPreview: String // Can be blob: URL (local preview) or backend path
 });
 
 const emit = defineEmits(["update:selectedFile", "update:videoPreview", "update:videoThumbnail"]);
 
+// Keep the current object URL to revoke it when a new file is chosen or on unmount
+let currentObjectUrl = null;
+
+// Create a browser-managed URL for the File object
+function setPreviewFromFile(file) {
+  // Revoke previous Object URL to avoid memory leaks
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+  currentObjectUrl = URL.createObjectURL(file);
+  emit("update:videoPreview", currentObjectUrl);
+}
 
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
 
   if (file) {
+    // 1) expose the File upward
     emit("update:selectedFile", file);
+    // 2) clear any previous thumbnail (the server will generate one later)
     emit("update:videoThumbnail", null)
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      emit("update:videoPreview", e.target.result);
-    };
-    reader.readAsDataURL(file);
+    // 3) set preview from object URL
+    setPreviewFromFile(file);
   } else {
+    // Reset state if no file selected
     emit("update:videoPreview", null);
     emit("update:selectedFile", null);
   }
+
+  // Clean up object URL on component destroy
+  onBeforeUnmount(() => {
+    if (currentObjectUrl) {
+      URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = null;
+    }
+  });
 };
 </script>
 

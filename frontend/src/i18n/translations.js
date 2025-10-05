@@ -107,7 +107,10 @@ const messages = {
                 update_user: "Update Account",
                 delete_article: "Delete Article",
                 delete_tag: "Delete Tag",
-                share_link: "Share link"
+                share_link: "Share link",
+                file_upload: "File uploading",
+                article_process: "File processing",
+                retry_process: "Retry processing"
             },
             text: {
                 invalid_tags: "Some tag(s) not validated",
@@ -140,7 +143,11 @@ const messages = {
                 delete_account_success: "Your account has been deleted.",
                 delete_account_error: "Error while deleting. Please try again.",
                 share_link_success: "Link copied to clipboard.",
-                share_link_error: "Impossible to copy link."
+                share_link_error: "Impossible to copy link.",
+                file_upload: "File uploading successful",
+                article_process_ok: "File processing successful",
+                article_process_failed: "File processing failed",
+                retry_process: "File process has been relaunched"
             }
         },
         article_detail: {
@@ -166,7 +173,7 @@ const messages = {
             empty_list: "No articles found"
         },
         validate: {
-            title: "Validation of tags",
+            tags_title: "Tags validation",
             save_button: "Update",
             sub_title: "Validation of article fields",
             label_title: "Title",
@@ -179,14 +186,18 @@ const messages = {
             placeholder_description: "Reason for refusal of description",
             sub_title_final: "General validation of the article",
             placeholder_final: "Overall reasons for refusal of article",
-            tags_title: "Tags validation",
             th_tag: "Tag",
             th_validate: "Validate",
             th_refuse: "Refuse",
             th_reason: "Reason",
             th_save: "Save",
             placeholder_tags: "Reason for refusal of tags",
-            delete_button: 'Delete'
+            delete_button: 'Delete',
+            processing_state: 'Video file processing status',
+            fileState_queued: 'Queued',
+            fileState_processing: 'Processing',
+            fileState_ready: 'Ready',
+            fileState_failed: 'Failed'
         },
         publish: {
             placeholder_file: "No file selected",
@@ -212,7 +223,7 @@ const messages = {
             option_video: "Vidéo",
             option_youtube: "Youtube link",
             option_public: "Public",
-            option_private: "Private"
+            option_private: "Private",
         },
         update: {
             placeholder_file: "No file selected",
@@ -404,7 +415,10 @@ const messages = {
                 update_user: "Mise à jour du compte",
                 delete_article: "Supprimer l'article",
                 delete_tag: "Supprimer le tag",
-                share_link: "Partage du lien"
+                share_link: "Partage du lien",
+                file_upload: "Téléchargement du fichier",
+                article_process: "Traitement du fichier",
+                retry_process: "Relancement du traitement"
             },
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
@@ -437,7 +451,11 @@ const messages = {
                 delete_account_success: "Votre compte a été supprimé.",
                 delete_account_error: "Erreur lors de la suprression. Veuillez réesssayer.",
                 share_link_success: "Lien copié dans le presse-papiers.",
-                share_link_error: "Impossible de copier le lien."
+                share_link_error: "Impossible de copier le lien.",
+                file_upload: "Le téléchargement du fichier à réussi",
+                article_process_ok: "Le traitement du fichier a réussi",
+                article_process_failed: "Le traitement du fichier a échoué",
+                retry_process: "Le traiement du fichier a été relancé"
             }
         },
         article_detail: {
@@ -463,7 +481,7 @@ const messages = {
             empty_list: "Aucun article trouvé"
         },
         validate: {
-            title: "Validation des tags",
+            tags_title: "Validation des tags",
             save_button: "Enregistrer",
             sub_title: "Validation des champs de l'article",
             label_title: "Titre",
@@ -476,14 +494,18 @@ const messages = {
             placeholder_description: "Motif du refus de la description",
             sub_title_final: "Validation générale de l'article",
             placeholder_final: "Motif du refus de l'article",
-            tags_title: "Validation des tags",
             th_tag: "Tag",
             th_validate: "Valider",
             th_refuse: "Refuser",
             th_reason: "Raison",
             th_save: "Enregistrer",
             placeholder_tags: "Motif du refus des tags",
-            delete_button: 'Supprimer'
+            delete_button: 'Supprimer',
+            processing_state: 'Statut du traitement du fichier vidéo',
+            fileState_queued: 'En attente',
+            fileState_processing: 'En traitement',
+            fileState_ready: 'Prêt',
+            fileState_failed: 'Échec'
         },
         publish: {
             placeholder_file: "Aucun fichier choisi",

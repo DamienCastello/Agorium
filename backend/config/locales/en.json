@@ -55,7 +55,8 @@
 		"reason_overall": "Article overall refusal reason must have a value.",
 		"not_authorized": "You are not authorized to validate this article.",
 		"error_validation": "Error validating article.",
-		"deleted": "deleted"
+		"deleted": "deleted",
+		"enqueue_failed": "Video processing could not start. Please try again."
 	},
 	"comment": {
 		"not_authenticated": "User not authenticated.",

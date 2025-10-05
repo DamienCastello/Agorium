@@ -55,7 +55,8 @@
 		"reason_overall": "Le motif global de refus de l'article doit avoir une valeur.",
 		"not_authorized": "Vous n'êtes pas autorisé à valider cet article.",
 		"error_validation": "Erreur lors de la validation de l'article.",
-		"deleted": "supprimé"
+		"deleted": "supprimé",
+		"enqueue_failed": "Le traitement vidéo n’a pas pu démarrer. Veuillez réessayer."
 	},
 	"comment": {
 		"not_authenticated": "Utilisateur non authentifié.",

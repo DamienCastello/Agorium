@@ -1,0 +1,3 @@
+<template>
+    <i class="fa-solid fa-hourglass-half"></i>
+</template>

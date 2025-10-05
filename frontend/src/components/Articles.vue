@@ -263,7 +263,7 @@ const navigateToArticle = (id) => {
 .card-image {
   width: 100%;
   height: 200px;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
 

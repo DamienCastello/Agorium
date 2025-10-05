@@ -12,6 +12,20 @@
 
         <div class="card-content">
           <div class="title-container">
+            <div class="badge-container">
+              <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+                <QueuedIcon />
+              </p>
+              <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+                <ProcessingIcon />
+              </p>
+              <p v-if="article.processingStatus === 'ready'" class="ready-badge">
+                <ReadyIcon />
+              </p>
+              <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+                <FailedIcon />
+              </p>
+            </div>
             <h2>{{ article.title }}</h2>
             <LockIcon v-if="article.isPrivate" class="private-icon" />
             <UnlockIcon v-if="!article.isPrivate" class="private-icon" />
@@ -48,6 +62,10 @@ import { useNotification } from "@kyvg/vue3-notification";
 import { useI18n } from "vue-i18n";
 import LockIcon from "./icons/LockIcon.vue";
 import UnlockIcon from "./icons/UnlockIcon.vue";
+import QueuedIcon from "./icons/QueuedIcon.vue";
+import ProcessingIcon from "./icons/ProcessingIcon.vue";
+import ReadyIcon from "./icons/ReadyIcon.vue";
+import FailedIcon from "./icons/FailedIcon.vue";
 
 const articles = ref([]);
 const state = ref("loading");
@@ -152,8 +170,8 @@ const navigateToValidation = (article) => {
 
 .card-image {
   width: 100%;
-  height: 200px;
-  object-fit: contain;
+  height: 200px !important;
+  object-fit: cover;
   display: block;
 }
 
@@ -182,6 +200,50 @@ const navigateToValidation = (article) => {
   flex-wrap: wrap;
   justify-content: flex-start;
   margin-top: auto;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.ready-badge {
+  background-color: rgb(31, 177, 43);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.failed-badge {
+  background-color: rgb(189, 26, 26);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
 }
 
 .valid-badge {

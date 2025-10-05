@@ -1,7 +1,37 @@
 const models = require('../models');
 const { Op, Sequelize } = require('sequelize');
+const fs = require('fs');
 const path = require('path');
-const { Article, User, Like, Tag, Comment } = require('../models');
+const { safeUnlink } = require('../utils/safeUnlink');
+const { sequelize, Article, User, Like, Tag, Comment } = require('../models');
+// TODO: try to use Like, Achievement & UserAchievement later
+const { videoQueue } = require('../services/videoQueue');
+const ffmpeg = require('fluent-ffmpeg'); // for a light preflight probe
+
+// Quick preflight validation: cheap checks before enqueue
+async function quickVideoPreflight(absFullPath) {
+  // 1) existence + size
+  const stat = fs.statSync(absFullPath);
+  const maxBytes = 1_500_000_000; // 1.5 GB safety cap (tune if needed)
+  if (stat.size <= 0) throw new Error('Empty file');
+  if (stat.size > maxBytes) throw new Error('File too large for preflight');
+
+  // 2) naive extension allowlist (you can expand later)
+  const ext = path.extname(absFullPath).toLowerCase();
+  const allowed = new Set(['.mp4', '.mov', '.m4v', '.webm']);
+  if (!allowed.has(ext)) throw new Error(`Unsupported extension: ${ext}`);
+
+  // 3) very light ffprobe to ensure we see at least one video stream
+  const meta = await new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(absFullPath, (err, data) => (err ? reject(err) : resolve(data)));
+  });
+
+  const videoStream = meta?.streams?.find(s => s.codec_type === 'video');
+  if (!videoStream) throw new Error('No video stream detected');
+  // Optional: short duration sanity check (may be undefined on some files)
+  // const duration = Number(meta?.format?.duration || 0);
+  // if (Number.isFinite(duration) && duration <= 0) throw new Error('Invalid duration');
+}
 
 module.exports = {
   indexValidated: async function (req, res, next) {
@@ -348,7 +378,6 @@ module.exports = {
     }
   },
   create: async function (req, res, next) {
-    try {
       const { title, description, urlYoutube, tags, isPrivate } = req.body;
 
       if (!title || !description) {
@@ -372,17 +401,22 @@ module.exports = {
       }
 
       const userId = req.user.id;
+      if (!userId) {
+        return res.status(400).json({ message: req.t('article.user_required') });
+      }
 
+    const t = await sequelize.transaction();
+    try {
+      // Build paths from multer
       let privateLink = null;
       let previewPath = null;
       let videoPath = null;
+      let originalVideo = null;
 
       if (isPrivate) {
         const crypto = require('crypto');
-
         privateLink = crypto.randomBytes(16).toString('hex');
       }
-
 
       if (req.files?.preview?.[0]) {
         previewPath = req.uploadedFiles.preview.replace('/app/public', '');
@@ -396,11 +430,18 @@ module.exports = {
         if (process.env.NODE_ENV === 'development') {
           videoPath = `uploads/videos/${req.files.video[0].filename}`;
         }
+        originalVideo = videoPath; // store original relative path
       }
 
-
-      if (!userId) {
-        return res.status(400).json({ message: req.t('article.user_required') });
+      // Compute absolute full path for the uploaded video (if any)
+      let fullVideoPath = null;
+      if (originalVideo) {
+        fullVideoPath = path.join('/app/public', originalVideo);
+        if (process.env.NODE_ENV === 'development') {
+          fullVideoPath = path.resolve(originalVideo); // local dev resolves to ./uploads/videos/xxx
+        }
+        // 🟣 PRE-FLIGHT ultra fast: if it throws → we delete file + rollback
+        await quickVideoPreflight(fullVideoPath);
       }
 
       // Création de l'article
@@ -408,7 +449,7 @@ module.exports = {
         title,
         description,
         preview: previewPath,
-        video: videoPath,
+        video: null,
         thumbnail: '',
         isPrivate,
         privateLink,
@@ -443,95 +484,83 @@ module.exports = {
         overallReasonForRefusal: null,
         isValid: false,
         userId,
+        processingStatus: originalVideo ? 'queued' : 'ready',
+        processingProgress: originalVideo ? 0 : 100,
+        originalVideo,
+        processingError: null,
+        processingRetries: 0,
+      }, { transaction: t });
+
+      // Associate tags inside the same transaction
+    if (tags && Array.isArray(tags)) {
+      const tagIds = tags.map((tag) => tag.id);
+      const tagsToAssociate = await Tag.findAll({ where: { id: tagIds }, transaction: t });
+      await article.setTags(tagsToAssociate, { transaction: t });
+    }
+
+    // Gamification
+    const articleCount = await Article.count({ where: { userId }, transaction: t });
+    const user = await User.findByPk(userId, { transaction: t });
+
+    let achievement;
+    let userAchievement;
+
+    if (articleCount === 1) {
+      achievement = await models.Achievement.findByPk(1, { transaction: t });
+      await achievement.addUsers(user, { transaction: t });
+      user.points += achievement.points;
+      await user.save({ transaction: t });
+    } else if (articleCount === 5) {
+      achievement = await models.Achievement.findByPk(2, { transaction: t });
+      await achievement.addUsers(user, { transaction: t });
+      user.points += achievement.points;
+      await user.save({ transaction: t });
+    } else if (articleCount % 20 === 0) {
+      achievement = await models.Achievement.findByPk(3, { transaction: t });
+      const [userAchievement, created] = await models.UserAchievement.findOrCreate({
+        where: { userId, achievementId: achievement.id },
+        defaults: { dateEarned: new Date(), iteration: 1 },
+        transaction: t,
       });
-
-      if (videoPath) {
-        const {
-          isExecutableFile,
-          analyzeVideo,
-          extractFrameFromVideo,
-          scanForNSFW
-        } = require('../services/video');
-
-        const oldVideoPath = article.video;
-        const oldThumbnailPath = article.thumbnail;
-        let fullVideoPath = null;
-
-        fullVideoPath = path.join('/app/public', videoPath);
-        if (process.env.NODE_ENV === 'development') {
-          fullVideoPath = path.resolve(videoPath);
-        }
-
-        await isExecutableFile(fullVideoPath);
-        await analyzeVideo(fullVideoPath);
-
-        const fs = require('fs');
-        const { v4: uuidv4 } = require('uuid');
-        const { getUploadPath } = require('../utils/getUploadPath');
-
-        const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
-        const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
-
-        if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
-          fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
-        }
-
-        await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
-        await scanForNSFW(thumbnailFullPath);
-
-        // Mise à jour du chemin relatif dans la base
-        await article.update({ thumbnail: thumbnailDbPath });
+      if (!created) {
+        userAchievement.iteration += 1;
+        userAchievement.dateEarned = new Date();
+        await userAchievement.save({ transaction: t });
       }
+      user.points += achievement.points;
+      await user.save({ transaction: t });
+    }
+    
 
-      if (tags && Array.isArray(tags)) {
-        const tagIds = tags.map((tag) => tag.id);
-        const tagsToAssociate = await models.Tag.findAll({ where: { id: tagIds } });
+    // ✅ All good → commit
+    await t.commit();
 
-        await article.setTags(tagsToAssociate);
-
-        // Vérifier le nombre d'articles pour débloquer des succès
-        const articleCount = await Article.count({ where: { userId } });
-        const user = await models.User.findByPk(userId);
-
-        let achievement;
-        let userAchievement;
-
-        if (articleCount === 1) {
-          achievement = await models.Achievement.findByPk(1);
-          await achievement.addUsers(user);
-          user.points += achievement.points;
-          await user.save();
-        } else if (articleCount === 5) {
-          achievement = await models.Achievement.findByPk(2);
-          await achievement.addUsers(user);
-          user.points += achievement.points;
-          await user.save();
-        } else if (articleCount % 20 === 0) {
-          achievement = await models.Achievement.findByPk(3);
-
-          [userAchievement, created] = await models.UserAchievement.findOrCreate({
-            where: { userId, achievementId: achievement.id },
-            defaults: {
-              dateEarned: new Date(),
-              iteration: 1,
-            },
-          });
-
-          if (!created) {
-            userAchievement.iteration += 1;
-            userAchievement.dateEarned = new Date();
-            await userAchievement.save();
-          }
-
-          user.points += achievement.points;
-          await user.save();
-        }
-
-        return res.status(200).json({ article, achievement, userAchievement, user });
+    if (originalVideo && fullVideoPath) {
+      try {
+        await videoQueue.add('process', { articleId: article.id, fullVideoPath });
+      } catch (e) {
+        console.error('[queue] enqueue afterCommit failed:', e?.message || e);
+        try {
+          await Article.update(
+            { processingStatus: 'failed', processingError: 'enqueue_failed' },
+            { where: { id: article.id } }
+          );
+        } catch (_) {}
       }
+    }
+
+    return res.status(200).json({ article, achievement, userAchievement, user });
 
     } catch (error) {
-      console.error("Error creating article: ", error.message);
+      // delete uploaded file only if we had one and we didn't commit
+      try {
+        if (originalVideo && fullVideoPath) {
+          safeUnlink(fullVideoPath);
+        }
+      } catch (_) {}
+
+      try { await t.rollback(); } catch (_) {}
+      console.error("Error creating article (preflight/enqueue): ", error.message);
       return res.status(500).json({ message: req.t('error') });
     }
   },
