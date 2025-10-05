@@ -4,8 +4,8 @@ services:
     container_name: agorium-db-preprod
     restart: always
     env_file:
-      - .env          # Chargement du fichier d'environnement principal
-      - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
+      - .env
+      - .env.preprod
     environment:
       MYSQL_ROOT_PASSWORD: caS>13200.ago
       MYSQL_DATABASE: agorium_db_preprod
@@ -16,6 +16,16 @@ services:
     networks:
       - proxy
 
+  redis:
+    image: redis:7-alpine
+    container_name: agorium-redis-preprod
+    restart: always
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis-data-preprod:/data
+    networks:
+      - proxy
+
   backend:
     build: ./backend
     container_name: agorium-backend-preprod
@@ -23,11 +33,11 @@ services:
       - mysql
       - redis
     env_file:
-      - .env          # Chargement du fichier d'environnement principal
-      - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
+      - .env
+      - .env.preprod
     environment:
-      - NODE_ENV=preprod  # Définition spécifique à cet environnement
-      - REDIS_HOST=agorium-redis-preprod
+      - NODE_ENV=preprod
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
     networks:
       - proxy
@@ -37,11 +47,11 @@ services:
     command: >
       sh -c "
         npm install &&
-        dockerize -wait tcp://agorium-db-preprod:3306 -timeout 60s &&
+        dockerize -wait tcp://agorium-db-preprod:3306 -wait tcp://redis:6379 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
-  frontend: 
+  frontend:
     build:
       context: ./frontend
       args:
@@ -50,13 +60,14 @@ services:
     depends_on:
       - backend
     env_file:
-      - .env          # Chargement du fichier d'environnement principal
-      - .env.preprod # Chargement du fichier d'environnement spécifique à preprod
+      - .env
+      - .env.preprod
     networks:
       - proxy
 
 volumes:
   mysql-data-preprod:
+  redis-data-preprod:
 
 networks:
   proxy:
