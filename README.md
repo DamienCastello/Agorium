@@ -138,7 +138,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     EMAIL_FROM=zanmato.13200@gmail.com
 
     # Redis
-    REDIS_HOST=agorium-redis-preprod
+    REDIS_HOST=redis
     REDIS_PORT=6379
     ```
 
@@ -169,7 +169,7 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     EMAIL_FROM=zanmato.13200@gmail.com
 
     # Redis
-    REDIS_HOST=agorium-redis-prod
+    REDIS_HOST=redis
     REDIS_PORT=6379
     ```
 
