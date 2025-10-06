@@ -829,7 +829,7 @@ module.exports = {
           analyzeVideo,
           extractFrameFromVideo,
           scanForNSFW
-        } = require('../services/video');
+        } = require('../services/videoProcess');
 
         let fullVideoPath = path.join('/app/public', videoPath);
         if (process.env.NODE_ENV === 'development') {
