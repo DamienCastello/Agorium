@@ -68,7 +68,7 @@ services:
     volumes:
       - ./backend:/app
       - /home/gamma/agorium-preprod-uploads:/app/public/uploads
-    command: node ./workers/videoWorker.js
+    command: node ./services/videoWorker.js
     networks:
       - proxy
 
