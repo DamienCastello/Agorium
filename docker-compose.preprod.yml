@@ -51,26 +51,26 @@ services:
         npx sequelize-cli db:migrate &&
         node ./bin/www"
 
-    worker:
-      build: ./backend
-      container_name: agorium-worker-preprod
-      restart: always
-      depends_on:
-        - redis
-        - mysql
-      env_file:
-        - .env
-        - .env.preprod
-      environment:
-        - NODE_ENV=preprod
-        - REDIS_HOST=agorium-redis-preprod
-        - REDIS_PORT=6379
-      volumes:
-        - ./backend:/app
-        - /home/gamma/agorium-preprod-uploads:/app/public/uploads
-      command: node ./workers/videoWorker.js
-      networks:
-        - proxy
+  worker:
+    build: ./backend
+    container_name: agorium-worker-preprod
+    restart: always
+    depends_on:
+      - redis
+      - mysql
+    env_file:
+      - .env
+      - .env.preprod
+    environment:
+      - NODE_ENV=preprod
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./backend:/app
+      - /home/gamma/agorium-preprod-uploads:/app/public/uploads
+    command: node ./workers/videoWorker.js
+    networks:
+      - proxy
 
   frontend:
     build:
