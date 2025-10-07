@@ -1,16 +1,17 @@
 <template>
-<el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px">
-  <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
-  <el-progress :percentage="uploadProgress" :stroke-width="12" />
-  <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
-    {{ uploadProgress }}%
-  </p>
-  <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
-    <i class="el-icon-loading"></i>
-    {{ $t('publish.processing_file') }}
-    <span v-if="processing.progress > 0">— {{ processing.progress }}%</span>
-  </p>
-</el-dialog>
+  <el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px">
+    <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
+    <el-progress :percentage="uploadProgress" :stroke-width="12" />
+    <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
+      {{ uploadProgress }}%
+    </p>
+    <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
+      <i class="el-icon-loading"></i>
+      {{ $t('publish.processing_file') }}
+      <span v-if="processing.progress > 0">— {{ processing.progress }}%</span>
+    </p>
+  </el-dialog>
+  
   <div v-if="state === 'error'">
     <p>{{ $t('publish.state_error') }}</p>
   </div>

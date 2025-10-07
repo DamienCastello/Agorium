@@ -50,7 +50,7 @@
           {{ likeNumber }}
         </div>
         <div v-if="authStore.user && authStore.user.id === article.userId" class="action-share"
-          @click="copyPrivateLinkToClipboard(article)">
+          @click="copyLinkToClipboard(article)">
           <ShareIcon class="icon" />
           {{ $t('article_detail.share') }}
         </div>
@@ -284,9 +284,10 @@ const navigateToModify = (article) => {
   });
 };
 
-const copyPrivateLinkToClipboard = () => {
+const copyLinkToClipboard = () => {
 handleNavbar(() => {
-  const link = `${url.frontUrl}/articles/private/${article.value.privateLink}`;
+  console.log("article : ", article.value)
+  const link = article.value.isPrivate ? `${url.frontUrl}/articles/private/${article.value.privateLink}` : `${url.frontUrl}/articles/${article.value.id}`;
   navigator.clipboard.writeText(link)
     .then(() => {
       notify({
