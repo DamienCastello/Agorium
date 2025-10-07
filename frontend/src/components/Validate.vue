@@ -91,7 +91,7 @@
                         <div class="field">
                             <p>{{ $t('validate.label_video') }}: </p>
                         </div>
-                        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                        <video :key="article.video" controls :src="`${url.baseUrl}/${article.video}`" width="600">
                             <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -355,7 +355,7 @@
                         <label>{{ $t('validate.label_video') }}: </label>
                     </div>
                     <div class="preview-container">
-                        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                        <video :key="article.video" controls :src="`${url.baseUrl}/${article.video}`" width="600">
                             <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -544,6 +544,19 @@ const loadingRetry = ref(false)
 let statusTimer = null
 const isPollingStatus = ref(false)
 
+async function reloadVideo() {
+  const id = article.value?.id ?? route.params.id;
+  if (!id) return;
+
+  await axios.get(`${url.baseUrl}/api/v1/articles/${id}`, {
+    headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+  }).then((response) => {
+    article.value.video = response.data.article.video;
+  }).catch((error) => {
+    console.log("error ", error)
+  })
+}
+
 function startStatusPolling() {
   stopStatusPolling()
   isPollingStatus.value = true
@@ -561,6 +574,7 @@ function startStatusPolling() {
 
       if (data.status === 'ready') {
         notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+        await reloadVideo()
         stopStatusPolling()
       }
       if (data.status === 'failed') {
@@ -849,6 +863,8 @@ const fetchArticle = async () => {
             response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
         }
         if (response.data && response.data.article) {
+            if(response.data.article.processingStatus === 'processing') startStatusPolling()
+
             const fetchedArticle = response.data.article;
             if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
                 try {
