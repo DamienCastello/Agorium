@@ -28,7 +28,7 @@ const connection = {
 const videoWorker = new Worker(
   'video-processing',
   async job => {
-    const { articleId, fullVideoPath } = job.data;
+    const { articleId, fullVideoPath, runType = 'create' } = job.data;
 
     // 0) Fetch the article; bail early if missing
     const article = await Article.findByPk(articleId);
@@ -36,6 +36,11 @@ const videoWorker = new Worker(
       // Mark failed in Bull; DB entry does not exist → nothing to update further
       throw new Error(`Article ${articleId} not found`);
     }
+
+    // Keep previous processed assets to optionally delete them on successful UPDATE
+    const prevProcessedVideoRel = article.video || null;
+    const prevThumbnailRel = article.thumbnail || null;
+    const prevOriginalRel = article.originalVideo || null;
 
     // We'll keep track of any output we produce to clean them on failure
     let producedThumbAbs = null;
@@ -99,7 +104,6 @@ const videoWorker = new Worker(
       // Make sure progress reflects completion of transcode
       await article.update({ processingProgress: Math.max(lastDbReport, 90) });
 
-
       // ─────────────────────────────────────────────────────────────
       // ⚠️ TEST ONLY: FORCE FAILURE HERE (uncomment to simulate fail)
       // throw new Error('FORCED_FAIL');
@@ -115,11 +119,10 @@ const videoWorker = new Worker(
       producedThumbAbs = thumbFullAbs;
       producedThumbRel = thumbRel;
 
-      await article.update({ processingProgress: 92 });
+      await article.update({ processingProgress: 96 });
 
       // 4) NSFW screening (throws if not ok)
       await scanForNSFW(thumbFullAbs);
-      await article.update({ processingProgress: 90 });
 
       // 5) Finalize: keep original video path, attach generated thumbnail
       await article.update({
@@ -128,7 +131,30 @@ const videoWorker = new Worker(
         processingStatus: 'ready',
         processingProgress: 100,
         processingError: null,
+        originalVideo: null, // consumed successfully
       });
+
+      // Post-success cleanup
+      try {
+        // Always remove the original used for this successful run
+        if (absInput && fs.existsSync(absInput)) {
+          safeUnlink(absInput);
+        } else if (prevOriginalRel) {
+          safeUnlink(toAbs(prevOriginalRel));
+        }
+
+        // Only on UPDATE runs: remove previous processed assets
+        if (runType === 'update') {
+          if (prevProcessedVideoRel && prevProcessedVideoRel !== producedVideoRel) {
+            safeUnlink(toAbs(prevProcessedVideoRel));
+          }
+          if (prevThumbnailRel && prevThumbnailRel !== producedThumbRel) {
+            safeUnlink(toAbs(prevThumbnailRel));
+          }
+        }
+      } catch (cleanupErr) {
+        console.warn('[worker] cleanup warning:', cleanupErr?.message || cleanupErr);
+      }
 
       // Return value is visible in Bull UI/logs
       return { articleId, status: 'ready' };

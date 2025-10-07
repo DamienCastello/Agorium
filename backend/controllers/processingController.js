@@ -61,6 +61,10 @@ module.exports = {
         return res.status(410).json({ message: 'Original file missing' })
       }
 
+      // Determine runType based on current state
+      // If there is already a processed "video", this retry is for an UPDATE flow
+      const runType = article.video ? 'update' : 'create'
+
       // Reset status
       await article.update({
         processingStatus: 'queued',
@@ -68,8 +72,12 @@ module.exports = {
         processingError: null,
       })
 
-      // Re-enqueue
-      await videoQueue.add('process', { articleId: article.id, fullVideoPath: absInput })
+      // Re-enqueue with runType
+      await videoQueue.add('process', {
+        articleId: article.id,
+        fullVideoPath: absInput,
+        runType,
+      })
 
       return res.status(202).json({ ok: true, id: article.id, status: 'queued' })
     } catch (err) {

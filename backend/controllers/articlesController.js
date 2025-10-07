@@ -33,6 +33,21 @@ async function quickVideoPreflight(absFullPath) {
   // if (Number.isFinite(duration) && duration <= 0) throw new Error('Invalid duration');
 }
 
+// helpers at top of file if not present:
+const isDev = process.env.NODE_ENV === 'development';
+function toAbs(rel) {
+  if (!rel) return null;
+  return isDev ? path.resolve(rel) : path.join('/app/public', rel);
+}
+async function purgeReactions(articleId) {
+  try {
+    await Like.destroy({ where: { articleId } })
+    await Comment.destroy({ where: { articleId } })
+  } catch (e) {
+    console.warn('[purgeReactions] warn:', e?.message || e)
+  }
+}
+
 module.exports = {
   indexValidated: async function (req, res, next) {
     try {
@@ -537,7 +552,7 @@ module.exports = {
 
     if (originalVideo && fullVideoPath) {
       try {
-        await videoQueue.add('process', { articleId: article.id, fullVideoPath });
+        await videoQueue.add('process', { articleId: article.id, fullVideoPath, runType: 'create' });
       } catch (e) {
         console.error('[queue] enqueue afterCommit failed:', e?.message || e);
         try {
@@ -707,180 +722,264 @@ module.exports = {
         res.status(500).json({ message: req.t('error') });
       });
   },
-  update: async function (req, res, next) {
-    try {
-      const { title, description, urlYoutube, tags: rawTags, isPrivate } = req.body;
+update: async function (req, res, next) {
+  try {
+    const { title, description, urlYoutube, isPrivate, tags: rawTags } = req.body;
 
-      if (!title || !description) {
-        return res.status(400).json({ message: req.t('article.fields_required') });
+    // ——— Basic validations ———
+    if (!title || !description) return res.status(400).json({ message: req.t('article.fields_required') });
+    if (title.length < 3) return res.status(400).json({ message: req.t('article.title_length') });
+
+    let tags = rawTags;
+    if (typeof tags === 'string') {
+      try { tags = JSON.parse(tags); }
+      catch { return res.status(400).json({ message: req.t('article.invalid_tags') }); }
+    }
+    if (!Array.isArray(tags) || tags.length === 0) {
+      return res.status(400).json({ message: req.t('article.tag_required') });
+    }
+
+    const userId = req.user.id;
+    if (!userId) return res.status(400).json({ message: req.t('article.user_required') });
+
+    const article = await Article.findByPk(req.params.id);
+    if (!article) return res.status(404).json({ message: req.t('article.not_found') });
+
+    // ——— Privacy toggle ———
+    if (!req.user.isAdmin && article.userId !== req.user.id && Object.prototype.hasOwnProperty.call(req.body, 'isPrivate')) {
+      return res.status(403).json({ message: req.t('unauthorized') });
+    }
+    const isPrivateBool = isPrivate === 'true' || isPrivate === true;
+    const isPrivateChanged = typeof isPrivate !== 'undefined' && isPrivateBool !== article.isPrivate;
+    let privateLink = article.privateLink;
+    if (isPrivateChanged) {
+      if (isPrivateBool) {
+        const crypto = require('crypto');
+        privateLink = crypto.randomBytes(16).toString('hex');
+      } else {
+        privateLink = null;
       }
+    }
 
-      if (title.length < 3) {
-        return res.status(400).json({ message: req.t('article.title_length') });
+    // ——— Previous file refs (for cleanup decisions) ———
+    const prevPreviewRel = article.preview || null;
+    const prevVideoRel   = article.video || null;
+    const prevThumbRel   = article.thumbnail || null;
+    const prevOrigRel    = article.originalVideo || null;
+
+    // ——— New uploads normalized by middleware ———
+    let previewPath = null;
+    let uploadedVideoRel = null;
+
+    if (req.files?.preview?.[0]) {
+      previewPath = req.uploadedFiles.preview.replace('/app/public', '');
+      if (process.env.NODE_ENV === 'development') {
+        previewPath = `uploads/previews/${req.files.preview[0].filename}`;
       }
+    }
 
-      let tags = rawTags;
-      if (typeof tags === 'string') {
-        try {
-          tags = JSON.parse(tags);
-        } catch (error) {
-          return res.status(400).json({ message: req.t('article.invalid_tags') });
-        }
+    if (req.files?.video?.[0]) {
+      uploadedVideoRel = req.uploadedFiles.video.replace('/app/public', '');
+      if (process.env.NODE_ENV === 'development') {
+        uploadedVideoRel = `uploads/videos/${req.files.video[0].filename}`;
       }
+    }
 
-      if (!tags || !Array.isArray(tags) || tags.length === 0) {
-        return res.status(400).json({ message: req.t('article.tag_required') });
-      }
+    // ——— Determine intent (media type switch) ———
+    const wantsYoutube = !!urlYoutube && !uploadedVideoRel && !previewPath; // user provided a youtube URL without uploading media
+    const wantsPreview = !!previewPath && !uploadedVideoRel;                // user uploaded an image
+    const wantsNewVideo = !!uploadedVideoRel;                               // user uploaded a (new) video
 
-      const userId = req.user.id;
-      if (!userId) {
-        return res.status(400).json({ message: req.t('article.user_required') });
-      }
+        // Compare tags sets (id-based)
+    function sameTagSet(a = [], b = []) {
+      const A = new Set(a.map(t => t.id))
+      const B = new Set(b.map(t => t.id))
+      if (A.size !== B.size) return false
+      for (const id of A) if (!B.has(id)) return false
+      return true
+    }
 
-      const article = await Article.findByPk(req.params.id);
-      if (!article) {
-        return res.status(404).json({ message: req.t('article.not_found') });
-      }
+    // What changes, except isPrivate
+    const titleChanged       = title !== article.title
+    const descriptionChanged = description !== article.description
+    const urlYoutubeChanged  = (typeof urlYoutube !== 'undefined') && ((urlYoutube || null) !== (article.urlYoutube || null))
+    const tagsChanged        = !sameTagSet(tags, await article.getTags({ attributes: ['id'] }))
 
-      if (!req.user.isAdmin && article.userId !== req.user.id && req.body.hasOwnProperty('isPrivate')) {
-        return res.status(403).json({ message: req.t('unauthorized') });
-      }
 
-      const isPrivateBool = isPrivate === 'true' || isPrivate === true;
-      const isPrivateChanged = isPrivateBool !== article.isPrivate;
+    // If isPrivate changes AND nothing else changes
+    const isOnlyPrivacyChange =
+      isPrivateChanged &&
+      !titleChanged &&
+      !descriptionChanged &&
+      !urlYoutubeChanged &&
+      !tagsChanged &&
+      !wantsYoutube &&
+      !wantsPreview &&
+      !wantsNewVideo
 
-      let privateLink = article.privateLink;
-      
-      if (isPrivateChanged) {
-        if (isPrivateBool === true) {
-          const crypto = require('crypto');
-          privateLink = crypto.randomBytes(16).toString('hex');
-        } else {
-          privateLink = null;
-        }
-      }
+    // Build a base update for common fields (reset validation, etc.)
+    const baseUpdate = {
+      title,
+      description,
+      isPrivate: typeof isPrivate === 'undefined' ? article.isPrivate : isPrivateBool,
+      privateLink,
+      // Reset validation to force a new validation cycle on content changes
+      isValid: isOnlyPrivacyChange ? article.isValid : false,
+      refusalReasons: JSON.stringify({
+        title: { value: '', isValid: null, validatedBy: null },
+        description: { value: '', isValid: null, validatedBy: null },
+        videoContent: { value: '', isValid: null, validatedBy: null },
+        videoFile: { value: '', isValid: null, validatedBy: null },
+        preview: { value: '', isValid: null, validatedBy: null },
+      }),
+      overallReasonForRefusal: null,
+      validatedBy: null,
+      userId,
+    };
 
-      const oldVideoPath = article.video;
-      const oldThumbnailPath = article.thumbnail;
-      const oldPreviewPath = article.preview;
-
-      let previewPath = null;
-      let videoPath = null;
-
-      if (req.files?.preview?.[0]) {
-        previewPath = req.uploadedFiles.preview.replace('/app/public', '');
-        if (process.env.NODE_ENV === 'development') {
-          previewPath = `uploads/previews/${req.files.preview[0].filename}`;
-        }
-      }
-
-      if (req.files?.video?.[0]) {
-        videoPath = req.uploadedFiles.video.replace('/app/public', '');
-        if (process.env.NODE_ENV === 'development') {
-          videoPath = `uploads/videos/${req.files.video[0].filename}`;
-        }
-      }
-
-      let thumbnailPath = article.thumbnail;
-
+    // ———————————————————————————————————————————————
+    // CASE A — Switch to YOUTUBE (no new video/image upload)
+    // ———————————————————————————————————————————————
+    if (wantsYoutube) {
       const updatedArticle = await article.update({
-        title,
-        description,
-        preview: previewPath || article.preview,
-        video: videoPath || article.video,
-        thumbnail: thumbnailPath,
-        urlYoutube: urlYoutube || article.urlYoutube,
-        refusalReasons: JSON.stringify({
-          title: { value: '', isValid: null, validatedBy: null },
-          description: { value: '', isValid: null, validatedBy: null },
-          videoContent: { value: '', isValid: null, validatedBy: null },
-          videoFile: { value: '', isValid: null, validatedBy: null },
-          preview: { value: '', isValid: null, validatedBy: null },
-        }),
-        overallReasonForRefusal: null,
-        isValid: article.isValid,
-        userId,
-        isPrivate,
-        privateLink
+        ...baseUpdate,
+        urlYoutube,
+        preview: null,
+        video: null,
+        thumbnail: null,
+        originalVideo: null,
+        processingStatus: 'ready',
+        processingProgress: 100,
+        processingError: null,
       });
 
-      if (tags && Array.isArray(tags)) {
-        const tagIds = tags.map(tag => tag.id);
-        const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
-        await updatedArticle.setTags(tagsToAssociate);
-      }
+      // Update tags
+      const tagIds = tags.map(t => t.id);
+      const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+      await updatedArticle.setTags(tagsToAssociate);
 
-      const fs = require('fs');
-      const path = require('path');
+      // Cleanup previous files (both video stack and preview)
+      safeUnlink(toAbs(prevPreviewRel));
+      safeUnlink(toAbs(prevVideoRel));
+      safeUnlink(toAbs(prevThumbRel));
+      safeUnlink(toAbs(prevOrigRel));
 
-      // Suppression de l'ancien preview si un nouveau preview a été uploadé
-      if (previewPath && oldPreviewPath) {
-        const oldFullPreviewPath = process.env.NODE_ENV === 'development'
-          ? path.resolve(oldPreviewPath)
-          : path.join('/app/public', oldPreviewPath);
-        if (fs.existsSync(oldFullPreviewPath)) {
-          fs.unlinkSync(oldFullPreviewPath);
-        }
-      }
+      // Drop likes & comments because the article has been modified
+      await purgeReactions(updatedArticle.id);
 
-      if (req.files?.video?.[0]) {
-        const {
-          isExecutableFile,
-          analyzeVideo,
-          extractFrameFromVideo,
-          scanForNSFW
-        } = require('../services/videoProcess');
-
-        let fullVideoPath = path.join('/app/public', videoPath);
-        if (process.env.NODE_ENV === 'development') {
-          fullVideoPath = path.resolve(videoPath);
-        }
-
-        await isExecutableFile(fullVideoPath);
-        await analyzeVideo(fullVideoPath);
-
-        const { getUploadPath } = require('../utils/getUploadPath');
-        const { v4: uuidv4 } = require('uuid');
-        const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
-        const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
-
-        if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
-          fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
-        }
-
-        await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
-        await scanForNSFW(thumbnailFullPath);
-
-        if (oldVideoPath) {
-          const oldFullVideoPath = process.env.NODE_ENV === 'development'
-            ? path.resolve(oldVideoPath)
-            : path.join('/app/public', oldVideoPath);
-          if (fs.existsSync(oldFullVideoPath)) {
-            fs.unlinkSync(oldFullVideoPath);
-          }
-        }
-
-        if (oldThumbnailPath) {
-          const oldFullThumbnailPath = process.env.NODE_ENV === 'development'
-            ? path.resolve(oldThumbnailPath)
-            : path.join('/app/public', oldThumbnailPath);
-          if (fs.existsSync(oldFullThumbnailPath)) {
-            fs.unlinkSync(oldFullThumbnailPath);
-          }
-        }
-
-        await article.update({
-          video: videoPath,
-          thumbnail: thumbnailDbPath
-        });
-      }
-
-      return res.json({ updatedArticle });
-    } catch (error) {
-      console.error("Error updating article:", error.message);
-      return res.status(500).json({ message: req.t('error') });
+      return res.json({ article: updatedArticle });
     }
-  },
+
+    // ———————————————————————————————————————————————
+    // CASE B — Switch to IMAGE (new preview upload, no new video)
+    // ———————————————————————————————————————————————
+    if (wantsPreview) {
+      const updatedArticle = await article.update({
+        ...baseUpdate,
+        preview: previewPath,
+        urlYoutube: null,
+        video: null,
+        thumbnail: null,
+        originalVideo: null,
+        processingStatus: 'ready',
+        processingProgress: 100,
+        processingError: null,
+      });
+
+      // Update tags
+      const tagIds = tags.map(t => t.id);
+      const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+      await updatedArticle.setTags(tagsToAssociate);
+
+      // Cleanup previous files:
+      // - previous preview only if replaced by a new one
+      if (prevPreviewRel && prevPreviewRel !== previewPath) safeUnlink(toAbs(prevPreviewRel));
+      // - drop the whole video stack if any
+      safeUnlink(toAbs(prevVideoRel));
+      safeUnlink(toAbs(prevThumbRel));
+      safeUnlink(toAbs(prevOrigRel));
+
+      // Drop likes & comments because the article has been modified
+      await purgeReactions(updatedArticle.id);
+
+      return res.json({ article: updatedArticle });
+    }
+
+    // ———————————————————————————————————————————————
+    // CASE C — New VIDEO uploaded (stay video type or switch from image/youtube to video)
+    // ———————————————————————————————————————————————
+    if (wantsNewVideo) {
+      // Preflight
+      let fullVideoPath = toAbs(uploadedVideoRel);
+      await quickVideoPreflight(fullVideoPath);
+
+      // Queue processing; keep old player working until success
+      const updatedArticle = await article.update({
+        ...baseUpdate,
+        urlYoutube: null,
+        preview: null,
+        originalVideo: uploadedVideoRel,
+        processingStatus: 'queued',
+        processingProgress: 0,
+        processingError: null,
+      });
+
+      // Update tags
+      const tagIds = tags.map(t => t.id);
+      const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+      await updatedArticle.setTags(tagsToAssociate);
+
+      if (prevPreviewRel) safeUnlink(toAbs(prevPreviewRel));
+
+      // Enqueue with runType=update so the worker will cleanup old processed assets on success
+      try {
+        await videoQueue.add('process', { articleId: updatedArticle.id, fullVideoPath, runType: 'update' });
+      } catch (e) {
+        console.error('[queue] enqueue after update failed:', e?.message || e);
+        await updatedArticle.update({ processingStatus: 'failed', processingError: 'enqueue_failed' });
+      }
+
+      // Drop likes & comments because the article has been modified
+      await purgeReactions(updatedArticle.id);
+
+      return res.json({ article: updatedArticle });
+    }
+
+    // ———————————————————————————————————————————————
+    // CASE D — No media change (text/privacy/tags only)
+    // (Keep current media; preserve processing fields)
+    // If user cleared youtube without providing another media, keep existing preview/video as-is.
+    // ———————————————————————————————————————————————
+    const updatedArticle = await article.update({
+      ...baseUpdate,
+      urlYoutube: typeof urlYoutube === 'undefined' ? article.urlYoutube : urlYoutube || null,
+      preview: article.preview,
+      video: article.video,
+      thumbnail: article.thumbnail,
+      originalVideo: article.originalVideo,
+      processingStatus: article.processingStatus,
+      processingProgress: article.processingProgress,
+      processingError: article.processingError,
+    });
+
+    // Update tags
+    {
+      const tagIds = tags.map(t => t.id);
+      const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+      await updatedArticle.setTags(tagsToAssociate);
+    }
+
+    if (!isOnlyPrivacyChange) {
+      await purgeReactions(updatedArticle.id);
+    }
+
+    return res.json({ article: updatedArticle });
+
+  } catch (error) {
+    console.error("Error updating article:", error.message);
+    return res.status(500).json({ message: req.t('error') });
+  }
+},
   validate: function (req, res, next) {
     const user = req.user;
 

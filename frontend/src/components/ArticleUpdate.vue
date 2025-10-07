@@ -1,11 +1,49 @@
 <template>
+    <el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px">
+        <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
+        <el-progress :percentage="uploadProgress" :stroke-width="12" />
+        <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
+            {{ uploadProgress }}%
+        </p>
+        <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
+            <i class="el-icon-loading"></i>
+            {{ $t('publish.processing_file') }}
+            <span v-if="Number.isFinite(processing.progress)">— {{ processing.progress }}%</span>
+        </p>
+    </el-dialog>
+
     <div v-if="state === 'error'">
         <p>{{ $t('update.state_error') }}</p>
     </div>
+
     <div v-else class="pico" v-loading="state === 'loading'" :element-loading-text="$t('publish.state_loading')">
+
         <div @mousedown="handleClickOutsideNavbar">
             <h1>{{ $t('update.title') }}</h1>
 
+                  <fieldset>
+                        <h3>{{ $t('publish.media_type') }}</h3>
+
+                        <el-radio-group v-model="mediaType">
+                        <el-radio value="image">{{ $t('publish.option_image') }}</el-radio>
+                        <el-radio value="video">{{ $t('publish.option_video') }}</el-radio>
+                        <el-radio value="youtube">{{ $t('publish.option_youtube') }}</el-radio>
+                        </el-radio-group>
+                    </fieldset>
+
+            <div class="badge-container" v-if="processing.status">
+                <p v-if="processing.status === 'queued'" class="queued-badge">Queued</p>
+                <p v-else-if="processing.status === 'processing'" class="processing-badge">
+                    Processing <span v-if="Number.isFinite(processing.progress)"> - {{ processing.progress }}%</span>
+                </p>
+                <p v-else-if="processing.status === 'ready'" class="ready-badge">Ready</p>
+                <p v-else-if="processing.status === 'failed'" class="failed-badge">Failed</p>
+                </div>
+                <div v-if="processing.status === 'failed'" class="processing-actions">
+                <button @click="retryProcessing" :disabled="loadingRetry || processing.status === 'queued' || processing.status === 'processing'">
+                    {{ loadingRetry ? 'Retry...' : 'Retry processing file' }}
+                </button>
+            </div>
 
             <form @submit.prevent="handleSubmit">
                 <el-radio-group v-model="form.isPrivate">
@@ -106,7 +144,7 @@
 
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import url from '@/utils/url';
 import axios from 'axios';
@@ -151,6 +189,38 @@ const isDialogVisible = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
 const articleId = ref(null);
+// Keep track of initial media to allow "no file upload" edits
+const initialMediaType = ref(null)
+
+watch(mediaType, (next, prev) => {
+  // Clean conflicting inputs when switching media type
+  if (next === 'youtube') {
+    selectedFile.value = null
+    imagePreview.value = null
+    videoPreview.value = null
+    videoThumbnail.value = null
+  } else if (next === 'image') {
+    form.value.urlYoutube = ''
+    selectedFile.value = null
+    videoPreview.value = null
+    videoThumbnail.value = null
+  } else if (next === 'video') {
+    form.value.urlYoutube = ''
+    imagePreview.value = null
+  }
+})
+
+// Modal upload state
+const uploading = ref(false)
+const uploadProgress = ref(0)
+
+// Local processing state for Update page
+const processing = ref({ status: null, progress: 0, articleId: null })
+let statusTimer = null
+const loadingRetry = ref(false)
+
+// Warn user on refresh/close during upload
+let beforeUnloadHandler = null
 
 const form = ref({
     title: "",
@@ -158,6 +228,82 @@ const form = ref({
     urlYoutube: "",
     isPrivate: 'public'
 });
+
+function attachBeforeUnload() {
+  if (beforeUnloadHandler) return
+  beforeUnloadHandler = (e) => { e.preventDefault(); e.returnValue = '' }
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+}
+function detachBeforeUnload() {
+  if (!beforeUnloadHandler) return
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+  beforeUnloadHandler = null
+}
+
+function stopStatusPolling() {
+  if (statusTimer) {
+    clearInterval(statusTimer)
+    statusTimer = null
+  }
+}
+
+function startStatusPolling(id) {
+  processing.value.articleId = id
+  stopStatusPolling()
+
+  // When polling starts after upload, show modal in "processing" phase
+  uploading.value = true
+  uploadProgress.value = 100
+
+  statusTimer = setInterval(async () => {
+    try {
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${id}/status`, {
+        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+        params: { ts: Date.now() }
+      })
+      processing.value.status = data.status
+      processing.value.progress = typeof data.progress === 'number' ? data.progress : 0
+
+      if (data.status === 'ready') {
+        // ✅ Success — close modal and keep badges in "ready"
+        stopStatusPolling()
+        uploading.value = false
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+      } else if (data.status === 'failed') {
+        // ❌ Failed — close modal and show Retry button via badges
+        stopStatusPolling()
+        uploading.value = false
+        notify({ title: t('notification.title.article_process'), type: 'error', text: t('notification.text.article_process_failed') })
+      }
+    } catch (e) {
+      console.warn('status poll error', e?.message || e)
+    }
+  }, 1500)
+}
+
+async function retryProcessing() {
+  if (!processing.value.articleId) return
+  loadingRetry.value = true
+  try {
+    await axios.post(
+      `${url.baseUrl}/api/v1/articles/${processing.value.articleId}/retry`,
+      {},
+      { headers: { Authorization: `Bearer ${authStore.token}` } }
+    )
+    processing.value.status = 'queued'
+    processing.value.progress = 0
+    startStatusPolling(processing.value.articleId)
+    notify({ title: t('notification.title.retry_process'), type: 'success', text: t('notification.text.retry_process') })
+  } catch (e) {
+    notify({
+      title: 'Retry',
+      type: 'error',
+      text: e?.response?.data?.message || e?.message || 'Retry error'
+    })
+  } finally {
+    loadingRetry.value = false
+  }
+}
 
 
 const handleSelectedTagClick = (tag, event) => {
@@ -257,6 +403,16 @@ const fetchArticle = async () => {
                     videoThumbnail.value = `${article.thumbnail}`;
                 }
             }
+            initialMediaType.value = mediaType.value
+
+            
+            // Initialize processing state from loaded article
+            processing.value.articleId = articleId.value
+            processing.value.status = article.processingStatus || null
+            processing.value.progress = Number.isFinite(article.processingProgress) ? article.processingProgress : 0
+            if (article.processingStatus === 'processing') {
+            startStatusPolling(articleId.value)
+            }
         } else {
             state.value = "error";
         }
@@ -304,6 +460,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside);
+    stopStatusPolling();
+    detachBeforeUnload();
 });
 
 const addTag = () => {
@@ -366,12 +524,27 @@ const addTag = () => {
 };
 
 const handleSubmit = async () => {
-    state.value = 'loading';
-
     const cleanedTags = selectedTags.value.map(tag => {
         const { createdAt, updatedAt, ...cleanTag } = tag;
         return cleanTag;
     });
+
+    if (mediaType.value === 'youtube') {
+        const isValidYoutubeId = extractVideoId(form.value.urlYoutube ?? '')
+        if (!isValidYoutubeId) {
+            notify({ title: t('notification.title.field_media_required'), type: 'warn', text: t('notification.text.field_media_url') })
+            return
+        }
+    }
+    if (mediaType.value === 'video' && initialMediaType.value !== 'video' && !selectedFile.value) {
+        notify({ title: t('notification.title.field_media_required'), type: 'warn', text: t('notification.text.field_media_required') })
+        return
+    }
+    if (mediaType.value === 'preview' && initialMediaType.value !== 'preview' && !selectedFile.value) {
+        notify({ title: t('notification.title.field_media_required'), type: 'warn', text: t('notification.text.field_media_required') })
+        return
+    }
+
 
     const formData = new FormData();
 
@@ -397,6 +570,9 @@ const handleSubmit = async () => {
     } else if (mediaType.value === "image") {
         formData.append("preview", selectedFile.value)
     } else if (mediaType.value === "video") {
+        uploading.value = true
+        uploadProgress.value = 0
+        attachBeforeUnload()
         formData.append("video", selectedFile.value)
     }
     formData.append("userId", authStore.user.id);
@@ -408,32 +584,47 @@ const handleSubmit = async () => {
                 "Content-Type": "multipart/form-data",
                 "Authorization": `Bearer ${authStore.token}`
             },
+            onUploadProgress: (event) => {
+                if (event.total) {
+                    uploadProgress.value = Math.round((event.loaded * 100) / event.total);
+                }
+            },
         })
-        .then(() => {
-            notify({
-                title: t('notification.title.article_update'),
-                type: 'success',
-                text: t('notification.text.article_update'),
-            });
-            setTimeout(() => {
-                // Improve it by call after navigation ...
-                state.value = 'idle';
-                router.push("/articles");
-            }, 2000);
+        .then((response) => {
+            // Expect backend to return the updated article
+            const updated = response?.data?.article || response?.data?.updatedArticle
+
+            if (mediaType.value === 'video' && selectedFile.value && updated) {
+                // Enter processing phase if backend queued the job
+                if (updated.processingStatus === 'queued' || updated.processingStatus === 'processing') {
+                    processing.value.articleId = updated.id
+                    processing.value.status = updated.processingStatus
+                    processing.value.progress = updated.processingProgress ?? 0
+                    uploadProgress.value = 100
+                    startStatusPolling(updated.id)
+                    return
+                }
+            }
+
+            // No-video update or no processing required → normal flow
+            notify({ title: t('notification.title.article_update'), type: 'success', text: t('notification.text.article_update') })
+            setTimeout(() => router.push("/articles"), 5000)
         })
         .catch((error) => {
             notify({
-                title: t('notification.title.article_update'),
-                type: 'error',
-                text: error.response.data.message,
+            title: t('notification.title.article_update'),
+            type: 'error',
+            text: error?.response?.data?.message || error?.message || 'Error',
             });
-            state.value = 'error';
-            setTimeout(() => {
-            // Improve it by call after navigation ...
-            state.value = 'idle';
-            router.push("/articles");
-            }, 3000);
-        });
+            setTimeout(() => router.push("/articles"), 5000)
+        })
+        .finally(() => {
+            if (!(mediaType.value === 'video' && selectedFile.value)) {
+            uploading.value = false
+            uploadProgress.value = 0
+            }
+            detachBeforeUnload()
+        })
 
 
 };
