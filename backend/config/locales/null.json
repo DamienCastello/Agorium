@@ -1,0 +1,11 @@
+{
+	"auth": {
+		"mailer_verification": {
+			"subject": "Vérifiez votre compte Agorium",
+			"html": "Bonjour, pour vérifier votre compte, cliquez sur le lien suivant: "
+		},
+		"signup": {
+			"verify_email_success": "auth.signup.verify_email_success"
+		}
+	}
+}

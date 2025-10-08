@@ -1,7 +1,7 @@
 <template>
-  <el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px">
+  <el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px" :title="$t('publish.modal_title_upload')">
     <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
-    <el-progress :percentage="uploadProgress" :stroke-width="12" />
+    <el-progress :percentage="uploadProgress" :stroke-width="12" color="#6400e4"/>
     <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
       {{ uploadProgress }}%
     </p>
