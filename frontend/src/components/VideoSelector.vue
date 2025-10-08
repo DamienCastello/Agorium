@@ -39,18 +39,19 @@ import getSrc from "@/utils/getSrc";
 import { onBeforeUnmount } from "vue";
 
 const navbarStore = useNavbarStore();
+
 const props = defineProps({
   mode: String,
-  videoThumbnail: String || null,
-  videoPreview: String // Can be blob: URL (local preview) or backend path
+  videoThumbnail: String,
+  videoPreview: String
 });
 
 const emit = defineEmits(["update:selectedFile", "update:videoPreview", "update:videoThumbnail"]);
 
-// Keep the current object URL to revoke it when a new file is chosen or on unmount
+// Keep track of the current blob URL so we can revoke it
 let currentObjectUrl = null;
 
-// Create a browser-managed URL for the File object
+/** Create a blob URL from a File and emit it upward */
 function setPreviewFromFile(file) {
   // Revoke previous Object URL to avoid memory leaks
   if (currentObjectUrl) {
@@ -61,15 +62,14 @@ function setPreviewFromFile(file) {
   emit("update:videoPreview", currentObjectUrl);
 }
 
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
+function handleFileUpload(event) {
+  const file = event.target.files?.[0];
 
   if (file) {
     // 1) expose the File upward
     emit("update:selectedFile", file);
-    // 2) clear any previous thumbnail (the server will generate one later)
-    emit("update:videoThumbnail", null)
-
+    // 2) clear any previous thumbnail (server will regenerate one)
+    emit("update:videoThumbnail", null);
     // 3) set preview from object URL
     setPreviewFromFile(file);
   } else {
@@ -78,14 +78,19 @@ const handleFileUpload = (event) => {
     emit("update:selectedFile", null);
   }
 
-  // Clean up object URL on component destroy
-  onBeforeUnmount(() => {
-    if (currentObjectUrl) {
-      URL.revokeObjectURL(currentObjectUrl);
-      currentObjectUrl = null;
-    }
-  });
-};
+  // Allow selecting the same file again (reset input value)
+  // (some browsers don't fire change if the same file is chosen twice)
+  event.target.value = "";
+}
+
+// Register lifecycle hook at setup-time (NOT inside handlers)
+// Ensures we always revoke the blob URL when the component unmounts
+onBeforeUnmount(() => {
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+});
 </script>
 
 <style scoped>
