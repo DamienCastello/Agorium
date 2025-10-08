@@ -2,10 +2,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
 
-/** Ensure parent directory exists. */
-function ensureDir(dir) {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-}
+const { ensureDir } = require('../utils/ensureDir')
 
 /**
  * Transcode to a streaming-friendly MP4:

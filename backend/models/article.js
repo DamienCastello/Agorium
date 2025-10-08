@@ -117,6 +117,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
     },
+    hlsPlaylist: { type: DataTypes.STRING, allowNull: true },
+    hlsDir: { type: DataTypes.STRING, allowNull: true }
   }, {
     sequelize,
     modelName: 'Article',

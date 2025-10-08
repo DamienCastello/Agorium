@@ -766,6 +766,8 @@ module.exports = {
       const prevVideoRel = article.video || null;
       const prevThumbRel = article.thumbnail || null;
       const prevOrigRel = article.originalVideo || null;
+      const prevHlsDirRel = article.hlsDir || null;
+      const prevHlsPlaylistRel = article.hlsPlaylist || null;
 
       // ——— New uploads normalized by middleware ———
       let previewPath = null;
@@ -848,6 +850,8 @@ module.exports = {
           video: null,
           thumbnail: null,
           originalVideo: null,
+          hlsPlaylist: null,
+          hlsDir: null,
           processingStatus: 'ready',
           processingProgress: 100,
           processingError: null,
@@ -863,6 +867,10 @@ module.exports = {
         safeUnlink(toAbs(prevVideoRel));
         safeUnlink(toAbs(prevThumbRel));
         safeUnlink(toAbs(prevOrigRel));
+        // remove HLS pack directory for this article if it exists
+        if (article.hlsDir) {
+          try { fs.rmSync(toAbs(article.hlsDir), { recursive: true, force: true }); } catch (_) {}
+        }
 
         // Drop likes & comments because the article has been modified
         await purgeReactions(updatedArticle.id);
@@ -881,6 +889,8 @@ module.exports = {
           video: null,
           thumbnail: null,
           originalVideo: null,
+          hlsPlaylist: null,
+          hlsDir: null,
           processingStatus: 'ready',
           processingProgress: 100,
           processingError: null,
@@ -898,6 +908,10 @@ module.exports = {
         safeUnlink(toAbs(prevVideoRel));
         safeUnlink(toAbs(prevThumbRel));
         safeUnlink(toAbs(prevOrigRel));
+        // remove HLS pack directory for this article if it exists
+        if (article.hlsDir) {
+          try { fs.rmSync(toAbs(article.hlsDir), { recursive: true, force: true }); } catch (_) {}
+        }
 
         // Drop likes & comments because the article has been modified
         await purgeReactions(updatedArticle.id);

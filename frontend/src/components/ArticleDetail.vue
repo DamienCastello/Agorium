@@ -26,12 +26,28 @@
       <div v-if="article.urlYoutube">
         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
       </div>
+      <!-- HLS first, fallback MP4 handled inside the component -->
+      <div v-else-if="article.hlsPlaylist" class="player">
+        <HlsPlayer
+          :hlsPlaylist="article.hlsPlaylist"
+          :mp4Fallback="article.video || null"
+          :poster="article.thumbnail || null"
+          :width="600"
+        />
+      </div>
+
+      <!-- If no HLS, keep MP4 path -->
       <div v-else-if="article.video" class="player">
-        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
-          <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
+        <video
+          controls
+          preload="metadata"
+          :poster="article.thumbnail ? `${url.baseUrl}/${article.thumbnail}` : null"
+          width="600"
+          :src="`${url.baseUrl}/${article.video}`"
+        >
+          <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-
       </div>
       <div v-else-if="article.preview" class="player">
         <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
@@ -88,6 +104,7 @@ import ReportIcon from "./icons/ReportIcon.vue";
 import PencilIcon from "./icons/PencilIcon.vue";
 import ShareIcon from "./icons/ShareIcon.vue";
 import Comments from "./Comments.vue";
+import HlsPlayer from "@/components/HlsPlayer.vue";
 import { useNavbarHandler } from "@/composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
 import { useRouter } from "vue-router";
