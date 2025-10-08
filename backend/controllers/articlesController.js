@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { safeUnlink } = require('../utils/safeUnlink');
 const { sequelize, Article, User, Like, Tag, Comment } = require('../models');
-// TODO: try to use Like, Achievement & UserAchievement later
+
 const { videoQueue } = require('../services/videoQueue');
 const ffmpeg = require('fluent-ffmpeg'); // for a light preflight probe
 
