@@ -5,8 +5,10 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 const { isExecutableFile, analyzeVideo, extractFrameFromVideo, scanForNSFW } = require('../services/videoProcess');
-const { transcodeToMp4, ensureDir } = require('../services/transcode');
+const { transcodeToMp4 } = require('../services/transcodeToMp4');
+const { transcodeToHLS } = require('../services/transcodeToHls');
 
+const { ensureDir } = require('../utils/ensureDir')
 const { safeUnlink } = require('../utils/safeUnlink');
 const { getUploadPath } = require('../utils/getUploadPath');
 const { Article } = require('../models');
@@ -41,12 +43,17 @@ const videoWorker = new Worker(
     const prevProcessedVideoRel = article.video || null;
     const prevThumbnailRel = article.thumbnail || null;
     const prevOriginalRel = article.originalVideo || null;
+    const prevHlsDirRel = article.hlsDir || null;
+    const prevHlsPlaylistRel = article.hlsPlaylist || null;
 
     // We'll keep track of any output we produce to clean them on failure
     let producedThumbAbs = null;
     let producedThumbRel = null;
     let producedVideoAbs = null;
     let producedVideoRel = null;
+    let producedHlsDirAbs = null;
+    let producedHlsDirRel = null;
+    let producedHlsMasterRel = null;
 
     try {
       // 1) Move article to "processing" ASAP
@@ -104,12 +111,36 @@ const videoWorker = new Worker(
       // Make sure progress reflects completion of transcode
       await article.update({ processingProgress: Math.max(lastDbReport, 90) });
 
+      // 3) Transcode processed MP4 -> HLS multi-bitrate pack
+      // Rationale: using the freshly normalized MP4 as input makes HLS simpler and stable.
+      await article.update({ processingProgress: 88 });
+
+      // Decide an output directory (unique per run). We store it in DB for easy deletion later.
+      const hlsDirRel = `uploads/hls/${uuidv4()}`;
+      const hlsDirAbs = toAbs(hlsDirRel);
+      ensureDir(hlsDirAbs);
+
+      const { masterAbs, masterRel, outDirAbs, outDirRel } = await transcodeToHLS(
+        producedVideoAbs,
+        hlsDirAbs,
+        hlsDirRel,
+        async (pct) => {
+          // Map 0..100 into 90..92 to avoid jumpy UI (tiny window since we’re already near the end)
+          const mapped = Math.min(92, 90 + Math.floor((pct || 0) * 0.02));
+          try { await article.update({ processingProgress: mapped }); } catch (_) {}
+        }
+      );
+
+      producedHlsDirAbs = outDirAbs;
+      producedHlsDirRel = outDirRel;
+      producedHlsMasterRel = masterRel;
+
       // ─────────────────────────────────────────────────────────────
       // ⚠️ TEST ONLY: FORCE FAILURE HERE (uncomment to simulate fail)
       // throw new Error('FORCED_FAIL');
       // ─────────────────────────────────────────────────────────────
 
-      // 3) Generate thumbnail from the *optimized* video to match final look
+      // 4) Generate thumbnail from the *optimized* video to match final look
       const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
       const { fullPath: thumbFullAbs, dbPath: thumbRel } = getUploadPath('thumbnails', thumbnailName);
       if (!fs.existsSync(path.dirname(thumbFullAbs))) {
@@ -121,13 +152,15 @@ const videoWorker = new Worker(
 
       await article.update({ processingProgress: 96 });
 
-      // 4) NSFW screening (throws if not ok)
+      // 5) NSFW screening (throws if not ok)
       await scanForNSFW(thumbFullAbs);
 
-      // 5) Finalize: keep original video path, attach generated thumbnail
+      // 6) Finalize: keep original video path, attach generated thumbnail
       await article.update({
         video: producedVideoRel,
         thumbnail: producedThumbRel,
+        hlsPlaylist: producedHlsMasterRel,
+        hlsDir: producedHlsDirRel,
         processingStatus: 'ready',
         processingProgress: 100,
         processingError: null,
@@ -151,6 +184,10 @@ const videoWorker = new Worker(
           if (prevThumbnailRel && prevThumbnailRel !== producedThumbRel) {
             safeUnlink(toAbs(prevThumbnailRel));
           }
+            // remove previous HLS pack (directory) if different
+          if (prevHlsDirRel && prevHlsDirRel !== producedHlsDirRel) {
+            try { fs.rmSync(toAbs(prevHlsDirRel), { recursive: true, force: true }); } catch (_) {}
+          }
         }
       } catch (cleanupErr) {
         console.warn('[worker] cleanup warning:', cleanupErr?.message || cleanupErr);
@@ -163,6 +200,10 @@ const videoWorker = new Worker(
       // Cleanup partial outputs (do NOT delete originalVideo: we want retry to work)
       safeUnlink(producedThumbAbs);
       safeUnlink(producedVideoAbs);
+      // cleanup HLS folder if it was created
+      if (producedHlsDirAbs) {
+        try { fs.rmSync(producedHlsDirAbs, { recursive: true, force: true }); } catch (_) {}
+      }
 
       // Mark article as failed (if we still have it)
       try {

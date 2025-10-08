@@ -34,7 +34,7 @@ app.use((req, res, next) => {
   }
 
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Range');
   res.header('Access-Control-Allow-Credentials', 'true');
 
   // Handle OPTIONS method
@@ -65,6 +65,19 @@ app.use((req, res, next) => {
   }
 
   i18n.setLocale(req, lang);
+  next();
+});
+
+// HLS MIME types
+// Ensure correct content types for HLS playlists and fMP4 segments
+app.use((req, res, next) => {
+  if (req.path.endsWith('.m3u8')) {
+    res.type('application/vnd.apple.mpegurl');
+  } else if (req.path.endsWith('.m4s')) {
+    res.type('video/iso.segment');
+  }
+  // Helpful: advertise byte-range support (static does it, but explicit is fine)
+  res.setHeader('Accept-Ranges', 'bytes');
   next();
 });
 
