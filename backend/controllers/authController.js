@@ -89,9 +89,37 @@ module.exports = {
       const token = jwt.sign(userData, secretKey, { expiresIn: '1d' });
       return res.status(200).json({ user: userData, token });
     } catch (error) {
-      console.error(req.t('auth.signup.error_label'), error);
-      return res.status(500).json({ message: req.t('error') });
+    console.error(req.t('auth.signup.error_label'), error);
+
+    // Unicité (pseudo / email)
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      // essaye d’identifier le champ en conflit
+      const field = error?.errors?.[0]?.path || (
+        /for key 'Users\.(\w+)'/i.exec(error?.parent?.sqlMessage || '')?.[1]
+      );
+
+      if (field === 'email') {
+        return res.status(409).json({ message: req.t('auth.signup.duplicate_email') });
+      }
+      if (field === 'pseudo') {
+        return res.status(409).json({ message: req.t('auth.signup.duplicate_pseudo') });
+      }
+      // inconnue ? message générique "conflit"
+      return res.status(409).json({ message: req.t('auth.signup.duplicate_generic') });
     }
+
+    // Validation Sequelize (si tu en utilises sur le modèle)
+    if (error.name === 'SequelizeValidationError') {
+      const first = error?.errors?.[0];
+      // mappe éventuellement des validators -> clés i18n
+      return res.status(400).json({ 
+        message: first?.message || req.t('auth.signup.validation_error') 
+      });
+    }
+
+    // Par défaut
+    return res.status(500).json({ message: req.t('error') });
+  }
   },
   verifyEmail: async function (req, res) {
     try {

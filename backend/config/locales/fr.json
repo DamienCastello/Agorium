@@ -23,7 +23,11 @@
 			"reinitialize_error": "Erreur lors de l'envoi de l'email.",
 			"invalid_link": "Lien invalide ou expiré.",
 			"reset_again": "Il est nécessaire de recréer un lien valide dans oubli de mot de passe.",
-			"verify_email_success": "Email vérifié avec succès."
+			"verify_email_success": "Email vérifié avec succès.",
+			"duplicate_email": "Email déjà utilisé.",
+			"duplicate_pseudo": "Pseudo déjà utilisé.",
+			"duplicate_generic": "Un des champs renseignés ne peut être utilisé.",
+			"validation_error": "Field validation error."
 		},
 		"mailer_verification": {
 			"subject": "Vérification de votre adresse email",
