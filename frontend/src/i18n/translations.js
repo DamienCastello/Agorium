@@ -195,12 +195,13 @@ const messages = {
             th_reason: "Reason",
             th_save: "Save",
             placeholder_tags: "Reason for refusal of tags",
-            delete_button: 'Delete',
-            processing_state: 'Video file processing status',
-            fileState_queued: 'Queued',
-            fileState_processing: 'Processing',
-            fileState_ready: 'Ready',
-            fileState_failed: 'Failed'
+            delete_button: "Delete",
+            processing_state: "Video file processing status",
+            fileState_queued: "Awaiting processing",
+            fileState_processing: "Processing",
+            fileState_ready: "Ready",
+            fileState_failed: "Failed",
+            fileState_validation: "Awaiting admin validation"
         },
         publish: {
             placeholder_file: "No file selected",
@@ -507,12 +508,13 @@ const messages = {
             th_reason: "Raison",
             th_save: "Enregistrer",
             placeholder_tags: "Motif du refus des tags",
-            delete_button: 'Supprimer',
-            processing_state: 'Statut du traitement du fichier vidéo',
-            fileState_queued: 'En attente',
-            fileState_processing: 'En traitement',
-            fileState_ready: 'Prêt',
-            fileState_failed: 'Échec'
+            delete_button: "Supprimer",
+            processing_state: "Statut du traitement du fichier vidéo",
+            fileState_queued: "En attente de traitement",
+            fileState_processing: "En traitement",
+            fileState_ready: "Prêt",
+            fileState_failed: "Échec",
+            fileState_validation: "En attente d'une validation admin"
         },
         publish: {
             placeholder_file: "Aucun fichier choisi",

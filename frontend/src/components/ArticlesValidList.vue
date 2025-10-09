@@ -7,13 +7,15 @@
       <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview" class="card-image" />
       <img v-else-if="article.video" :src="`${url.baseUrl}/${article.thumbnail}`" alt="Preview" class="card-image" />
       <div class="card-content">
-        <div v-if="article.isPrivate" class="private-icon">
-          <LockIcon />
+        <div class="title-container">
+          <h2>{{ article.title }}</h2>
+          <div v-if="article.isPrivate" class="private-icon">
+            <LockIcon />
+          </div>
+          <div v-if="!article.isPrivate" class="private-icon">
+            <UnlockIcon />
+          </div>
         </div>
-        <div v-if="!article.isPrivate" class="private-icon">
-          <UnlockIcon />
-        </div>
-        <h3>{{ article.title }}</h3>
         <p class="description">
           {{
             article.description.length > 100
@@ -155,9 +157,17 @@ onMounted(() => {
   display: none;
 }
 
+.title-container {
+  width: 100%;
+  display: flex !important;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .article-card {
   flex: 0 0 auto;
-  width: clamp(120px, 25vw, 180px);
+  width: 250px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
@@ -166,6 +176,7 @@ onMounted(() => {
   transition: transform 0.2s ease;
   flex-shrink: 0;
 }
+
 
 .article-card:hover {
   transform: scale(1.02);
@@ -183,8 +194,7 @@ onMounted(() => {
   padding: 0.6rem;
 }
 
-.card-content h3 {
-  font-size: clamp(0.4rem, 2vw, 0.5rem) !important;
+.card-content h2 {
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -192,7 +202,7 @@ onMounted(() => {
 }
 
 .description {
-  font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+  font-size: 0.6rem;
   color: #555;
   margin: 0.5rem 0;
   height: clamp(1.5rem, 2.5vw, 2.4rem);
@@ -220,7 +230,7 @@ onMounted(() => {
 
 .private-icon {
   text-align: end;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 h1 {

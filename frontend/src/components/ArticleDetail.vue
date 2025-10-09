@@ -11,6 +11,26 @@
         <div class="tags-badges">
           <p v-for="tag in article.tags" :key="tag.id" class="badge">{{ tag.name }}</p>
         </div>
+        <div class="badge-process-container">
+            <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+                <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+            </p>
+            <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+                <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+                <span v-if="Number.isFinite(article.processingProgress)"> - {{ article.processingProgress }}%</span>
+            </p>
+            <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+                <FailedIcon /> {{ $t('validate.fileState_failed') }}
+            </p>
+            <p v-if="article.processingStatus === 'ready' && !article.isValid" class="queued-badge">
+                <QueuedIcon /> {{ $t('validate.fileState_validation') }}
+            </p>
+        </div>
+        <div v-if="article.processingStatus === 'failed'" class="processing-actions">
+            <button @click="retryProcessing" :disabled="loadingRetry || article.processingStatus === 'queued' || article.processingStatus === 'processing'">
+                {{ loadingRetry ? 'Retry...' : 'Retry' }}
+            </button>
+        </div>
         <div v-if="article.isPrivate" class="private-icons">
           <LockIcon />
           <span>{{ $t('article_detail.private') }}</span>
@@ -91,7 +111,7 @@
 
 <script setup>
 import axios from "axios";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import extractYoutubeUrl from "../utils/extractYoutubeUrl";
 import Player from "./Player.vue";
@@ -111,6 +131,9 @@ import { useRouter } from "vue-router";
 import { useGlobalStore } from '@/stores/global';
 import LockIcon from "./icons/LockIcon.vue";
 import UnlockIcon from "./icons/UnlockIcon.vue";
+import QueuedIcon from "./icons/QueuedIcon.vue";
+import ProcessingIcon from "./icons/ProcessingIcon.vue";
+import FailedIcon from "./icons/FailedIcon.vue";
 import { useI18n } from "vue-i18n";
 
 const article = ref(null);
@@ -127,6 +150,87 @@ const { notify } = useNotification();
 const privateLink = route.params.privateLink;
 const articleId = route.params.id;
 const { t } = useI18n();
+const loadingRetry = ref(false)
+let statusTimer = null
+const isPollingStatus = ref(false)
+
+async function reloadVideo() {
+  const id = article.value?.id ?? route.params.id;
+  if (!id) return;
+
+  await axios.get(`${url.baseUrl}/api/v1/articles/${id}`, {
+    headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+  }).then((response) => {
+    article.value.video = response.data.article.video;
+  }).catch((error) => {
+    console.log("error ", error)
+  })
+}
+
+function startStatusPolling() {
+  stopStatusPolling()
+  isPollingStatus.value = true
+  statusTimer = setInterval(async () => {
+    try {
+      const id = article.value?.id
+      if (!id) return
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${id}/status`, {
+        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+        params: { ts: Date.now() }
+      })
+      
+      article.value.processingStatus = data.status
+      article.value.processingProgress = data.progress ?? 0
+
+      if (data.status === 'ready') {
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+        await reloadVideo()
+        stopStatusPolling()
+      }
+      if (data.status === 'failed') {
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_failed') })
+        stopStatusPolling()
+      }
+    } catch (e) {
+      console.warn('status poll error', e?.message || e)
+    }
+  }, 1500)
+}
+
+function stopStatusPolling() {
+  isPollingStatus.value = false
+  if (statusTimer) {
+    clearInterval(statusTimer)
+    statusTimer = null
+  }
+}
+
+async function retryProcessing() {
+  if (!article.value?.id) return
+  loadingRetry.value = true
+  try {
+    await axios.post(
+      `${url.baseUrl}/api/v1/articles/${article.value.id}/retry`,
+      {},
+      { headers: { Authorization: `Bearer ${authStore.token}` } }
+    )
+
+    article.value.processingStatus = 'queued'
+    article.value.processingProgress = 0
+
+    startStatusPolling()
+
+    notify({ title: t('notification.title.retry_process'), type: 'success', text: t('notification.text.retry_process') })
+  } catch (e) {
+    notify({
+      title: 'Retry',
+      type: 'error',
+      text: e?.response?.data?.message || e?.message || 'Erreur lors du retry'
+    })
+  } finally {
+    loadingRetry.value = false
+  }
+}
 
 const toggleLike = () => {
   handleNavbar(() => {
@@ -218,6 +322,7 @@ onMounted(async () => {
       response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
     }
     if (response.data && response.data.article) {
+      if(response.data.article.processingStatus !== 'ready') startStatusPolling()
       article.value = response.data.article;
       likeNumber.value = article.value.likes.length;
       //Set isLiked to dynamic display icon
@@ -266,6 +371,10 @@ onMounted(async () => {
     });
     state.value = "error";
   }
+});
+
+onBeforeUnmount(() => {
+    stopStatusPolling()
 });
 
 const navigateToReport = (id) => {
@@ -380,6 +489,51 @@ span {
   white-space: nowrap;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   text-align: center;
+}
+
+.badge-process-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: 15px;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.failed-badge {
+  background-color: rgb(189, 26, 26);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-actions {
+    margin-bottom: 20px;
 }
 
 .action-container {

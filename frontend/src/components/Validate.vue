@@ -863,7 +863,7 @@ const fetchArticle = async () => {
             response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
         }
         if (response.data && response.data.article) {
-            if(response.data.article.processingStatus === 'processing') startStatusPolling()
+            if(response.data.article.processingStatus !== 'ready') startStatusPolling()
 
             const fetchedArticle = response.data.article;
             if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {

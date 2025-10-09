@@ -7,13 +7,29 @@
       <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview" class="card-image" />
       <img v-else-if="article.video" :src="`${url.baseUrl}/${article.thumbnail}`" alt="Preview" class="card-image" />
       <div class="card-content">
-        <div v-if="article.isPrivate" class="private-icon">
-          <LockIcon />
+        <div class="title-container">
+          <div class="badge-container">
+            <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+              <QueuedIcon />
+            </p>
+            <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+              <ProcessingIcon />
+            </p>
+            <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+              <FailedIcon />
+            </p>
+            <p v-if="article.processingStatus === 'ready' && !article.isValid" class="queued-badge">
+                <QueuedIcon />
+            </p>
+          </div>
+          <h2>{{ article.title }}</h2>
+          <div v-if="article.isPrivate" class="private-icon">
+            <LockIcon />
+          </div>
+          <div v-if="!article.isPrivate" class="private-icon">
+            <UnlockIcon />
+          </div>
         </div>
-        <div v-if="!article.isPrivate" class="private-icon">
-          <UnlockIcon />
-        </div>
-        <h3>{{ article.title }}</h3>
         <p class="description">
           {{
             article.description.length > 100
@@ -48,7 +64,10 @@ import { ElInfiniteScroll } from 'element-plus'
 import LockIcon from './icons/LockIcon.vue';
 import UnlockIcon from './icons/UnlockIcon.vue';
 import { useNavbarHandler } from '@/composables/useNavbarHandler';
-
+import QueuedIcon from './icons/QueuedIcon.vue';
+import ProcessingIcon from './icons/ProcessingIcon.vue';
+import ReadyIcon from './icons/ReadyIcon.vue';
+import FailedIcon from './icons/FailedIcon.vue';
 
 const articles = ref([]);
 const state = ref('loading');
@@ -159,9 +178,68 @@ onMounted(() => {
   display: none;
 }
 
+.title-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: auto;
+  margin-bottom: 0 !important;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.ready-badge {
+  background-color: rgb(31, 177, 43);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.failed-badge {
+  background-color: rgb(189, 26, 26);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
 .article-card {
   flex: 0 0 auto;
-  width: clamp(120px, 25vw, 180px);
+  width: 250px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
@@ -187,8 +265,7 @@ onMounted(() => {
   padding: 0.6rem;
 }
 
-.card-content h3 {
-  font-size: clamp(0.4rem, 2vw, 0.5rem) !important;
+.card-content h2 {
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -196,7 +273,7 @@ onMounted(() => {
 }
 
 .description {
-  font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+  font-size: 0.6rem;
   color: #555;
   margin: 0.5rem 0;
   height: clamp(1.5rem, 2.5vw, 2.4rem);
@@ -224,7 +301,7 @@ onMounted(() => {
 
 .private-icon {
   text-align: end;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 h1 {
