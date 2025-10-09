@@ -109,6 +109,13 @@
 		"error_validation": "An error occurred while validating the tag.",
 		"error_delete": "An error occurred while deleting the tag."
 	},
+	"validation": {
+		"new_article_subject": "New article in validation",
+		"new_article_html": "New article awaiting validation by an administrator",
+		"title_label": "Title",
+		"author_label": "Author",
+		"open_label": "Open article"
+	},
 	"error": "Internal server error.",
 	"unauthorized": "unauthorized",
 	"article_detail": {

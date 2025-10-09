@@ -458,9 +458,8 @@ const handleSubmit = () => {
 
   formData.append("userId", authStore.user.id);
   formData.append("tags", JSON.stringify(cleanedTags));
-  
     axios
-      .post(`${url.baseUrl}/api/v1/articles/`, formData, {
+      .post(`${url.baseUrl}/api/v1/articles?lang=${localStorage.  getItem('lang')}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${authStore.token}`
@@ -473,11 +472,19 @@ const handleSubmit = () => {
 
       })
       .then((response) => {
-        notify({
-          title: t('notification.title.file_upload'),
-          type: 'success',
-          text: t('notification.text.file_upload'),
-        });
+        if (response.data.article.originalVideo) {
+          notify({
+            title: t('notification.title.file_upload'),
+            type: 'success',
+            text: t('notification.text.file_upload'),
+          });
+        } else {
+            notify({
+            title: t('notification.title.article_create'),
+            type: 'success',
+            text: t('notification.text.article_create'),
+          });
+        }
 
         // Extract the created article id from backend response
         const createdArticleId =

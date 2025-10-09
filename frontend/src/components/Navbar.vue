@@ -1,4 +1,19 @@
 <template>
+  <el-dialog
+    v-model="showAuthModal"
+    :title="$t('navigation.auth_required_title')"
+    width="420px"
+    :close-on-click-modal="true"
+  >
+    <p>{{ $t('navigation.auth_required_message') }}</p>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="showAuthModal = false">{{ $t('navigation.cancel') }}</el-button>
+        <el-button @click="goToSignup" plain>{{ $t('navigation.signup') }}</el-button>
+        <el-button type="primary" @click="goToLogin">{{ $t('navigation.login') }}</el-button>
+      </div>
+    </template>
+  </el-dialog>
   <nav class="navbar" @click="handleClickOutsideNavbar">
     <ul class="navbar-title">
       <li>
@@ -36,8 +51,12 @@
           {{ $t('navigation.articles') }}
         </RouterLink>
       </li>
-      <li v-if="isAuthenticated">
-        <RouterLink to="/new-article" :class="{ 'active': isActiveRoute('/new-article') }" @click="closeMenu">
+      <li>
+        <RouterLink
+          to="/new-article"
+          :class="{ 'active': isActiveRoute('/new-article') }"
+          @click.prevent="handlePublishClick"
+        >
           {{ $t('navigation.publish') }}
         </RouterLink>
       </li>
@@ -93,6 +112,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const selectedLanguage = ref('fr');
+const showAuthModal = ref(false)
 const { locale, t } = useI18n();
 const { notify } = useNotification();
 
@@ -125,6 +145,24 @@ const changeLanguage = async (lang) => {
 
   navbarStore.closeTranslation();
 };
+
+const handlePublishClick = (evt) => {
+  closeMenu()
+
+  if (authStore.user) {
+    router.push('/new-article')
+  } else {
+    showAuthModal.value = true
+  }
+}
+const goToLogin = () => {
+  showAuthModal.value = false
+  router.push({ path: '/login', query: { redirect: '/new-article' } })
+}
+const goToSignup = () => {
+  showAuthModal.value = false
+  router.push({ path: '/signup', query: { redirect: '/new-article' } })
+}
 
 const handleClick = (event) => {
   closeMenu();

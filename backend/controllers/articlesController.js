@@ -3,6 +3,7 @@ const { Op, Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const { safeUnlink } = require('../utils/safeUnlink');
+const { notifyAdminValidation } = require('../utils/notifyAdminValidation');
 const { sequelize, Article, User, Like, Tag, Comment } = require('../models');
 
 const { videoQueue } = require('../services/videoQueue');
@@ -394,6 +395,7 @@ module.exports = {
   },
   create: async function (req, res, next) {
     const { title, description, urlYoutube, tags, isPrivate } = req.body;
+    const { lang } = req.query;
 
     if (!title || !description) {
       return res.status(400).json({ message: req.t('article.fields_required') });
@@ -552,7 +554,7 @@ module.exports = {
 
       if (originalVideo && fullVideoPath) {
         try {
-          await videoQueue.add('process', { articleId: article.id, fullVideoPath, runType: 'create' });
+          await videoQueue.add('process', { articleId: article.id, fullVideoPath, runType: 'create', lang: lang });
         } catch (e) {
           console.error('[queue] enqueue afterCommit failed:', e?.message || e);
           try {
@@ -562,6 +564,8 @@ module.exports = {
             );
           } catch (_) { }
         }
+      } else if (urlYoutube || previewPath) {
+        await notifyAdminValidation(article, lang);
       }
 
       return res.status(200).json({ article, achievement, userAchievement, user });
@@ -725,6 +729,7 @@ module.exports = {
   update: async function (req, res, next) {
     try {
       const { title, description, urlYoutube, isPrivate, tags: rawTags } = req.body;
+      const { lang } = req.query;
 
       // ——— Basic validations ———
       if (!title || !description) return res.status(400).json({ message: req.t('article.fields_required') });
@@ -875,6 +880,10 @@ module.exports = {
         // Drop likes & comments because the article has been modified
         await purgeReactions(updatedArticle.id);
 
+        if(!isOnlyPrivacyChange) {
+          await notifyAdminValidation(article, lang);
+        }
+
         return res.json({ article: updatedArticle });
       }
 
@@ -916,6 +925,10 @@ module.exports = {
         // Drop likes & comments because the article has been modified
         await purgeReactions(updatedArticle.id);
 
+        if(!isOnlyPrivacyChange) {
+          await notifyAdminValidation(article, lang);
+        }
+
         return res.json({ article: updatedArticle });
       }
 
@@ -947,7 +960,7 @@ module.exports = {
 
         // Enqueue with runType=update so the worker will cleanup old processed assets on success
         try {
-          await videoQueue.add('process', { articleId: updatedArticle.id, fullVideoPath, runType: 'update' });
+          await videoQueue.add('process', { articleId: updatedArticle.id, fullVideoPath, runType: 'update', lang: lang });
         } catch (e) {
           console.error('[queue] enqueue after update failed:', e?.message || e);
           await updatedArticle.update({ processingStatus: 'failed', processingError: 'enqueue_failed' });
@@ -986,6 +999,8 @@ module.exports = {
       if (!isOnlyPrivacyChange) {
         await purgeReactions(updatedArticle.id);
       }
+
+      await notifyAdminValidation(article, lang);
 
       return res.json({ article: updatedArticle });
 

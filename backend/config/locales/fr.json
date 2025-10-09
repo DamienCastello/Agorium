@@ -109,6 +109,13 @@
 		"error_validation": "Erreur lors de la validation du tag",
 		"error_delete": "Erreur lors de la suppression du tag."
 	},
+	"validation": {
+		"new_article_subject": "Nouvel article en validation",
+		"new_article_html": "Nouvel article en attente de validation par un administrateur",
+		"title_label": "Titre",
+		"author_label": "Auteur",
+		"open_label": "Ouvrir l'article"
+	},
 	"error": "Erreur serveur interne.",
 	"unauthorized": "unauthorized",
 	"article_detail": {

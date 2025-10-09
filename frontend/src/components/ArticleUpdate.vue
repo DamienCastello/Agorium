@@ -579,7 +579,7 @@ const handleSubmit = async () => {
     formData.append("tags", JSON.stringify(cleanedTags));
 
     axios
-        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}`, formData, {
+        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}?lang=${localStorage.getItem('lang')}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 "Authorization": `Bearer ${authStore.token}`
@@ -591,6 +591,20 @@ const handleSubmit = async () => {
             },
         })
         .then((response) => {
+            if (response.data.article.originalVideo) {
+                notify({
+                    title: t('notification.title.file_upload'),
+                    type: 'success',
+                    text: t('notification.text.file_upload'),
+                });
+            } else {
+                notify({
+                    title: t('notification.title.article_update'),
+                    type: 'success',
+                    text: t('notification.text.article_update'),
+                });
+            }
+
             // Expect backend to return the updated article
             const updated = response?.data?.article || response?.data?.updatedArticle
 
@@ -606,8 +620,6 @@ const handleSubmit = async () => {
                 }
             }
 
-            // No-video update or no processing required → normal flow
-            notify({ title: t('notification.title.article_update'), type: 'success', text: t('notification.text.article_update') })
             setTimeout(() => router.push("/articles"), 5000)
         })
         .catch((error) => {
