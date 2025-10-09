@@ -59,7 +59,7 @@ const videoWorker = new Worker(
       // 1) Move article to "processing" ASAP
       await article.update({
         processingStatus: 'processing',
-        processingProgress: 10,
+        processingProgress: 5,
         processingError: null,
       });
 
@@ -78,9 +78,11 @@ const videoWorker = new Worker(
 
       // 2) Lightweight validations / probes (your helpers may throw on error)
       await isExecutableFile(absInput);
-      await article.update({ processingProgress: 30 });
+      await article.update({ processingProgress: 10 });
 
-      await analyzeVideo(absInput);
+      const analysis = await analyzeVideo(absInput); // <- returns { duration, ... }
+      const durationSec = Number(analysis?.duration || 0);
+      await article.update({ processingProgress: 20 });
 
       // 2.5) Transcode original -> optimized MP4 (keep original in DB as originalVideo)
       // We write under /uploads/videos/processed/<uuidv4>.mp4 (relative path in DB)
@@ -90,15 +92,12 @@ const videoWorker = new Worker(
       // Ensure folder exists (safety on fresh servers)
       ensureDir(path.dirname(processedAbs));
 
-      // Optional small bump before starting to show progress
-      await article.update({ processingProgress: 55 });
-
-      // Map ffmpeg percent (0..100) to a 60..90 window in our DB to avoid spike updates
-      let lastDbReport = 55;
+      // Map ffmpeg percent (0..100) to a 20..50 window in our DB to avoid spike updates
+      let lastDbReport = 20;
       await transcodeToMp4(absInput, processedAbs, async pct => {
-        // "Map 0..100 -> 60..90" and throttle 3% steps
-        const mapped = Math.min(90, 60 + Math.floor((pct || 0) * 0.30));
-        if (mapped - lastDbReport >= 3) {
+        // Map 0..100 → 20..50 (linear)
+        const mapped = Math.max(20, Math.min(50, 20 + Math.floor((pct || 0) * 0.60)));
+        if (mapped - lastDbReport >= 2) {
           lastDbReport = mapped;
           try { await article.update({ processingProgress: mapped }); } catch (_) {}
         }
@@ -109,37 +108,37 @@ const videoWorker = new Worker(
       producedVideoRel = processedRel;
 
       // Make sure progress reflects completion of transcode
-      await article.update({ processingProgress: Math.max(lastDbReport, 90) });
+      await article.update({ processingProgress: Math.max(lastDbReport, 40) });
+
 
       // 3) Transcode processed MP4 -> HLS multi-bitrate pack
-      // Rationale: using the freshly normalized MP4 as input makes HLS simpler and stable.
-      await article.update({ processingProgress: 88 });
-
       // Decide an output directory (unique per run). We store it in DB for easy deletion later.
       const hlsDirRel = `uploads/hls/${uuidv4()}`;
       const hlsDirAbs = toAbs(hlsDirRel);
       ensureDir(hlsDirAbs);
 
-      const { masterAbs, masterRel, outDirAbs, outDirRel } = await transcodeToHLS(
+      await transcodeToHLS(
         producedVideoAbs,
         hlsDirAbs,
         hlsDirRel,
         async (pct) => {
-          // Map 0..100 into 90..92 to avoid jumpy UI (tiny window since we’re already near the end)
-          const mapped = Math.min(92, 90 + Math.floor((pct || 0) * 0.02));
+          // Map HLS local 0..100 → 50..90
+          const mapped = Math.max(50, Math.min(90, 50 + Math.floor((pct || 0) * 0.15)));
           try { await article.update({ processingProgress: mapped }); } catch (_) {}
-        }
-      );
-
-      producedHlsDirAbs = outDirAbs;
-      producedHlsDirRel = outDirRel;
-      producedHlsMasterRel = masterRel;
+        },
+        { durationSec } // <- gives HLS step a duration reference
+      ).then(({ masterAbs, masterRel, outDirAbs, outDirRel }) => {
+        producedHlsDirAbs = outDirAbs;
+        producedHlsDirRel = outDirRel;
+        producedHlsMasterRel = masterRel;
+      });
 
       // ─────────────────────────────────────────────────────────────
       // ⚠️ TEST ONLY: FORCE FAILURE HERE (uncomment to simulate fail)
       // throw new Error('FORCED_FAIL');
       // ─────────────────────────────────────────────────────────────
 
+      await article.update({ processingProgress: 95 });
       // 4) Generate thumbnail from the *optimized* video to match final look
       const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
       const { fullPath: thumbFullAbs, dbPath: thumbRel } = getUploadPath('thumbnails', thumbnailName);
@@ -150,7 +149,7 @@ const videoWorker = new Worker(
       producedThumbAbs = thumbFullAbs;
       producedThumbRel = thumbRel;
 
-      await article.update({ processingProgress: 96 });
+      await article.update({ processingProgress: 98 });
 
       // 5) NSFW screening (throws if not ok)
       await scanForNSFW(thumbFullAbs);
