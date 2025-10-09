@@ -5,112 +5,125 @@
     controls
     preload="metadata"
     :poster="posterUrl || null"
+    :width="String(width)"
     playsinline
   />
 </template>
 
 <script setup>
-// Lightweight HLS player with MP4 fallback.
-// - If browser supports native HLS (Safari), feed .m3u8 directly.
-// - Else use hls.js to attach the .m3u8 source.
-// - If HLS fails, fallback to MP4 if provided.
-
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, watch, computed } from 'vue'
 import Hls from 'hls.js'
-import url from '@/utils/url' // same util you already use
+import url from '@/utils/url'
 
 const props = defineProps({
-  // Relative path like "uploads/hls/<uuid>/master.m3u8"
+  // Relative HLS master path (e.g., "uploads/hls/<uuid>/master.m3u8")
   hlsPlaylist: { type: String, required: true },
-  // Optional fallback MP4 relative path: "uploads/videos/processed/xxx.mp4"
+  // Optional MP4 processed fallback (e.g., "uploads/videos/processed/xxx.mp4")
   mp4Fallback: { type: String, default: null },
-  // Optional poster relative path: "uploads/thumbnails/xxx.jpg"
+  // Optional poster relative path (e.g., "uploads/thumbnails/xxx.jpg")
   poster: { type: String, default: null },
-  // Optional width attribute
+  // Video width attribute (number or string)
   width: { type: [String, Number], default: 600 },
 })
 
 const videoEl = ref(null)
-let hlsInstance = null
+let hls = null
 
-const playlistUrl = () => `${url.baseUrl}/${props.hlsPlaylist}`
-const mp4Url = () => (props.mp4Fallback ? `${url.baseUrl}/${props.mp4Fallback}` : null)
-const posterUrl = props.poster ? `${url.baseUrl}/${props.poster}` : null
+const hlsUrl = computed(() => `${url.baseUrl}/${props.hlsPlaylist}`)
+const mp4Url = computed(() => (props.mp4Fallback ? `${url.baseUrl}/${props.mp4Fallback}` : null))
+const posterUrl = computed(() => (props.poster ? `${url.baseUrl}/${props.poster}` : null))
 
 function destroyHls() {
-  // Clean hls instance to prevent memory leaks
-  if (hlsInstance) {
-    try { hlsInstance.destroy() } catch (_) {}
-    hlsInstance = null
+  if (hls) {
+    try { hls.destroy() } catch (_) {}
+    hls = null
   }
 }
 
 function canPlayNativeHls() {
-  // Safari (and some mobile browsers) can play application/vnd.apple.mpegurl natively
   const v = document.createElement('video')
-  return v.canPlayType('application/vnd.apple.mpegurl') === 'probably' ||
-         v.canPlayType('application/vnd.apple.mpegurl') === 'maybe'
+  // Safari & iOS return 'probably'/'maybe' for application/vnd.apple.mpegurl
+  const t = v.canPlayType('application/vnd.apple.mpegurl')
+  return t === 'probably' || t === 'maybe'
 }
 
-function attachHls() {
+function setupHls() {
   const el = videoEl.value
   if (!el) return
 
   destroyHls()
 
-  const srcM3U8 = playlistUrl()
-
+  // 1) Native HLS (Safari)
   if (canPlayNativeHls()) {
-    // Native HLS (Safari): just set the src to .m3u8
-    el.src = srcM3U8
+    el.src = hlsUrl.value
     el.load()
     return
   }
 
+  // 2) hls.js path (ABR in JS)
   if (Hls.isSupported()) {
-    // hls.js path
-    hlsInstance = new Hls({
-      // Reasonable defaults (tweak as needed)
-      enableWorker: true,
-      lowLatencyMode: true,
-      backBufferLength: 90,
+    // ABR/mobile-friendly defaults
+    hls = new Hls({
+      // Do not request levels larger than the player size
+      capLevelToPlayerSize: true,
+      // Start at the lowest level automatically if unknown
+      startLevel: -1,
+      // Short buffers to react quickly on mobile networks
+      maxBufferLength: 10,     // seconds
+      maxMaxBufferLength: 30,
+      backBufferLength: 30,
+      // enableWorker: true is default in recent Hls.js; omitting to avoid issues in some bundlers
+      // lowLatencyMode: false here (we’re on VOD, not live)
     })
-    hlsInstance.loadSource(srcM3U8)
-    hlsInstance.attachMedia(el)
 
-    // Optional: error handling with fallback to MP4
-    hlsInstance.on(Hls.Events.ERROR, (_, data) => {
-      // Media or network fatal error → fallback if possible
-      if (data?.fatal && props.mp4Fallback) {
+    hls.attachMedia(el)
+    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+      hls.loadSource(hlsUrl.value)
+    })
+
+    // If network looks slow, force an initial low level (e.g., 360p)
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      const et = navigator.connection?.effectiveType // 'slow-2g'|'2g'|'3g'|'4g'...
+      if (et && ['slow-2g', '2g', '3g'].includes(et)) {
+        const lowIdx = hls.levels.findIndex(L => (L.height || 0) <= 360)
+        if (lowIdx >= 0) {
+          // Force initial low level; ABR can still ramp up later
+          hls.currentLevel = lowIdx
+        }
+      }
+      // Autoplay may be blocked; let user click play if needed
+      // el.play().catch(() => {})
+    })
+
+    // Fallback to MP4 if fatal error occurs
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      if (data?.fatal && mp4Url.value) {
         destroyHls()
-        el.src = mp4Url()
+        el.src = mp4Url.value
         el.load()
       }
     })
-  } else {
-    // Last-resort: fallback to MP4 if provided
-    if (props.mp4Fallback) {
-      el.src = mp4Url()
-      el.load()
-    }
+    return
+  }
+
+  // 3) No Hls.js support: last-resort MP4 fallback
+  if (mp4Url.value) {
+    el.src = mp4Url.value
+    el.load()
   }
 }
 
 onMounted(() => {
-  // Set width attribute if provided
-  if (videoEl.value && props.width) {
-    videoEl.value.setAttribute('width', String(props.width))
-  }
-  attachHls()
+  setupHls()
 })
 
 onBeforeUnmount(() => {
   destroyHls()
 })
 
-// If props change dynamically, re-attach
-watch(() => props.hlsPlaylist, () => attachHls())
-watch(() => props.mp4Fallback, () => attachHls())
+// Re-init if any of these change
+watch(() => props.hlsPlaylist, () => setupHls())
+watch(() => props.mp4Fallback, () => setupHls())
 </script>
 
 <style scoped>
