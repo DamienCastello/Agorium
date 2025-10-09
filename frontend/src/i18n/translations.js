@@ -13,7 +13,10 @@ const messages = {
             delete_account: "Delete Account",
             logout: "Logout",
             yes: 'yes',
-            no: 'no'
+            no: 'no',
+            auth_required_title: "Authentication required",
+            auth_required_message: "You must be authenticated to publish an article.",
+            cancel: "Cancel"
         },
         cgu: {
             title: "Terms of Service",
@@ -317,13 +320,16 @@ const messages = {
             articles: "Articles",
             publish: "Publier",
             login: "Se connecter",
-            signup: "S'inscrire",
+            signup: "Créer un compte",
             profile: "Mon profil",
             account: "Compte",
             delete_account: "Supprimer mon compte",
             logout: "Se déconnecter",
             yes: 'oui',
-            no: 'non'
+            no: 'non',
+            auth_required_title: "Authentification requise",
+            auth_required_message: "Vous devez être authentifié pour publier un article.",
+            cancel: "Annuler"
         },
         cgu: {
             title: "Conditions Générales d'Utilisation",

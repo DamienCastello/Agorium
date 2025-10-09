@@ -3,6 +3,7 @@ const { Worker } = require('bullmq');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config()
 
 const { isExecutableFile, analyzeVideo, extractFrameFromVideo, scanForNSFW } = require('../services/videoProcess');
 const { transcodeToMp4 } = require('../services/transcodeToMp4');
@@ -11,7 +12,10 @@ const { transcodeToHLS } = require('../services/transcodeToHls');
 const { ensureDir } = require('../utils/ensureDir')
 const { safeUnlink } = require('../utils/safeUnlink');
 const { getUploadPath } = require('../utils/getUploadPath');
+const { notifyAdminValidation } = require('../utils/notifyAdminValidation');
+
 const { Article } = require('../models');
+
 
 // ---- Small helpers ---- //
 const isDev = process.env.NODE_ENV === 'development';
@@ -30,7 +34,7 @@ const connection = {
 const videoWorker = new Worker(
   'video-processing',
   async job => {
-    const { articleId, fullVideoPath, runType = 'create' } = job.data;
+    const { articleId, fullVideoPath, runType = 'create', lang } = job.data;
 
     // 0) Fetch the article; bail early if missing
     const article = await Article.findByPk(articleId);
@@ -165,6 +169,8 @@ const videoWorker = new Worker(
         processingError: null,
         originalVideo: null, // consumed successfully
       });
+      
+      await notifyAdminValidation(article, lang);
 
       // Post-success cleanup
       try {
