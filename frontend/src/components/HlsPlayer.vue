@@ -81,19 +81,18 @@ function setupHls() {
       hls.loadSource(hlsUrl.value)
     })
 
-    // If network looks slow, force an initial low level (e.g., 360p)
+    // If network looks slow, force an initial low level (e.g., 240p)
     hls.on(Hls.Events.MANIFEST_PARSED, () => {
       const et = navigator.connection?.effectiveType // 'slow-2g'|'2g'|'3g'|'4g'...
-      if (et && ['slow-2g', '2g', '3g'].includes(et)) {
-        const lowIdx = hls.levels.findIndex(L => (L.height || 0) <= 360)
-        if (lowIdx >= 0) {
-          // Force initial low level; ABR can still ramp up later
-          hls.currentLevel = lowIdx
-        }
+      // Choose the lowest safe level depending on network
+      const targetHeight = (et && ['slow-2g', '2g', '3g'].includes(et)) ? 240 : 360
+      const lowIdx = hls.levels.findIndex(L => (L.height || 0) <= targetHeight)
+      if (lowIdx >= 0) {
+        // Force initial low level; ABR can still ramp up later
+        hls.currentLevel = lowIdx
       }
-      // Autoplay may be blocked; let user click play if needed
-      // el.play().catch(() => {})
     })
+
 
     // Fallback to MP4 if fatal error occurs
     hls.on(Hls.Events.ERROR, (_, data) => {
