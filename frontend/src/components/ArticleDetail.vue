@@ -352,7 +352,7 @@ onMounted(async () => {
 
       setOgBasic({
         title: article.value?.title || 'Agorium',
-        description: article.value?.description || 'La plateforme de diffusion libre.',
+        description: article.value?.description || 'La plateforme de diffusion libre',
         image: ogImage,
         url: pageUrl
       })
