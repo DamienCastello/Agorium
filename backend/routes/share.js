@@ -19,7 +19,7 @@ const FRONT_URL = process.env.VITE_FRONT_URL || 'http://localhost:5173';
 const API_PUBLIC_URL = process.env.API_PUBLIC_URL || 'http://localhost:3000';
 const PUBLIC_BANNER = `${FRONT_URL}/og-banner.jpg`;
 
-router.get('/article/:id', async (req, res) => {
+router.get('/articles/:id', async (req, res) => {
   try {
     const a = await Article.findByPk(req.params.id, {
       attributes: ['id','title','description','thumbnail','preview','isPrivate','privateLink']
@@ -69,7 +69,7 @@ router.get('/article/:id', async (req, res) => {
 });
 
 // Optional: private link variant
-router.get('/article/private/:privateLink', async (req, res) => {
+router.get('/articles/private/:privateLink', async (req, res) => {
   try {
     const a = await Article.findOne({ where: { privateLink: req.params.privateLink } });
     if (!a) return res.status(404).send('Not found');
