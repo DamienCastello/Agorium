@@ -1,16 +1,21 @@
 <template>
   <el-dialog
     v-model="showAuthModal"
-    :title="$t('navigation.auth_required_title')"
     width="420px"
-    :close-on-click-modal="true"
+    :show-close="false"
   >
-    <p>{{ $t('navigation.auth_required_message') }}</p>
+    <template #header>
+    <div class="modal-bloc">
+      <span>{{ $t('navigation.auth_required_title') }}</span>
+    </div>
+  </template>
+    <p class="modal-bloc">{{ $t('navigation.auth_required_message') }}</p>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="showAuthModal = false">{{ $t('navigation.cancel') }}</el-button>
+        <div class="modal-bloc">
         <el-button @click="goToSignup" plain>{{ $t('navigation.signup') }}</el-button>
-        <el-button type="primary" @click="goToLogin">{{ $t('navigation.login') }}</el-button>
+        <el-button @click="goToLogin">{{ $t('navigation.login') }}</el-button>
+        </div>
       </div>
     </template>
   </el-dialog>
@@ -337,6 +342,13 @@ const handleClickOutsideNavbar = (event) => {
   padding: 30px;
   border: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-bloc {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 @media (min-width: 769px) {

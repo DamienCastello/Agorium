@@ -1,16 +1,29 @@
 <template>
-    <el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px" :title="$t('publish.modal_title_upload')">
-        <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
-        <el-progress :percentage="uploadProgress" :stroke-width="12" color="#6400e4"/>
-        <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
-            {{ uploadProgress }}%
+    <el-dialog v-model="uploading" :close-on-press-escape="false" :close-on-click-modal="false" :show-close="false"
+    width="420px">
+    <template #header>
+      <h4>{{ $t('publish.modal_title_upload') }}</h4>
+    </template>
+    <p class="modal-text">{{ $t('publish.state_uploading') }}</p>
+    <el-progress :percentage="uploadProgress" class="progressBar" :stroke-width="12" color="#6400e4" />
+    <div v-if="uploadProgress === 100">
+
+      <p v-if="processing.status === 'queued'" class="queued-badge modal-text">
+        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+      </p>
+      <div v-if="processing.status === 'processing'">
+        <p class="processing-badge modal-text">
+          <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
         </p>
-        <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
-            <i class="el-icon-loading"></i>
-            {{ $t('publish.processing_file') }}
-            <span v-if="Number.isFinite(processing.progress)">— {{ processing.progress }}%</span>
-        </p>
-    </el-dialog>
+        <el-progress :percentage="processing.progress" class="progressBar" :stroke-width="12" color="#6400e4" />
+      </div>
+
+      <p>
+        {{ $t('publish.can_switch') }}
+      </p>
+      <el-button color="#6400e4"  @click="goToArticles">{{ $t('publish.navigate_articles') }}</el-button>
+    </div>
+  </el-dialog>
 
     <div v-if="state === 'error'">
         <p>{{ $t('update.state_error') }}</p>
@@ -20,17 +33,7 @@
 
         <div @mousedown="handleClickOutsideNavbar">
             <h1>{{ $t('update.title') }}</h1>
-
-                  <fieldset>
-                        <h3>{{ $t('publish.media_type') }}</h3>
-
-                        <el-radio-group v-model="mediaType">
-                        <el-radio value="image">{{ $t('publish.option_image') }}</el-radio>
-                        <el-radio value="video">{{ $t('publish.option_video') }}</el-radio>
-                        <el-radio value="youtube">{{ $t('publish.option_youtube') }}</el-radio>
-                        </el-radio-group>
-                    </fieldset>
-
+            <h3>{{ $t('validate.processing_state') }}</h3>
             <div class="badge-container" v-if="processing.status">
                 <p v-if="processing.status === 'queued'" class="queued-badge">Queued</p>
                 <p v-else-if="processing.status === 'processing'" class="processing-badge">
@@ -44,6 +47,16 @@
                     {{ loadingRetry ? 'Retry...' : 'Retry processing file' }}
                 </button>
             </div>
+
+                  <fieldset>
+                        <h3>{{ $t('publish.media_type') }}</h3>
+
+                        <el-radio-group v-model="mediaType">
+                        <el-radio value="image">{{ $t('publish.option_image') }}</el-radio>
+                        <el-radio value="video">{{ $t('publish.option_video') }}</el-radio>
+                        <el-radio value="youtube">{{ $t('publish.option_youtube') }}</el-radio>
+                        </el-radio-group>
+                    </fieldset>
 
             <form @submit.prevent="handleSubmit">
                 <el-radio-group v-model="form.isPrivate">
@@ -135,7 +148,7 @@
             </form>
         </div>
     </div>
-    <el-button @click="showConfirmDialog" :disabled="isDropdownOpen || navbarStore.isMenuOpen">
+    <el-button @click="showConfirmDialog" class="danger-btn" :disabled="isDropdownOpen || navbarStore.isMenuOpen">
         {{ $t('update.delete') }}
     </el-button>
     <notifications position="bottom right" />
@@ -739,6 +752,10 @@ const deleteArticle = async (id) => {
         }
     }
 };
+
+const goToArticles = () => {
+  router.push("/articles");
+}
 </script>
 
 <style scoped>
@@ -779,6 +796,45 @@ const deleteArticle = async (id) => {
     font-weight: bold;
     color: red;
     font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 10px 3px !important;
+  border: 1px solid black;
+  padding: 5px
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 10px 3px !important;
+  border: 1px solid black;
+}
+
+.modal-text {
+  padding: 10px 0;
+  font-size: 18px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+.progressBar {
+  margin-bottom: 20px;
+}
+
+h4 {
+  margin: 0px;
+  padding: 0px;
 }
 
 @media (max-width: 768px) {
@@ -918,12 +974,12 @@ const deleteArticle = async (id) => {
     background-color: #4b00b3;
 }
 
-.el-button {
+.danger-btn {
     border-color: #ff4d4d;
     color: red;
 }
 
-.el-button:hover {
+.danger-btn:hover {
     background-color: #ff4d4d77;
     border-color: #ff4d4d;
     color: red;

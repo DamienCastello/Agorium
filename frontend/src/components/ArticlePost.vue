@@ -1,17 +1,30 @@
 <template>
-  <el-dialog v-model="uploading" :close-on-click-modal="false" :show-close="false" width="420px" :title="$t('publish.modal_title_upload')">
-    <h3 style="margin:0 0 12px 0;">{{ $t('publish.state_uploading') }}</h3>
-    <el-progress :percentage="uploadProgress" :stroke-width="12" color="#6400e4"/>
-    <p v-if="uploadProgress < 100" style="margin-top:8px; font-size:12px;">
-      {{ uploadProgress }}%
-    </p>
-    <p v-else style="margin-top:8px; font-size:12px; display:flex; align-items:center; gap:6px;">
-      <i class="el-icon-loading"></i>
-      {{ $t('publish.processing_file') }}
-      <span v-if="processing.progress > 0">— {{ processing.progress }}%</span>
-    </p>
+  <el-dialog v-model="uploading" :close-on-press-escape="false" :close-on-click-modal="false" :show-close="false"
+    width="420px">
+    <template #header>
+      <h4>{{ $t('publish.modal_title_upload') }}</h4>
+    </template>
+    <p class="modal-text">{{ $t('publish.state_uploading') }}</p>
+    <el-progress :percentage="uploadProgress" class="progressBar" :stroke-width="12" color="#6400e4" />
+    <div v-if="uploadProgress === 100">
+
+      <p v-if="processing.status === 'queued'" class="queued-badge modal-text">
+        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+      </p>
+      <div v-if="processing.status === 'processing'">
+        <p class="processing-badge modal-text">
+          <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+        </p>
+        <el-progress :percentage="processing.progress" class="progressBar" :stroke-width="12" color="#6400e4" />
+      </div>
+
+      <p>
+        {{ $t('publish.can_switch') }}
+      </p>
+      <el-button color="#6400e4" @click="goToArticles">{{ $t('publish.navigate_articles') }}</el-button>
+    </div>
   </el-dialog>
-  
+
   <div v-if="state === 'error'">
     <p>{{ $t('publish.state_error') }}</p>
   </div>
@@ -33,11 +46,11 @@
 
       <form @submit.prevent="handleSubmit">
         <fieldset>
-        <el-radio-group v-model="form.isPrivate">
-          <el-radio value="public">{{ $t('publish.option_public') }}</el-radio>
-          <el-radio value="private">{{ $t('publish.option_private') }}</el-radio>
-        </el-radio-group>
-      </fieldset>
+          <el-radio-group v-model="form.isPrivate">
+            <el-radio value="public">{{ $t('publish.option_public') }}</el-radio>
+            <el-radio value="private">{{ $t('publish.option_private') }}</el-radio>
+          </el-radio-group>
+        </fieldset>
         <fieldset>
           <label for="title">{{ $t('publish.label_title') }}<span style="color: red">*</span></label>
           <input id="title" type="text" :placeholder="$t('publish.placeholder_title')" v-model="form.title" />
@@ -51,7 +64,9 @@
         <div class="dropdown" :class="{ open: isDropdownOpen }" ref="dropdownRef">
           <div class="dropdown-toggle" @click="toggleDropdown">
             <div class="selected-tags-container">
-              <span v-for="(tag, index) in selectedTags" :key="index" :class="{ 'selected-valid-tag': tag.isValid, 'selected-invalid-tag': !tag.isValid}" @click="handleSelectedTagClick(tag, $event)">
+              <span v-for="(tag, index) in selectedTags" :key="index"
+                :class="{ 'selected-valid-tag': tag.isValid, 'selected-invalid-tag': !tag.isValid }"
+                @click="handleSelectedTagClick(tag, $event)">
                 {{ tag.name }}
               </span>
               <span class="dropdown-placeholder" v-if="selectedTags.length === 0">
@@ -61,21 +76,21 @@
           </div>
           <div v-if="isDropdownOpen" class="dropdown-content">
             <div class="tags-list">
-              <label v-for="(tag, index) in tags" :key="tag.id" class="tag-item"
-                :class="{ 
-                  'not-selected-valid': !selectedTags.includes(tag) && tag.isValid,
-                  'not-selected-invalid': !selectedTags.includes(tag) && !tag.isValid,
-                  'selected-valid': selectedTags.includes(tag) && tag.isValid, 
-                  'selected-invalid': selectedTags.includes(tag) && !tag.isValid }">
-                <input type="checkbox" :value="tag" v-model="selectedTags"/>
+              <label v-for="(tag, index) in tags" :key="tag.id" class="tag-item" :class="{
+                'not-selected-valid': !selectedTags.includes(tag) && tag.isValid,
+                'not-selected-invalid': !selectedTags.includes(tag) && !tag.isValid,
+                'selected-valid': selectedTags.includes(tag) && tag.isValid,
+                'selected-invalid': selectedTags.includes(tag) && !tag.isValid
+              }">
+                <input type="checkbox" :value="tag" v-model="selectedTags" />
                 {{ tag.name }}
               </label>
             </div>
             <div class="add-tag-container">
               <label for="new-tag">{{ $t('publish.new_tag') }}</label>
               <div class="add-tag">
-                <input id="new-tag" type="text" :placeholder="$t('publish.placeholder_tag')" v-model="newTag" @keyup.enter="addTag"
-                  class="new-tag-input" />
+                <input id="new-tag" type="text" :placeholder="$t('publish.placeholder_tag')" v-model="newTag"
+                  @keyup.enter="addTag" class="new-tag-input" />
                 <button @click="addTag" type="button" class="add-tag-button">{{ $t('publish.add_button') }}</button>
               </div>
             </div>
@@ -83,21 +98,14 @@
         </div>
 
         <FadeSlideTransition>
-          <component 
-            :is="componentToShow"
-            v-model="form.urlYoutube"
-            :mode="'create'"
-            :imagePreview="imagePreview"
-            :videoPreview="videoPreview"
-            @update:selectedFile="updateSelectedFile"
-            @update:imagePreview="updateImagePreview"
-            @update:videoPreview="updateVideoPreview"
-            @update:videoThumbnail="updateVideoThumbnail" 
-            :videoThumbnail="videoThumbnail"
-          />
+          <component :is="componentToShow" v-model="form.urlYoutube" :mode="'create'" :imagePreview="imagePreview"
+            :videoPreview="videoPreview" @update:selectedFile="updateSelectedFile"
+            @update:imagePreview="updateImagePreview" @update:videoPreview="updateVideoPreview"
+            @update:videoThumbnail="updateVideoThumbnail" :videoThumbnail="videoThumbnail" />
         </FadeSlideTransition>
         <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('publish.tag_required') }}</p>
-        <button type="submit" :disabled=" !isFormValid || selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
+        <button type="submit"
+          :disabled="!isFormValid || selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
           {{ $t('publish.submit_button') }}
         </button>
       </form>
@@ -121,6 +129,8 @@ import { useNavbarStore } from "../stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
 import extractVideoId from "@/utils/extractYoutubeUrl";
 import { useI18n } from "vue-i18n";
+import QueuedIcon from "./icons/QueuedIcon.vue";
+import ProcessingIcon from "./icons/ProcessingIcon.vue";
 
 const lorem =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
@@ -140,7 +150,7 @@ const { t } = useI18n();
 const state = ref("loading");
 const tags = ref([]);
 const selectedTags = ref([]);
-const mediaType = ref("youtube");
+const mediaType = ref("video");
 const selectedFile = ref(null);
 const imagePreview = ref(null);
 const videoPreview = ref(null);
@@ -171,11 +181,11 @@ function startProcessingPolling(articleId) {
 
   processingTimer = setInterval(async () => {
     try {
-      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${processing.articleId}/status`, 
-      {
-        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
-        params: { ts: Date.now() } // cache-buster
-      })
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${processing.articleId}/status`,
+        {
+          headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+          params: { ts: Date.now() } // cache-buster
+        })
 
       // Update store from backend response
       processing.update({
@@ -398,7 +408,7 @@ const handleClickOutsideNavbar = (event) => {
     setTimeout(() => {
       isClosingNavbar.value = false;
     }, 200);
-  } 
+  }
   if (navbarStore.isTranslationOpen) {
     event.preventDefault();
     event.stopPropagation();
@@ -437,7 +447,7 @@ const handleSubmit = () => {
   if (mediaType.value === "youtube") {
     // Verify youtube ID is valid
     const isValidYoutubeId = !!extractVideoId(form.value.urlYoutube);
-    
+
     if (!isValidYoutubeId) {
       notify({
         title: t('notification.title.field_media_required'),
@@ -446,7 +456,7 @@ const handleSubmit = () => {
       });
       return;
     }
-  formData.append("urlYoutube", form.value.urlYoutube);
+    formData.append("urlYoutube", form.value.urlYoutube);
   } else if (mediaType.value === "image") {
     formData.append("preview", selectedFile.value)
   } else if (mediaType.value === "video") {
@@ -458,67 +468,67 @@ const handleSubmit = () => {
 
   formData.append("userId", authStore.user.id);
   formData.append("tags", JSON.stringify(cleanedTags));
-    axios
-      .post(`${url.baseUrl}/api/v1/articles?lang=${localStorage.  getItem('lang')}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${authStore.token}`
-        },
-        onUploadProgress: (event) => {
-          if (event.total) {
-            uploadProgress.value = Math.round((event.loaded * 100) / event.total);
-          }
-        },
-
-      })
-      .then((response) => {
-        if (response.data.article.originalVideo) {
-          notify({
-            title: t('notification.title.file_upload'),
-            type: 'success',
-            text: t('notification.text.file_upload'),
-          });
-        } else {
-            notify({
-            title: t('notification.title.article_create'),
-            type: 'success',
-            text: t('notification.text.article_create'),
-          });
+  axios
+    .post(`${url.baseUrl}/api/v1/articles?lang=${localStorage.getItem('lang')}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        "Authorization": `Bearer ${authStore.token}`
+      },
+      onUploadProgress: (event) => {
+        if (event.total) {
+          uploadProgress.value = Math.round((event.loaded * 100) / event.total);
         }
+      },
 
-        // Extract the created article id from backend response
-        const createdArticleId =
-          response?.data?.article?.id ??
-          response?.data?.articleId
-
-        if (mediaType.value === 'video' && selectedFile.value && createdArticleId) {
-          // Switch to backend processing phase
-          uploadProgress.value = 100
-          startProcessingPolling(createdArticleId)
-        } else {
-          // For image/youtube flows, former quick redirect
-          setTimeout(() => router.push("/articles"), 5000);
-        }
-      })
-      .catch((error) => {
+    })
+    .then((response) => {
+      if (response.data.article.originalVideo) {
+        notify({
+          title: t('notification.title.file_upload'),
+          type: 'success',
+          text: t('notification.text.file_upload'),
+        });
+      } else {
         notify({
           title: t('notification.title.article_create'),
-          type: 'error',
-          text: error?.response?.data?.message || error?.message || 'Error',
+          type: 'success',
+          text: t('notification.text.article_create'),
         });
-        // Close modal and clear processing state on error
+      }
+
+      // Extract the created article id from backend response
+      const createdArticleId =
+        response?.data?.article?.id ??
+        response?.data?.articleId
+
+      if (mediaType.value === 'video' && selectedFile.value && createdArticleId) {
+        // Switch to backend processing phase
+        uploadProgress.value = 100
+        startProcessingPolling(createdArticleId)
+      } else {
+        // For image/youtube flows, former quick redirect
+        setTimeout(() => router.push("/articles"), 5000);
+      }
+    })
+    .catch((error) => {
+      notify({
+        title: t('notification.title.article_create'),
+        type: 'error',
+        text: error?.response?.data?.message || error?.message || 'Error',
+      });
+      // Close modal and clear processing state on error
+      uploading.value = false
+      uploadProgress.value = 0
+      processing.clear()
+      setTimeout(() => router.push("/articles"), 5000);
+    })
+    .finally(() => {
+      if (!(mediaType.value === 'video' && selectedFile.value)) {
         uploading.value = false
         uploadProgress.value = 0
-        processing.clear()
-        setTimeout(() => router.push("/articles"), 5000);
-      })
-      .finally(() => {
-        if (!(mediaType.value === 'video' && selectedFile.value)) {
-          uploading.value = false
-          uploadProgress.value = 0
-        }
-        detachBeforeUnload() // always remove guard when upload request ends
-      });
+      }
+      detachBeforeUnload() // always remove guard when upload request ends
+    });
 };
 
 const toggleDropdown = () => {
@@ -528,12 +538,14 @@ const toggleDropdown = () => {
 
   isDropdownOpen.value = !isDropdownOpen.value;
 };
+
+const goToArticles = () => {
+  router.push("/articles");
+}
 </script>
 
 <style scoped>
-
-
-:deep( .el-radio.is-checked .el-radio__input) {
+:deep(.el-radio.is-checked .el-radio__input) {
   --el-color-primary: #4040BF !important;
 }
 
@@ -572,6 +584,45 @@ const toggleDropdown = () => {
   flex-wrap: wrap;
   gap: 8px;
   max-width: 455px;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 10px 3px !important;
+  border: 1px solid black;
+  padding: 5px
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 10px 3px !important;
+  border: 1px solid black;
+}
+
+.modal-text {
+  padding: 10px 0;
+  font-size: 18px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+.progressBar {
+  margin-bottom: 20px;
+}
+
+h4 {
+  margin: 0px;
+  padding: 0px;
 }
 
 @media (max-width: 768px) {

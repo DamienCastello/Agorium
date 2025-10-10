@@ -211,8 +211,8 @@ const messages = {
             state_error: "Unable to load data",
             state_loading: "Loading ...",
             modal_title_upload: "Upload & Process file",
-            state_uploading: "Video upload progress:",
-            processing_file: "Processing file ...",
+            state_uploading: "Video upload progress",
+            processing_file: "File processing progress",
             title: "Publish new article",
             placeholder_title: "My zinzito article",
             label_title: "Title",
@@ -229,6 +229,8 @@ const messages = {
             option_youtube: "Youtube link",
             option_public: "Public",
             option_private: "Private",
+            can_switch: "You can leave this page while the file is processing.",
+            navigate_articles: "Home page"
         },
         update: {
             placeholder_file: "No file selected",
@@ -524,8 +526,8 @@ const messages = {
             state_error: "Impossible de charger les données",
             state_loading: "Chargement ...",
             modal_title_upload: "Téléchargement et traitement du fichier",
-            state_uploading: "Progression de l'envoi de la vidéo:",
-            processing_file: "Traitement du fichier ...",
+            state_uploading: "Progression de l'envoi de la vidéo",
+            processing_file: "Progression du traitement du fichier",
             title: "Publier un nouvel article",
             placeholder_title: "Mon article de zinzin",
             label_title: "Titre",
@@ -541,7 +543,9 @@ const messages = {
             option_video: "Vidéo",
             option_youtube: "Lien YouTube",
             option_public: "Publique",
-            option_private: "Privé"
+            option_private: "Privé",
+            can_switch: "Vous pouvez quitter cette page durant le traitement du fichier.",
+            navigate_articles: "Page d'accueil"
         },
         update: {
             placeholder_file: "Aucun fichier choisi",
