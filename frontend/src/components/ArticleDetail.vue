@@ -116,6 +116,7 @@ import { useRoute } from "vue-router";
 import extractYoutubeUrl from "../utils/extractYoutubeUrl";
 import Player from "./Player.vue";
 import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
+import { setOgBasic } from '../utils/meta'
 import url from "../utils/url";
 import { useAuthStore } from "@/stores/auth";
 import LikedIcon from "./icons/LikedIcon.vue";
@@ -338,6 +339,24 @@ onMounted(async () => {
         }
       }
 
+      const front = import.meta.env.VITE_FRONT_URL || window.location.origin
+      const pageUrl = privateLink
+        ? `${front}/articles/private/${route.params.privateLink}`
+        : `${front}/articles/${article.value.id}`
+
+      const apiPublic = url.baseUrl
+      const ogImage =
+        (article.value?.thumbnail && `${apiPublic}/${article.value.thumbnail}`) ||
+        (article.value?.preview   && `${apiPublic}/${article.value.preview}`)   ||
+        `${front}/og-banner.jpg`
+
+      setOgBasic({
+        title: article.value?.title || 'Agorium',
+        description: article.value?.description || 'La plateforme de diffusion libre.',
+        image: ogImage,
+        url: pageUrl
+      })
+
       //Fetch creator to display info
       axios.get(`${url.baseUrl}/api/v1/users/${response.data.article.userId}`, {
         withCredentials: true,
@@ -413,7 +432,7 @@ const navigateToModify = (article) => {
 const copyLinkToClipboard = () => {
 handleNavbar(() => {
   console.log("article : ", article.value)
-  const link = article.value.isPrivate ? `${url.frontUrl}/articles/private/${article.value.privateLink}` : `${url.frontUrl}/articles/${article.value.id}`;
+  const link = article.value.isPrivate ? `${url.baseUrl}/api/v1/share/articles/private/${article.value.privateLink}` : `${url.baseUrl}/api/v1/share/articles/${article.value.id}`;
   navigator.clipboard.writeText(link)
     .then(() => {
       notify({

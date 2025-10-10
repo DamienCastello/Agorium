@@ -39,6 +39,8 @@ services:
       - NODE_ENV=production
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - VITE_FRONT_URL=https://agorium.castello.ovh
+      - API_PUBLIC_URL=https://agorium-backend.castello.ovh
     networks:
       - proxy
     volumes:
@@ -65,6 +67,8 @@ services:
       - NODE_ENV=production
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - VITE_FRONT_URL=https://agorium.castello.ovh
+      - API_PUBLIC_URL=https://agorium-backend.castello.ovh
     volumes:
       - ./backend:/app
       - /home/gamma/agorium-prod-uploads:/app/public/uploads

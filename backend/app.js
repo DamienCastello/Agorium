@@ -12,6 +12,7 @@ var achievementsRouter = require('./routes/achievements');
 var commentsRouter = require('./routes/comments');
 var reportsRouter = require('./routes/reports');
 var authRouter = require('./routes/auth');
+const shareRoutes = require('./routes/share');
 
 const { localAuthStrategy } = require('./routes/strategies/local');
 const { jwtAuthStrategy } = require('./routes/strategies/jwt');
@@ -102,6 +103,7 @@ app.use('/api/v1/comments', commentsRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/tags', tagsRouter);
 app.use('/api/v1/achievements', achievementsRouter);
+app.use('/api/v1/share', shareRoutes);
 
 
 // Gestion des erreurs Multer

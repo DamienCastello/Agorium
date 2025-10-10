@@ -20,4 +20,9 @@ cat > /usr/share/nginx/html/env.json << EOF
 }
 EOF
 
+# 🔵 Inject the public origin into OG fallback metas in index.html (for crawlers)
+sed -i "s|%PUBLIC_ORIGIN%|${FRONT_PUBLIC_ORIGIN}|g" /usr/share/nginx/html/index.html
+# If you referenced the manifest with %PUBLIC_ORIGIN% too, uncomment:
+# sed -i "s|%PUBLIC_ORIGIN%|${FRONT_PUBLIC_ORIGIN}|g" /usr/share/nginx/html/site.webmanifest
+
 exec nginx -g "daemon off;"
