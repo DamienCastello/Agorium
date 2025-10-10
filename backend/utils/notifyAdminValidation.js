@@ -19,7 +19,7 @@ async function notifyAdminValidation(article, lang) {
 
       // Lien pour l’admin : soit la page de validation, soit la page article
       // Choisis l’URL qui correspond à ton back-office de validation.
-      const frontUrl = process.env.FRONT_URL || process.env.VITE_FRONT_URL || 'http://localhost:5173';
+      const frontUrl = process.env.VITE_FRONT_URL || 'http://localhost:5173';
       const moderationLink = `${frontUrl}/validations/${article.isPrivate ? article.privateLink : article.id}`;
 
       await sendAdminsVideoAwaitingValidation(
