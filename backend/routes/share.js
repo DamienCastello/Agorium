@@ -110,8 +110,8 @@ router.get('/article/private/:privateLink', async (req, res) => {
   }
 });
 
-router.get('/site', (req, res) => {
-  const rawPath = req.params[0] || '';musique', etc.
+router.get('/', (req, res) => {
+  const rawPath = req.params[0] || '';
   const cleanPath = rawPath.replace(/^\/+/, '');
   const pageUrl = `${FRONT_URL}/${cleanPath}`;
 
