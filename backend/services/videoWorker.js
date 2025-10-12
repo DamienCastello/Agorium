@@ -100,7 +100,7 @@ const videoWorker = new Worker(
       let lastDbReport = 20;
       await transcodeToMp4(absInput, processedAbs, async pct => {
         // Map 0..100 → 20..50 (linear)
-        const mapped = Math.max(20, Math.min(50, 20 + Math.floor((pct || 0) * 0.60)));
+        const mapped = Math.max(20, Math.min(50, 20 + Math.floor((pct || 0) * 0.30)));
         if (mapped - lastDbReport >= 2) {
           lastDbReport = mapped;
           try { await article.update({ processingProgress: mapped }); } catch (_) {}
@@ -127,7 +127,7 @@ const videoWorker = new Worker(
         hlsDirRel,
         async (pct) => {
           // Map HLS local 0..100 → 50..90
-          const mapped = Math.max(50, Math.min(90, 50 + Math.floor((pct || 0) * 0.15)));
+          const mapped = Math.max(50, Math.min(90, 50 + Math.floor((pct || 0) * 0.40)));
           try { await article.update({ processingProgress: mapped }); } catch (_) {}
         },
         { durationSec } // <- gives HLS step a duration reference

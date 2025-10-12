@@ -1,8 +1,17 @@
 <template>
     <div class="comment-container">
-        <div class="comment">
-            <p><span>{{ props.comment?.user.pseudo }}:</span> {{ props.comment?.content }}</p>
-        </div>
+            <div class="comment">
+                <RouterLink :to="`/profile/${props.comment.user?.pseudo}`" class="author">
+                    <img :src="props.comment.user?.avatar ? `${url.baseUrl}/${props.comment.user?.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
+                        alt="author-avatar" class="author-avatar" />
+                </RouterLink>
+                <div class="comment-text">
+                <p class="pseudo">{{ props.comment.user?.pseudo }}: </p>
+                <span class="comment-content"> {{ props.comment?.content }}</span>
+                </div>
+
+            </div>
+
         <div class="actions-comment">
             <div class="action-comment-like" @click="toggleLike">
                 <FadeSlideTransition>
@@ -98,16 +107,16 @@ const toggleLike = () => {
 
 const navigateToReport = (id) => {
     handleNavbar(() => {
-    if (!authStore.user) {
-      notify({
-        title: t('notification.title.like_article'),
-        type: 'error',
-        text: t('notification.text.like_article_error_auth'),
-      });
-    return;
-  }
-  
-    
+        if (!authStore.user) {
+            notify({
+                title: t('notification.title.report_comment'),
+                type: 'error',
+                text: t('notification.text.report_comment_error_auth'),
+            });
+            return;
+        }
+
+
         router.push({
             name: 'ReportComment',
             params: { commentId: id, entity: 'comments' }
@@ -117,84 +126,151 @@ const navigateToReport = (id) => {
 </script>
 
 <style>
-span {
-    font-weight: bold;
-    margin-right: 8px;
+* { 
+  box-sizing: border-box; 
 }
 
 .comment-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0px;
-    width: 90%;
+  display: flex;
+  flex-direction: column; /* ↓ Les actions passent dessous */
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 6px 0;
 }
 
 .comment {
-    min-width: 600px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
 }
 
+.author {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 80px;
+  min-width: 64px;
+  max-width: 100px;
+}
+
+.author-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ccc;
+  display: block;
+}
+
+.comment-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pseudo {
+  color: rgb(75, 75, 75);
+  font-weight: bold;
+  margin: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.comment-content {
+  font-weight: normal;
+  color: rgb(75, 75, 75);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ✅ Actions sous le commentaire (même en desktop) */
 .actions-comment {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 0px;
-    width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
 }
 
+.action-comment-like,
 .action-comment-report {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 70px;
-    height: 70px;
-    border: 2px solid rgb(70, 70, 70);
-    border-radius: 10px;
-    padding: 10px;
-    background-color: #e7e7e7;
-    cursor: pointer;
-    margin: 5px 5px 0px 5px;
-    text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 2px solid rgb(70, 70, 70);
+  border-radius: 10px;
+  padding: 8px;
+  background-color: #e7e7e7;
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .action-comment-like {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 70px;
-    height: 70px;
-    font-size: 30px;
-    border: 2px solid rgb(70, 70, 70);
-    border-radius: 10px;
-    padding: 10px;
-    margin: 5px 5px 0px 5px;
-    background-color: #e7e7e7;
-    cursor: pointer;
+  font-size: 24px;
 }
 
 .icon {
-  font-size: 40px;
+  font-size: 28px;
 }
 
+/* ✅ Responsive (reste pareil) */
 @media (max-width: 768px) {
-    span {
-        margin-right: 4px;
-    }
+  .comment-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
 
-    .comment {
-        min-width: 200px;
-    }
+  .comment {
+    width: 100%;
+  }
 
-    .actions-comment {
-        flex-direction: column;
-        justify-content: center;
-    }
-    .icon {
-    font-size: 35px;
-    }
+  .author {
+    flex: 0 0 auto;
+    align-self: flex-start;
+  }
+
+  .author-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .actions-comment {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .action-comment-like,
+  .action-comment-report {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .icon {
+    font-size: 24px;
+  }
 }
 </style>
