@@ -463,5 +463,77 @@ const handleClickOutsideNavbar = (event) => {
   }
 }
 
+.dropdown {
+  position: relative;
+  display: inline-block;
+  align-self: flex-start;
+  z-index: 10;
+}
 
+.dropdown > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  outline: none;
+}
+
+.dropdown > summary::-webkit-details-marker { display: none; }
+.dropdown > summary::marker { content: ""; }
+
+.dropdown > ul {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  left: auto;
+  z-index: 1000;
+
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+
+  width: max-content;
+  min-width: 180px;
+  max-width: 260px;
+  box-shadow: 0 8px 16px rgba(0,0,0,.08);
+}
+
+.dropdown > ul > li {
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.dropdown > ul a {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.dropdown > ul a:hover {
+  background: #f6f6f6;
+}
+
+.dropdown > ul .delete-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  color: #fff;
+  background-color: darkred;
+  border: 2px solid brown;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dropdown > ul .delete-button:hover {
+  background-color: rgb(112, 0, 0);
+}
 </style>
