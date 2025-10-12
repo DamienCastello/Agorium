@@ -659,8 +659,8 @@ span {
 }
 
 .author-avatar {
-  width: 50px;
-  height: 50px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #ccc;
@@ -685,8 +685,7 @@ span {
   }
 
   .article-container {
-    max-width: 300px;
-    min-width: 300px;
+    min-width: clamp(300px, 10vw, 300px);
   }
 
   h1 {
