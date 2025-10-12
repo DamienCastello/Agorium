@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="uploading" :close-on-press-escape="false" :close-on-click-modal="false" :show-close="false"
-    width="420px">
+    :width="'clamp(300px, 90vw, 420px)'">
     <template #header>
       <h4>{{ $t('publish.modal_title_upload') }}</h4>
     </template>
@@ -761,4 +761,5 @@ h4 {
 .add-tag-button:hover {
   background-color: #4b00b3;
 }
+
 </style>

@@ -78,29 +78,30 @@
           <img
             :src="creator?.avatar ? `${url.baseUrl}/${creator?.avatar}` : `${url.baseUrl}/uploads/avatars/utilisateur.png`"
             alt="author-avatar" class="author-avatar" />
-        </RouterLink>
-        <div class="action-like" @click="toggleLike">
-          <FadeSlideTransition>
-            <component :is="componentToShow" />
-          </FadeSlideTransition>
-          {{ likeNumber }}
-        </div>
-        <div v-if="authStore.user && authStore.user.id === article.userId" class="action-share"
-          @click="copyLinkToClipboard(article)">
-          <ShareIcon class="icon" />
-          {{ $t('article_detail.share') }}
-        </div>
-        <div class="action-report" @click="navigateToReport(article.id)">
-          <ReportIcon class="icon" />
-          {{ $t('article_detail.report') }}
-        </div>
-        <div v-if="authStore.user && authStore.user.id === article.userId" class="action-modify"
-          @click="navigateToModify(article)">
-          <PencilIcon class="icon" />
-          {{ $t('article_detail.modify') }}
+        </RouterLink>  
+        <div class="actions">
+          <div v-if="authStore.user && authStore.user.id === article.userId" class="action-modify"
+            @click="navigateToModify(article)">
+            <PencilIcon class="icon" />
+            {{ $t('article_detail.modify') }}
+          </div>
+          <div v-if="canShare" class="action-share"
+            @click="copyLinkToClipboard(article)">
+            <ShareIcon class="icon" />
+            {{ $t('article_detail.share') }}
+          </div>
+          <div class="action-like" @click="toggleLike">
+            <FadeSlideTransition>
+              <component :is="componentToShow" />
+            </FadeSlideTransition>
+            {{ likeNumber }}
+          </div>
+          <div class="action-report" @click="navigateToReport(article.id)">
+            <ReportIcon class="icon" />
+            {{ $t('article_detail.report') }}
+          </div>
         </div>
       </div>
-
       <p>{{ article.description }}</p>
       <hr />
       <Comments :article="article" :refreshComments="fetchArticle" />
@@ -246,9 +247,9 @@ const toggleLike = () => {
 
     if (!authStore.user) {
       notify({
-        title: "Liking Article",
-        type: 'error',
-        text: "You must be authenticated to like an article.",
+        title: t('notification.title.like_article'),
+        type: 'info',
+        text: t('notification.text.like_article_error_auth'),
       });
       return;
     }
@@ -396,13 +397,19 @@ onBeforeUnmount(() => {
     stopStatusPolling()
 });
 
+const canShare = computed(() => {
+  if (!article.value) return false
+  if (!article.value.isPrivate) return true
+  return !!(authStore.user && authStore.user.id === article.value.userId)
+})
+
 const navigateToReport = (id) => {
   handleNavbar(() => {
     if (!authStore.user) {
       notify({
-        title: "Report Article",
-        type: 'error',
-        text: "You must be authenticated to report an article.",
+        title: t('notification.title.report_article'),
+        type: 'info',
+        text: t('notification.text.report_article_error_auth'),
       });
       return;
     }
@@ -563,31 +570,11 @@ span {
   margin: 20px 10px;
 }
 
-.action-report {
+.actions {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
   align-items: center;
-  border: 2px solid rgb(70, 70, 70);
-  border-radius: 10px;
-  padding: clamp(4px, 2vw, 6px);
-  background-color: #e7e7e7;
-  cursor: pointer;
-  width: clamp(70px, 10vw, 100px);
-  height: clamp(90px, 10vw, 120px);
-}
-
-.action-like {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid rgb(70, 70, 70);
-  border-radius: 10px;
-  background-color: #e7e7e7;
-  cursor: pointer;
-  width: clamp(70px, 10vw, 100px);
-  height: clamp(90px, 10vw, 120px);
+  justify-content: space-between;
 }
 
 .action-modify {
@@ -602,9 +589,39 @@ span {
   cursor: pointer;
   width: clamp(70px, 10vw, 100px);
   height: clamp(90px, 10vw, 120px);
+  margin-right: 10px;
 }
 
 .action-share {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid rgb(70, 70, 70);
+  border-radius: 10px;
+  padding: clamp(4px, 2vw, 6px);
+  background-color: #e7e7e7;
+  cursor: pointer;
+  width: clamp(70px, 10vw, 100px);
+  height: clamp(90px, 10vw, 120px);
+  margin-right: 10px;
+}
+
+.action-like {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid rgb(70, 70, 70);
+  border-radius: 10px;
+  background-color: #e7e7e7;
+  cursor: pointer;
+  width: clamp(70px, 10vw, 100px);
+  height: clamp(90px, 10vw, 120px);
+  margin-right: 10px;
+}
+
+.action-report {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -692,35 +709,25 @@ span {
     font-size: 20px;
   }
 
-  .action-like {
-    font-size: clamp(10px, 2vw, 10px);
-    padding: clamp(2px, 1.5vw, 5px);
-    width: clamp(50px, 2vw, 70px);
-    height: clamp(50px, 1.5vw, 70px);
+  .actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
   }
 
-  .action-report {
-    font-size: clamp(10px, 2vw, 10px);
-    padding: clamp(2px, 1.5vw, 5px);
-    margin-left: 2px;
-    width: clamp(50px, 2vw, 70px);
-    height: clamp(50px, 1.5vw, 70px);
-  }
-
-  .action-modify {
-    font-size: clamp(10px, 2vw, 10px);
-    padding: clamp(2px, 1.5vw, 5px);
-    margin-left: 2px;
-    width: clamp(50px, 2vw, 70px);
-    height: clamp(50px, 1.5vw, 70px);
-  }
-
+  .action-like,
+  .action-report,
+  .action-modify,
   .action-share {
     font-size: clamp(10px, 2vw, 10px);
     padding: clamp(2px, 1.5vw, 5px);
-    margin-left: 2px;
-    width: clamp(50px, 2vw, 70px);
-    height: clamp(50px, 1.5vw, 70px);
+  width: clamp(50px, 10vw, 90px);
+  height: clamp(40px, 10vw, 50px);
+    margin: 0;
   }
 
   .icon {
@@ -734,5 +741,10 @@ span {
     justify-content: space-around;
   }
 
+  .actions {
+    background: none;
+    max-width: none !important;
+  }
 }
+
 </style>
