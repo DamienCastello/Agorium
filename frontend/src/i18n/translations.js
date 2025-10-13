@@ -286,6 +286,58 @@ const messages = {
             line5: "It’s a space without ads, without editorial constraints, open to those who want to express themselves sincerely.",
             line6: "Agorium is a personal project, built alone, out of passion, with the desire to offer something useful."        
           },
+        roadmap: {
+            title: "Project roadmap",
+            title_releases: "Last releases",
+            title_core1: " CORE v1 — In progress",
+            title_core2: "CORE v2 — Coming soon",
+            core1: {
+                l1: "A form allows users to feed the list of articles",
+                l2: "Users can comment on articles, like and associate tags",
+                l3: "Admin users can validate articles and associated tags",
+                l4: "Sort and filter articles by date, tags, pertinence",
+                l5: "Implement article reporting, gamification, i18n, infinite loading",
+                l6: "Buy domain & deploy on server",
+                l7: "Dockerize project",
+                l8: "Video upload & streaming",
+                l9: "File storage optimization",
+                l10: "Abuse reporting improvements",
+                l11: "Style improvement (Element+)",
+                l12: "CI/CD pipeline with Docker",
+            },
+            core2: {
+                l1: "SSR for SEO",
+                l2: "Accessibility features",
+                l4: "Performance: cache, CDN"
+            },
+            releases: {
+                v150: {
+                    l1: "Add remove article (creator and admin) and tag (admin)",
+                    l2: "Add private articles",
+                    l3: "Add modal progress bar of file upload and processing",
+                    l4: "Improve file process: queue job list, worker and video transcode (mp4 & hls)",
+                    l5: "Add notify admins by email on new validation awaiting",
+                    l6: "Add icon and banner site"
+                },
+                v141: "Add remove files before delete user",
+                v140: "Add auth actions (verify, forgot, reset & delete)",
+                v132: "Fix responsive",
+                v131: {
+                    l1: "Add Terms of Service",
+                    l2: "Add About us page"
+                },
+                v130: {
+                    l1: "Add upload video",
+                    l2: "Analyze and scan uploads"
+                },
+                v121: "Fix config",
+                v120: {
+                    l1: "Add update article (from article view)",
+                    l2: "Isolate the upload folder and make it persistent",
+                    l3: "Add Roadmap"
+                }
+            }
+        },
         report: {
             title: "Report",
             title_subject_article: "article",
@@ -604,7 +656,59 @@ const messages = {
             line4: "documentaires, musiques, jeux ou autres contenus originaux.",
             line5: "C’est un espace sans publicité, sans contraintes éditoriales, ouvert à celles et ceux qui veulent s’exprimer avec sincérité.",
             line6: "Agorium est un projet personnel, fait seul, par passion, avec l’envie de proposer une plateforme utile."
-        },    
+        },
+        roadmap: {
+            title: "Roadmap du projet",
+            title_releases: "Mise à jour récentes",
+            title_core1: " CORE v1 — En cours",
+            title_core2: "CORE v2 — À venir",
+            core1: {
+                l1: "Un formulaire permet aux utilisateurs d'alimenter la liste des articles",
+                l2: "Les utilisateurs peuvent commenter les articles, les aimer et leur associer des tags",
+                l3: "Les administrateurs peuvent valider les articles et les tags associés",
+                l4: "Trier et filtrer les articles par date, tags et pertinence",
+                l5: "Implémenter le reporting des articles, la gamification, l'i18n et le chargement infini",
+                l6: "Acheter un domaine et déployer sur un serveur",
+                l7: "Dockerizer le projet",
+                l8: "Téléchargement et streaming vidéo",
+                l9: "Optimisation du stockage des fichiers",
+                l10: "Amélioration du reporting des abus",
+                l11: "Amélioration du style (Element+)",
+                l12: "Pipeline CI/CD avec Docker",
+            },
+            core2: {
+                l1: "Rendu coté serveur pour le SEO",
+                l2: "Fonctionnalités d'accessibilité",
+                l4: "Performances: cache, CDN"
+            },
+            releases: {
+                v150: {
+                    l1: "Ajout de la suppression d'articles (créateur et admin) et de tags (admin)",
+                    l2: "Ajout d'articles privés",
+                    l3: "Ajout d'une fenêtre modale pour la barre de progression du téléchargement et du traitement du fichier",
+                    l4: "Amélioration du traitement des fichiers: liste des tâches en file d'attente, worker et transcodage vidéo (mp4 et hls)",
+                    l5: "Ajout de la notification par e-mail aux admins en cas de nouvelle validation en attente",
+                    l6: "Ajout d'une icône et d'une bannière pour le site"
+                },
+                v141: "Ajout de la suppression de fichiers avant suppression utilisateur",
+                v140: "Ajout d'actions d'authentification (vérification, oubli, réinitialisation et suppression)",
+                v132: "Correctif du responsive",
+                v131: {
+                    l1: "Ajout des conditions d'utilisation",
+                    l2: "Ajout d'une page À propos"
+                },
+                v130: {
+                    l1: "Ajout des upload vidéos",
+                    l2: "Analyse et scan des uploads"
+                },
+                v121: "Correctif de la config",
+                v120: {
+                    l1: "Ajout de mise à jour d'un article (depuis la vue article)",
+                    l2: "Isoler le dossier de téléchargement et le rendre persistant",
+                    l3: "Ajouter une feuille de route"
+                }
+            }           
+        },
         report: {
             title: "Signaler un",
             title_subject_article: "article",

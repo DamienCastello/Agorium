@@ -1,9 +1,9 @@
 <template>
   <div class="roadmap">
-    <h1>📌 Project Roadmap</h1>
+    <h1>📌 {{ $t('roadmap.title') }}</h1>
 
     <section class="card">
-      <h2>📝 Last Releases</h2>
+      <h2>📝 {{ $t('roadmap.title_releases') }}</h2>
       <div v-for="release in releases" :key="release.version" class="release-block">
         <p class="release-version"><strong>{{ release.version }}</strong></p>
         <ul class="bullet-list">
@@ -13,14 +13,14 @@
     </section>
 
     <section class="card">
-      <h2>🛠️ CORE v1 — En cours</h2>
+      <h2>🛠️ {{ $t('roadmap.title_core1') }}</h2>
       <ul class="check-list">
         <li v-for="(item, idx) in coreV1" :key="idx">{{ item }}</li>
       </ul>
     </section>
 
     <section class="card">
-      <h2>⏳ CORE v2 — À venir</h2>
+      <h2>⏳ {{ $t('roadmap.title_core2') }}</h2>
       <ul class="check-list">
         <li v-for="(item, idx) in coreV2" :key="idx">{{ item }}</li>
       </ul>
@@ -30,46 +30,55 @@
 
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-onMounted(() => window.scrollTo(0, 0));
+const { t } = useI18n()
 
-const releases = ref([
-  { version: 'v1.4.1', items: ['Remove files before delete user'] },
-  { version: 'v1.4.0', items: ['Add auth actions (verify, forgot, reset & delete)'] },
-  { version: 'v1.3.2', items: ['Fix responsive'] },
-  { version: 'v1.3.1', items: ['Add Terms of Service', 'Add About us page'] },
-  { version: 'v1.3.0', items: ['Add upload video', 'Analyze and scan uploads'] },
-  { version: 'v1.2.1', items: ['Fix config.'] },
-  { version: 'v1.2.0', items: [
-    'Add update article (in profile view)',
-    'Isolate the upload folder and make it persistent',
-    'Add Roadmap'
+onMounted(() => window.scrollTo(0, 0))
+
+const releasesDefs = ref([
+  { version: 'v1.5.0', items: [
+    'roadmap.releases.v150.l1',
+    'roadmap.releases.v150.l2',
+    'roadmap.releases.v150.l3',
+    'roadmap.releases.v150.l4',
+    'roadmap.releases.v150.l5',
+    'roadmap.releases.v150.l6',
   ]},
-  { version: 'v1.1.1', items: ['Fix multiples bugs.'] },
+  { version: 'v1.4.1', items: ['roadmap.releases.v141'] },
+  { version: 'v1.4.0', items: ['roadmap.releases.v140'] },
+  { version: 'v1.3.2', items: ['roadmap.releases.v132'] },
+  { version: 'v1.3.1', items: ['roadmap.releases.v131.l1','roadmap.releases.v131.l2'] },
+  { version: 'v1.3.0', items: ['roadmap.releases.v130.l1','roadmap.releases.v130.l2'] },
+  { version: 'v1.2.1', items: ['roadmap.releases.v121'] },
+  { version: 'v1.2.0', items: [
+    'roadmap.releases.v120.l1',
+    'roadmap.releases.v120.l2',
+    'roadmap.releases.v120.l3',
+  ]},
 ])
 
-const coreV1 = ref([
-  'A form allows users to feed the list of articles',
-  'Users can comment on articles, like and associate tags',
-  'Admin users can validate articles and associated tags',
-  'Sort and filter articles by date, tags, pertinence',
-  'Implement article reporting, gamification, i18n, infinite loading',
-  'Buy domain & deploy on server',
-  'Dockerize project',
-  'Video upload & streaming',
-  'File storage optimization',
-  'Abuse reporting improvements',
-  'Style improvement (Element+)',
-  'CI/CD pipeline with Docker'
+const coreV1Keys = ref([
+  'roadmap.core1.l1','roadmap.core1.l2','roadmap.core1.l3','roadmap.core1.l4',
+  'roadmap.core1.l5','roadmap.core1.l6','roadmap.core1.l7','roadmap.core1.l8',
+  'roadmap.core1.l9','roadmap.core1.l10','roadmap.core1.l11','roadmap.core1.l12',
 ])
 
-const coreV2 = ref([
-  'SSR for SEO',
-  'Accessibility features',
-  'Security enhancements',
-  'Performance: cache, CDN'
+const coreV2Keys = ref([
+  'roadmap.core2.l1','roadmap.core2.l2','roadmap.core2.l3',
 ])
+
+// 2) On “projette” vers des textes via t() dans des computed (réactifs à la locale)
+const releases = computed(() =>
+  releasesDefs.value.map(r => ({
+    version: r.version,
+    items: r.items.map(k => t(k)),
+  }))
+)
+
+const coreV1 = computed(() => coreV1Keys.value.map(k => t(k)))
+const coreV2 = computed(() => coreV2Keys.value.map(k => t(k)))
 </script>
 
 <style scoped>
@@ -118,7 +127,7 @@ h2 {
 }
 
 .check-list {
-  list-style: none;
+  list-style: disc;
   padding-left: 0;
 }
 
