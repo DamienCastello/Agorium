@@ -9,42 +9,75 @@
         <div v-else class="article-container">
             <div v-if="isMobile">
                 <!-- Mobile View -->
-                <h3>{{ $t('validate.title') }}</h3>
-                <div v-for="tag in article.tags" :key="tag.id" class="tag-container">
+                <h3>{{ $t('validate.processing_state') }}</h3>
+                <div class="badge-container">
+                    <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+                        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+                        <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+                        <span v-if="Number.isFinite(article.processingProgress)"> - {{ article.processingProgress }}%</span>
+                    </p>
+                    <p v-if="article.processingStatus === 'ready'" class="ready-badge">
+                        <ReadyIcon /> {{ $t('validate.fileState_ready') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+                        <FailedIcon /> {{ $t('validate.fileState_failed') }}
+                    </p>
+                </div>
+                <div v-if="article.processingStatus === 'failed'" class="processing-actions">
+                    <button @click="retryProcessing" :disabled="loadingRetry || article.processingStatus === 'queued' || article.processingStatus === 'processing'">
+                        {{ loadingRetry ? 'Retry...' : 'Retry' }}
+                    </button>
+                </div>
+                <h3>{{ $t('validate.tags_title') }}</h3>
+                <div v-for="tag in article.tags" :key="tag.id" class="tag-container card">
                     <div class="tag-row">
                         <span class="tag-name">{{ tag.name }}</span>
                         <div class="tag-actions">
-                            <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')"
-                                class="mobile-icon-tag">
-                                <CheckIcon class="icon-check" />
-                            </span>
-                            <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')"
-                                class="mobile-icon-tag">
-                                <CrossIcon class="icon-cross" />
-                            </span>
+                            <div class="action-container-mobile">
+                                <span :class="{ validated: tag.isValid }" @click="accept(tag, 'tag')"
+                                    class="mobile-icon-tag">
+                                    <CheckIcon class="icon-check" />
+                                </span>
+                                <span :class="{ refused: tag.isValid === false }" @click="refuse(tag, 'tag')"
+                                    class="mobile-icon-tag">
+                                    <CrossIcon class="icon-cross" />
+                                </span>
+                            </div>
                         </div>
                         <textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                             placeholder="Motif du refus du tag"></textarea>
-                        <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{ $t('validate.save_button')
-                        }}</button>
+                        <div class="tag-actions">
+                            <button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{
+                                $t('validate.save_button')
+                                }}</button>
+                            <button class="delete-button" :disabled="tag.isValid || navbarStore.isMenuOpen"
+                                @click="deleteTag(tag)">{{
+                                    $t('validate.delete_button')
+                                }}</button>
+                        </div>
                     </div>
+
                 </div>
 
                 <h3>{{ $t('validate.sub_title') }}</h3>
-                <div class="field">
-                    <label>{{ $t('validate.label_title') }}: </label>
-                    <span>{{ article.title }}</span>
-                </div>
-                <div class="group">
+
+                <div class="group card">
+                    <div class="field">
+                        <p>{{ $t('validate.label_title') }}: <span>{{ article.title }}</span></p>
+                    </div>
                     <div class="field-row">
-                        <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.title.isValid }"
-                            @click="accept(article, 'title')">
-                            <CheckIcon />
-                        </div>
-                        <div class="icon-fields-mobile"
-                            :class="{ refused: article.refusalReasons.title.isValid === false }"
-                            @click="refuse(article, 'title')">
-                            <CrossIcon />
+                        <div class="action-container-mobile">
+                            <div class="icon-fields-mobile" :class="{ validated: article.refusalReasons.title.isValid }"
+                                @click="accept(article, 'title')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.title.isValid === false }"
+                                @click="refuse(article, 'title')">
+                                <CrossIcon />
+                            </div>
                         </div>
                         <textarea :disabled="article.refusalReasons.title.isValid"
                             v-model="article.refusalReasons.title.value"
@@ -54,24 +87,26 @@
 
                 <hr />
                 <div v-if="article.video">
-                    <div class="field">
-                        <label>{{ $t('validate.label_video') }}: </label>
-                    </div>
-                    <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
-                        <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="group">
+                    <div class="group card">
+                        <div class="field">
+                            <p>{{ $t('validate.label_video') }}: </p>
+                        </div>
+                        <video :key="article.video" controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                            <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                         <div class="field-row">
-                            <div class="icon-fields-mobile"
-                                :class="{ validated: article.refusalReasons.videoFile.isValid }"
-                                @click="accept(article, 'videoFile')">
-                                <CheckIcon />
-                            </div>
-                            <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.videoFile.isValid === false }"
-                                @click="refuse(article, 'videoFile')">
-                                <CrossIcon />
+                            <div class="action-container-mobile">
+                                <div class="icon-fields-mobile"
+                                    :class="{ validated: article.refusalReasons.videoFile.isValid }"
+                                    @click="accept(article, 'videoFile')">
+                                    <CheckIcon />
+                                </div>
+                                <div class="icon-fields-mobile"
+                                    :class="{ refused: article.refusalReasons.videoFile.isValid === false }"
+                                    @click="refuse(article, 'videoFile')">
+                                    <CrossIcon />
+                                </div>
                             </div>
                             <textarea :disabled="article.refusalReasons.videoFile.isValid"
                                 v-model="article.refusalReasons.videoFile.value"
@@ -81,23 +116,24 @@
                 </div>
 
                 <div v-if="article.urlYoutube">
-                    <div class="field">
-                        <label>{{ $t('validate.label_video') }}: </label>
-                    </div>
-                    <div class="preview-container">
+                    <div class="group card">
+                        <div class="field">
+                            <p>{{ $t('validate.label_video') }}: </p>
+                        </div>
                         <Player :videoId="extractYoutubeUrl(article.urlYoutube)" />
-                    </div>
-                    <div class="group">
-                        <div class="field-row">
-                            <div class="icon-fields-mobile"
-                                :class="{ validated: article.refusalReasons.videoContent.isValid }"
-                                @click="accept(article, 'videoContent')">
-                                <CheckIcon />
-                            </div>
-                            <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.videoContent.isValid === false }"
-                                @click="refuse(article, 'videoContent')">
-                                <CrossIcon />
+
+                        <div class="field-row mt20">
+                            <div class="action-container-mobile">
+                                <div class="icon-fields-mobile"
+                                    :class="{ validated: article.refusalReasons.videoContent.isValid }"
+                                    @click="accept(article, 'videoContent')">
+                                    <CheckIcon />
+                                </div>
+                                <div class="icon-fields-mobile"
+                                    :class="{ refused: article.refusalReasons.videoContent.isValid === false }"
+                                    @click="refuse(article, 'videoContent')">
+                                    <CrossIcon />
+                                </div>
                             </div>
                             <textarea :disabled="article.refusalReasons.videoContent.isValid"
                                 v-model="article.refusalReasons.videoContent.value"
@@ -106,21 +142,23 @@
                     </div>
                 </div>
                 <div v-else-if="article.preview">
-                    <div class="field">
-                        <label>{{ $t('validate.label_preview') }}: </label>
-                    </div>
-                    <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
-                    <div class="group">
+                    <div class="group card">
+                        <div class="field">
+                            <p>{{ $t('validate.label_preview') }}: </p>
+                        </div>
+                        <img :src="`${url.baseUrl}/${article.preview}`" alt="Preview" />
                         <div class="field-row">
-                            <div class="icon-fields-mobile"
-                                :class="{ validated: article.refusalReasons.preview.isValid }"
-                                @click="accept(article, 'preview')">
-                                <CheckIcon />
-                            </div>
-                            <div class="icon-fields-mobile"
-                                :class="{ refused: article.refusalReasons.preview.isValid === false }"
-                                @click="refuse(article, 'preview')">
-                                <CrossIcon />
+                            <div class="action-container-mobile">
+                                <div class="icon-fields-mobile"
+                                    :class="{ validated: article.refusalReasons.preview.isValid }"
+                                    @click="accept(article, 'preview')">
+                                    <CheckIcon />
+                                </div>
+                                <div class="icon-fields-mobile"
+                                    :class="{ refused: article.refusalReasons.preview.isValid === false }"
+                                    @click="refuse(article, 'preview')">
+                                    <CrossIcon />
+                                </div>
                             </div>
                             <textarea :disabled="article.refusalReasons.preview.isValid"
                                 v-model="article.refusalReasons.preview.value"
@@ -131,21 +169,23 @@
 
                 <hr />
 
-                <div class="field">
-                    <label>{{ $t('validate.label_description') }}: </label>
-                    <span>{{ article.description }}</span>
-                </div>
-                <div class="group">
+
+                <div class="group card">
+                    <div class="field">
+                        <p>{{ $t('validate.label_description') }}: <span>{{ article.description }}</span></p>
+                    </div>
                     <div class="field-row">
-                        <div class="icon-fields-mobile"
-                            :class="{ validated: article.refusalReasons.description.isValid }"
-                            @click="accept(article, 'description')">
-                            <CheckIcon />
-                        </div>
-                        <div class="icon-fields-mobile"
-                            :class="{ refused: article.refusalReasons.description.isValid === false }"
-                            @click="refuse(article, 'description')">
-                            <CrossIcon />
+                        <div class="action-container-mobile">
+                            <div class="icon-fields-mobile"
+                                :class="{ validated: article.refusalReasons.description.isValid }"
+                                @click="accept(article, 'description')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile"
+                                :class="{ refused: article.refusalReasons.description.isValid === false }"
+                                @click="refuse(article, 'description')">
+                                <CrossIcon />
+                            </div>
                         </div>
                         <textarea :disabled="article.refusalReasons.description.isValid"
                             v-model="article.refusalReasons.description.value"
@@ -154,15 +194,17 @@
                 </div>
 
                 <h3>{{ $t('validate.sub_title_final') }}</h3>
-                <div class="group">
+                <div class="group card">
                     <div class="field-row">
-                        <div class="icon-fields-mobile" :class="{ validated: article.isValid }"
-                            @click="accept(article, 'overall')">
-                            <CheckIcon />
-                        </div>
-                        <div class="icon-fields-mobile" :class="{ refused: article.isValid === false }"
-                            @click="refuse(article, 'overall')">
-                            <CrossIcon />
+                        <div class="action-container-mobile">
+                            <div class="icon-fields-mobile" :class="{ validated: article.isValid }"
+                                @click="accept(article, 'overall')">
+                                <CheckIcon />
+                            </div>
+                            <div class="icon-fields-mobile" :class="{ refused: article.isValid === false }"
+                                @click="refuse(article, 'overall')">
+                                <CrossIcon />
+                            </div>
                         </div>
                         <textarea :disabled="article.isValid" v-model="article.overallReasonForRefusal"
                             :placeholder="$t('validate.placeholder_final')" class="final-textarea"></textarea>
@@ -174,6 +216,28 @@
 
             <div v-else>
                 <!-- PC View -->
+
+                <h3>{{ $t('validate.processing_state') }}</h3>
+                <div class="badge-container">
+                    <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+                        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+                        <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+                        <span v-if="Number.isFinite(article.processingProgress)"> - {{ article.processingProgress }}%</span>
+                    </p>
+                    <p v-if="article.processingStatus === 'ready'" class="ready-badge">
+                        <ReadyIcon /> {{ $t('validate.fileState_ready') }}
+                    </p>
+                    <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+                        <FailedIcon /> {{ $t('validate.fileState_failed') }}
+                    </p>
+                </div>
+                <div v-if="article.processingStatus === 'failed'" class="processing-actions">
+                    <button @click="retryProcessing" :disabled="loadingRetry || article.processingStatus === 'queued' || article.processingStatus === 'processing'">
+                        {{ loadingRetry ? 'Retry...' : 'Retry processing file' }}
+                    </button>
+                </div>
                 <h3>{{ $t('validate.tags_title') }}</h3>
                 <table>
                     <thead>
@@ -183,6 +247,7 @@
                             <th scope="col">{{ $t('validate.th_refuse') }}</th>
                             <th scope="col">{{ $t('validate.th_reason') }}</th>
                             <th scope="col">{{ $t('validate.th_save') }}</th>
+                            <th scope="col">{{ $t('validate.delete_button') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -200,8 +265,12 @@
                             <td><textarea :disabled="tag.isValid" v-model="tag.refusalReason"
                                     :placeholder="$t('validate.placeholder_tags')"></textarea>
                             </td>
-                            <td class="tag-submit"><button @click="updateTag(tag)">{{ $t('validate.save_button')
-                            }}</button></td>
+                            <td class="tag-submit"><button :disabled="navbarStore.isMenuOpen" @click="updateTag(tag)">{{
+                                $t('validate.save_button')
+                                    }}</button></td>
+                            <td><button class="delete-button" :disabled="tag.isValid || navbarStore.isMenuOpen"
+                                    @click="deleteTag(tag)">{{ $t('validate.delete_button')
+                                    }}</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -286,7 +355,7 @@
                         <label>{{ $t('validate.label_video') }}: </label>
                     </div>
                     <div class="preview-container">
-                        <video controls :src="`${url.baseUrl}/${article.video}`" width="600">
+                        <video :key="article.video" controls :src="`${url.baseUrl}/${article.video}`" width="600">
                             <source :src="`${url.baseUrl}/${article.video}`" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -453,6 +522,10 @@ import { useNavbarStore } from "../stores/navbar";
 import { useNavbarHandler } from "../composables/useNavbarHandler";
 import { useNotification } from "@kyvg/vue3-notification";
 import { useI18n } from "vue-i18n";
+import QueuedIcon from "./icons/QueuedIcon.vue";
+import ProcessingIcon from "./icons/ProcessingIcon.vue";
+import ReadyIcon from "./icons/ReadyIcon.vue";
+import FailedIcon from "./icons/FailedIcon.vue";
 
 const isMobile = ref(false);
 const article = ref(null);
@@ -465,6 +538,89 @@ const router = useRouter();
 const { handleNavbar } = useNavbarHandler();
 const { notify } = useNotification();
 const { t } = useI18n();
+const privateLink = route.params.privateLink;
+const articleId = route.params.id;
+const loadingRetry = ref(false)
+let statusTimer = null
+const isPollingStatus = ref(false)
+
+async function reloadVideo() {
+  const id = article.value?.id ?? route.params.id;
+  if (!id) return;
+
+  await axios.get(`${url.baseUrl}/api/v1/articles/${id}`, {
+    headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+  }).then((response) => {
+    article.value.video = response.data.article.video;
+  }).catch((error) => {
+    console.log("error ", error)
+  })
+}
+
+function startStatusPolling() {
+  stopStatusPolling()
+  isPollingStatus.value = true
+  statusTimer = setInterval(async () => {
+    try {
+      const id = article.value?.id
+      if (!id) return
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${id}/status`, {
+        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+        params: { ts: Date.now() }
+      })
+      
+      article.value.processingStatus = data.status
+      article.value.processingProgress = data.progress ?? 0
+
+      if (data.status === 'ready') {
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+        await reloadVideo()
+        stopStatusPolling()
+      }
+      if (data.status === 'failed') {
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_failed') })
+        stopStatusPolling()
+      }
+    } catch (e) {
+      console.warn('status poll error', e?.message || e)
+    }
+  }, 1500)
+}
+
+function stopStatusPolling() {
+  isPollingStatus.value = false
+  if (statusTimer) {
+    clearInterval(statusTimer)
+    statusTimer = null
+  }
+}
+
+async function retryProcessing() {
+  if (!article.value?.id) return
+  loadingRetry.value = true
+  try {
+    await axios.post(
+      `${url.baseUrl}/api/v1/articles/${article.value.id}/retry`,
+      {},
+      { headers: { Authorization: `Bearer ${authStore.token}` } }
+    )
+
+    article.value.processingStatus = 'queued'
+    article.value.processingProgress = 0
+
+    startStatusPolling()
+
+    notify({ title: t('notification.title.retry_process'), type: 'success', text: t('notification.text.retry_process') })
+  } catch (e) {
+    notify({
+      title: 'Retry',
+      type: 'error',
+      text: e?.response?.data?.message || e?.message || 'Erreur lors du retry'
+    })
+  } finally {
+    loadingRetry.value = false
+  }
+}
 
 const checkWindowSize = () => {
     if (window.innerWidth <= 768) {
@@ -646,6 +802,7 @@ const updateArticle = (article) => {
 
         axios.put(`${url.baseUrl}/api/v1/articles/${article.id}/validate`, updatedArticle, {
             withCredentials: true,
+            "Authorization": `Bearer ${authStore.token}`
         }).then(response => {
             notify({
                 title: t('notification.title.validation'),
@@ -665,7 +822,83 @@ const updateArticle = (article) => {
     })
 };
 
-onMounted(() => {
+const deleteTag = async (tag) => {
+    try {
+        await axios.delete(`${url.baseUrl}/api/v1/tags/${tag.id}`, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${authStore.token}`,
+            },
+            withCredentials: true
+        })
+        notify({
+            title: t('notification.title.delete_tag'),
+            type: 'success',
+            text: response?.data?.message,
+        });
+
+        setTimeout(() => {
+            router.push('/validations')
+        }, 3000)
+    } catch (error) {
+        notify({
+            title: t('notification.title.delete_tag'),
+            type: 'error',
+            text: error?.respons?.data?.message,
+        });
+    }
+};
+
+const fetchArticle = async () => {
+    if (!articleId && !privateLink) {
+        state.value = "error";
+        return;
+    }
+
+    try {
+        let response;
+        if (privateLink) {
+            response = await axios.get(`${url.baseUrl}/api/v1/articles/private/${route.params.privateLink}`);
+        } else {
+            response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
+        }
+        if (response.data && response.data.article) {
+            if(response.data.article.processingStatus !== 'ready') startStatusPolling()
+
+            const fetchedArticle = response.data.article;
+            if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
+                try {
+                    fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
+                } catch (e) {
+                    notify({
+                        title: t('notification.titile.article_fetch'),
+                        type: 'error',
+                        text: `${t('notification.text.error_parse_refusalReasons')}: ${e.message}`,
+                    });
+                    fetchedArticle.refusalReasons = {};
+                }
+                article.value = fetchedArticle;
+                tags.value = fetchedArticle.tags;
+                state.value = "idle";
+            } else {
+                article.value = response.data.article;
+                tags.value = response.data.article.tags;
+                state.value = "idle";
+            }
+        } else {
+            state.value = "error";
+        }
+    } catch (error) {
+        notify({
+            title: t('notification.titile.validation_fetch'),
+            type: 'error',
+            text: `${t('notification.text.error_article_fetch')}: ${error.response.data.message}`,
+        });
+        state.value = "error";
+    }
+}
+
+onMounted(async () => {
     checkWindowSize();
 
     window.addEventListener('resize', () => {
@@ -673,51 +906,12 @@ onMounted(() => {
     });
     window.scrollTo(0, 0);
 
-    const articleId = route.params.id;
-
-    axios.get(`${url.baseUrl}/api/v1/articles/${articleId}`, {
-        withCredentials: true,
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-    })
-        .then((response) => {
-            if (response.data && response.data.article) {
-                const fetchedArticle = response.data.article;
-                if (fetchedArticle.refusalReasons && typeof fetchedArticle.refusalReasons === "string") {
-                    try {
-                        fetchedArticle.refusalReasons = JSON.parse(fetchedArticle.refusalReasons);
-                    } catch (e) {
-                        notify({
-                            title: t('notification.titile.article_fetch'),
-                            type: 'error',
-                            text: `${t('notification.text.error_parse_refusalReasons')}: ${e.message}`,
-                        });
-                        fetchedArticle.refusalReasons = {};
-                    }
-                    article.value = fetchedArticle;
-                    tags.value = fetchedArticle.tags;
-                    state.value = "idle";
-                } else {
-                    article.value = response.data.article;
-                    tags.value = response.data.article.tags;
-                    state.value = "idle";
-                }
-            }
-        })
-        .catch((error) => {
-            notify({
-                title: t('notification.titile.validation_fetch'),
-                type: 'error',
-                text: `${t('notification.text.error_article_fetch')}: ${error.response.data.message}`,
-            });
-            state.value = "error";
-        })
+    fetchArticle();
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', checkWindowSize);
+    stopStatusPolling()
 });
 </script>
 
@@ -743,6 +937,62 @@ fieldset legend label {
     font-weight: normal;
 }
 
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: 15px;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.ready-badge {
+  background-color: rgb(31, 177, 43);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.failed-badge {
+  background-color: rgb(189, 26, 26);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-actions {
+    margin-bottom: 20px;
+}
+
 label {
     margin-right: 15px;
 }
@@ -752,6 +1002,14 @@ label {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.preview-container-mobile {
+    margin-bottom: 15px;
+}
+
+.mt20 {
+    margin-top: 20px;
 }
 
 .icon-check {
@@ -862,7 +1120,17 @@ td button {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-bottom: 10px;
+}
+
+.group {
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.card {
+    background-color: #ebebeb;
+    border: 1px solid #ccc;
+    border-radius: 15px;
 }
 
 .tag-container {
@@ -919,14 +1187,21 @@ textarea {
     min-height: 80px;
 }
 
+.action-container-mobile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .icon-fields-mobile {
     cursor: pointer;
     width: 60px !important;
     font-size: 30px;
     text-align: center;
     border: 1px solid grey;
-    margin-bottom: 2px;
+    margin-bottom: 10px;
     border-radius: 10px;
+    margin-right: 15px;
 }
 
 .mobile-icon-tag {
@@ -944,6 +1219,18 @@ button {
     padding: 6px;
 }
 
+.delete-button {
+    border-color: #ff4d4d !important;
+    background-color: #ccc !important;
+    color: red !important;
+}
+
+.delete-button:hover {
+    background-color: #ff4d4d77 !important;
+    border-color: #ff4d4d !important;
+    color: red !important;
+}
+
 @media (max-width: 768px) {
     h3 {
         text-align: center;
@@ -952,6 +1239,7 @@ button {
     .tag-row {
         display: block;
         text-align: center;
+        margin-bottom: 10px;
     }
 
     .tag-actions {

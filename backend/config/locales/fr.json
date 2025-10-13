@@ -23,7 +23,11 @@
 			"reinitialize_error": "Erreur lors de l'envoi de l'email.",
 			"invalid_link": "Lien invalide ou expiré.",
 			"reset_again": "Il est nécessaire de recréer un lien valide dans oubli de mot de passe.",
-			"verify_email_success": "Email vérifié avec succès."
+			"verify_email_success": "Email vérifié avec succès.",
+			"duplicate_email": "Email déjà utilisé.",
+			"duplicate_pseudo": "Pseudo déjà utilisé.",
+			"duplicate_generic": "Un des champs renseignés ne peut être utilisé.",
+			"validation_error": "Field validation error."
 		},
 		"mailer_verification": {
 			"subject": "Vérification de votre adresse email",
@@ -55,7 +59,8 @@
 		"reason_overall": "Le motif global de refus de l'article doit avoir une valeur.",
 		"not_authorized": "Vous n'êtes pas autorisé à valider cet article.",
 		"error_validation": "Erreur lors de la validation de l'article.",
-		"deleted": "supprimé"
+		"deleted": "supprimé",
+		"enqueue_failed": "Le traitement vidéo n’a pas pu démarrer. Veuillez réessayer."
 	},
 	"comment": {
 		"not_authenticated": "Utilisateur non authentifié.",
@@ -104,5 +109,16 @@
 		"error_validation": "Erreur lors de la validation du tag",
 		"error_delete": "Erreur lors de la suppression du tag."
 	},
-	"error": "Erreur serveur interne."
+	"validation": {
+		"new_article_subject": "Nouvel article en validation",
+		"new_article_html": "Nouvel article en attente de validation par un administrateur",
+		"title_label": "Titre",
+		"author_label": "Auteur",
+		"open_label": "Ouvrir l'article"
+	},
+	"error": "Erreur serveur interne.",
+	"unauthorized": "unauthorized",
+	"article_detail": {
+		"private_access_denied": "article_detail.private_access_denied"
+	}
 }

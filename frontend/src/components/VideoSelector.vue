@@ -5,18 +5,21 @@
         <div>
           <div v-if="mode === 'update'">
             <p>Vidéo actuelle:</p>
-            <video :src="getSrc(videoPreview)" :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
-              alt="Preview" class="preview" />
+            <video  :src="getSrc(videoPreview)" 
+                    :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
+              alt="Preview" class="preview" preload="metadata"/>
           </div>
           <div v-if="mode === 'create' && videoPreview">
-            <video :src="getSrc(videoPreview)" :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
-              alt="Preview" class="preview" />
+            <video  :src="getSrc(videoPreview)" 
+                    :poster="videoThumbnail ? `${url.baseUrl}/${videoThumbnail}` : null"
+              alt="Preview" class="preview" preload="metadata"/>
 
           </div>
         </div>
       </FadeSlideTransition>
+      
       <label for="avatar">{{ $t('publish.preview_video') }} <span style="color: red">*</span></label>
-      <input type="file" id="fileInput" hidden @change="handleFileUpload"
+      <input type="file" id="fileInput" hidden @change="handleFileUpload" accept="video/*"
         :disabled="navbarStore.isMenuOpen || navbarStore.isTranslationOpen" />
       <label for="fileInput" class="custom-label"
         :class="{ 'disabled': navbarStore.isMenuOpen || navbarStore.isTranslationOpen }"
@@ -33,34 +36,61 @@ import FadeSlideTransition from "@/transitions/FadeSlideTransition.vue";
 import { useNavbarStore } from "@/stores/navbar";
 import url from "@/utils/url";
 import getSrc from "@/utils/getSrc";
+import { onBeforeUnmount } from "vue";
 
 const navbarStore = useNavbarStore();
+
 const props = defineProps({
   mode: String,
-  videoThumbnail: String || null,
+  videoThumbnail: String,
   videoPreview: String
 });
 
 const emit = defineEmits(["update:selectedFile", "update:videoPreview", "update:videoThumbnail"]);
 
+// Keep track of the current blob URL so we can revoke it
+let currentObjectUrl = null;
 
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
+/** Create a blob URL from a File and emit it upward */
+function setPreviewFromFile(file) {
+  // Revoke previous Object URL to avoid memory leaks
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+  currentObjectUrl = URL.createObjectURL(file);
+  emit("update:videoPreview", currentObjectUrl);
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files?.[0];
 
   if (file) {
+    // 1) expose the File upward
     emit("update:selectedFile", file);
-    emit("update:videoThumbnail", null)
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      emit("update:videoPreview", e.target.result);
-    };
-    reader.readAsDataURL(file);
+    // 2) clear any previous thumbnail (server will regenerate one)
+    emit("update:videoThumbnail", null);
+    // 3) set preview from object URL
+    setPreviewFromFile(file);
   } else {
+    // Reset state if no file selected
     emit("update:videoPreview", null);
     emit("update:selectedFile", null);
   }
-};
+
+  // Allow selecting the same file again (reset input value)
+  // (some browsers don't fire change if the same file is chosen twice)
+  event.target.value = "";
+}
+
+// Register lifecycle hook at setup-time (NOT inside handlers)
+// Ensures we always revoke the blob URL when the component unmounts
+onBeforeUnmount(() => {
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+});
 </script>
 
 <style scoped>

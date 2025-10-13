@@ -13,7 +13,10 @@ const messages = {
             delete_account: "Delete Account",
             logout: "Logout",
             yes: 'yes',
-            no: 'no'
+            no: 'no',
+            auth_required_title: "Authentication required",
+            auth_required_message: "You must be authenticated to publish an article.",
+            cancel: "Cancel"
         },
         cgu: {
             title: "Terms of Service",
@@ -83,33 +86,41 @@ const messages = {
             title: {
                 login: "Log In",
                 signup: "Sign Up",
-                article_fetch: "Fetching Article",
-                articles_fetch: "Fetching Articles",
-                validations_fetch: "Fetching Articles Awaiting To Validation",
+                article_fetch: "Fetching article",
+                articles_fetch: "Fetching articles",
+                validations_fetch: "Fetching articles awaiting to validation",
                 validation: "Validation",
-                validation_fetch: "Fetching Article Awaiting To Validation",
-                tag_exists: "Tag Conflict",
-                tag_create: "Tag Create",
-                error_tag_create: "Error Creating Tag",
-                error_tags_fetch: "Error Fetching Tags",
-                field_media_required: "Selecting Resource",
-                article_create: "Article Create",
-                article_update: "Article Update",
-                like_comment: "Liking Comment",
-                like_article: "Liking Article",
-                comment_create: "Commenting Article",
-                new_badge: "New Badge Obtained",
-                profile_error_user_fetch: "Error Fetching User",
-                profile_error_avatar_update: "Error Updating Avatar",
-                report_reason: "Report Reason",
+                validation_fetch: "Fetching article awaiting to validation",
+                tag_exists: "Tag conflict",
+                tag_create: "Tag create",
+                error_tag_create: "Error creating tag",
+                error_tags_fetch: "Error fetching tags",
+                field_media_required: "Selecting resource",
+                article_create: "Article create",
+                article_update: "Article update",
+                like_comment: "Liking comment",
+                report_comment: "Reporting comment",
+                like_article: "Liking article",
+                report_article: "Reporting article",
+                comment_create: "Commenting article",
+                new_badge: "New badge obtained",
+                profile_error_user_fetch: "Error fetching user",
+                profile_error_avatar_update: "Error updating avatar",
+                report_reason: "Report reason",
                 report_create: "Report",
-                delete_account: "Delete Account",
-                update_user: "Update Account"
+                delete_account: "Delete account",
+                update_user: "Update account",
+                delete_article: "Delete article",
+                delete_tag: "Delete tag",
+                share_link: "Share link",
+                file_upload: "File uploading",
+                article_process: "File processing",
+                retry_process: "Retry processing"
             },
             text: {
                 invalid_tags: "Some tag(s) not validated",
                 invalid_fields: "Some field(s) not validated",
-                signup: "Your account has been created. Please check your mails (spam) to validate sign up.",
+                signup: "Your account has been created. Please check your mails to validate sign up.",
                 valid_tags: "Tags validated successfully.",
                 error_tags_validation: "Error updating tags validation",
                 valid_article: "Article validated successfully.",
@@ -124,7 +135,9 @@ const messages = {
                 article_update: "Article updated successfully.",
                 like_comment_error_load: "Comment is not loaded or missing ID.",
                 like_comment_error_auth: "You must be authenticated to like a comment.",
+                report_comment_error_auth: "You must be authenticated to report a comment.",
                 like_article_error_auth: "You must be authenticated to like an article.",
+                report_article_error_auth: "You must be authenticated to report an article.",
                 comment_error_auth: "User not logged in. Unable to post comment.",
                 comment_error_content_required: "Comment can not be empty.",
                 comment_create: "Comment created successfully.",
@@ -136,12 +149,22 @@ const messages = {
                 log_error_language: "Error back side when changing language: ",
                 delete_account_success: "Your account has been deleted.",
                 delete_account_error: "Error while deleting. Please try again.",
+                share_link_success: "Link copied to clipboard.",
+                share_link_error: "Impossible to copy link.",
+                file_upload: "File uploading successful",
+                article_process_ok: "File processing successful",
+                article_process_failed: "File processing failed",
+                retry_process: "File process has been relaunched"
             }
         },
         article_detail: {
             state_loading: "Loading article ...",
             state_error: "Unable to load this article",
-            report: "Report"
+            report: "Report",
+            modify: "Modify",
+            share: "Share",
+            private: "private",
+            public: "public"
         },
         articles: {
             tag_filter: "Filter by tags",
@@ -157,7 +180,7 @@ const messages = {
             empty_list: "No articles found"
         },
         validate: {
-            title: "Validation of tags",
+            tags_title: "Tags validation",
             save_button: "Update",
             sub_title: "Validation of article fields",
             label_title: "Title",
@@ -170,13 +193,19 @@ const messages = {
             placeholder_description: "Reason for refusal of description",
             sub_title_final: "General validation of the article",
             placeholder_final: "Overall reasons for refusal of article",
-            tags_title: "Tags validation",
             th_tag: "Tag",
             th_validate: "Validate",
             th_refuse: "Refuse",
             th_reason: "Reason",
             th_save: "Save",
-            placeholder_tags: "Reason for refusal of tags"
+            placeholder_tags: "Reason for refusal of tags",
+            delete_button: "Delete",
+            processing_state: "Video file processing status",
+            fileState_queued: "Awaiting processing",
+            fileState_processing: "Processing",
+            fileState_ready: "Ready",
+            fileState_failed: "Failed",
+            fileState_validation: "Awaiting admin validation"
         },
         publish: {
             placeholder_file: "No file selected",
@@ -185,6 +214,9 @@ const messages = {
             preview_video: "Preview vidéo",
             state_error: "Unable to load data",
             state_loading: "Loading ...",
+            modal_title_upload: "Upload & Process file",
+            state_uploading: "Video upload progress",
+            processing_file: "File processing progress",
             title: "Publish new article",
             placeholder_title: "My zinzito article",
             label_title: "Title",
@@ -198,7 +230,11 @@ const messages = {
             media_type: "Media type",
             option_image: "Image",
             option_video: "Vidéo",
-            option_youtube: "Youtube link"
+            option_youtube: "Youtube link",
+            option_public: "Public",
+            option_private: "Private",
+            can_switch: "You can leave this page while the file is processing.",
+            navigate_articles: "Home page"
         },
         update: {
             placeholder_file: "No file selected",
@@ -216,11 +252,15 @@ const messages = {
             placeholder_tag: "Some tag",
             add_button: "Add",
             tag_required: "Select at least one tag.",
-            submit_button: "Update"
+            submit_button: "Update",
+            delete: "Delete",
+            delete_title: "Deleting article",
+            delete_answer: "Are you sure you want to delete this article ?",
+            delete_warning: "This action is irreversible. "
         },
         comments: {
             title: "Comments",
-            auth_required: "Log in to leave a comment.",
+            auth_required: "Log in to like, report or leave a new comment.",
             placeholder_comment: "My crazy comment",
             label_comment: "Leave a comment",
             label_textarea: "Input area",
@@ -229,11 +269,12 @@ const messages = {
         profile: {
             title: "profile",
             state_loading: "Loading data ...",
-            label_articles_treatment: "Posted articles being processed",
+            label_articles_treatment: "Published articles being processed",
             informations: "Modify my informations",
             delete_title: "Deleting account",
             delete_answer: "Are you sure you want to delete your account ?",
-            delete_warning: "This action is irreversible and all your data will be lost (articles, comments, uploads). "
+            delete_warning: "This action is irreversible and all your data will be lost (articles, comments, uploads). ",
+            label_articles_valid_by_user: "Validated published articles"
         },
         about: {
             title: "Why Agorium Exists",
@@ -245,6 +286,58 @@ const messages = {
             line5: "It’s a space without ads, without editorial constraints, open to those who want to express themselves sincerely.",
             line6: "Agorium is a personal project, built alone, out of passion, with the desire to offer something useful."        
           },
+        roadmap: {
+            title: "Project roadmap",
+            title_releases: "Last releases",
+            title_core1: " CORE v1 — In progress",
+            title_core2: "CORE v2 — Coming soon",
+            core1: {
+                l1: "A form allows users to feed the list of articles",
+                l2: "Users can comment on articles, like and associate tags",
+                l3: "Admin users can validate articles and associated tags",
+                l4: "Sort and filter articles by date, tags, pertinence",
+                l5: "Implement article reporting, gamification, i18n, infinite loading",
+                l6: "Buy domain & deploy on server",
+                l7: "Dockerize project",
+                l8: "Video upload & streaming",
+                l9: "File storage optimization",
+                l10: "Abuse reporting improvements",
+                l11: "Style improvement (Element+)",
+                l12: "CI/CD pipeline with Docker",
+            },
+            core2: {
+                l1: "SSR for SEO",
+                l2: "Accessibility features",
+                l4: "Performance: cache, CDN"
+            },
+            releases: {
+                v150: {
+                    l1: "Add remove article (creator and admin) and tag (admin)",
+                    l2: "Add private articles",
+                    l3: "Add modal progress bar of file upload and processing",
+                    l4: "Improve file process: queue job list, worker and video transcode (mp4 & hls)",
+                    l5: "Add notify admins by email on new validation awaiting",
+                    l6: "Add icon and banner site"
+                },
+                v141: "Add remove files before delete user",
+                v140: "Add auth actions (verify, forgot, reset & delete)",
+                v132: "Fix responsive",
+                v131: {
+                    l1: "Add Terms of Service",
+                    l2: "Add About us page"
+                },
+                v130: {
+                    l1: "Add upload video",
+                    l2: "Analyze and scan uploads"
+                },
+                v121: "Fix config",
+                v120: {
+                    l1: "Add update article (from article view)",
+                    l2: "Isolate the upload folder and make it persistent",
+                    l3: "Add Roadmap"
+                }
+            }
+        },
         report: {
             title: "Report",
             title_subject_article: "article",
@@ -286,13 +379,16 @@ const messages = {
             articles: "Articles",
             publish: "Publier",
             login: "Se connecter",
-            signup: "S'inscrire",
+            signup: "Créer un compte",
             profile: "Mon profil",
             account: "Compte",
             delete_account: "Supprimer mon compte",
             logout: "Se déconnecter",
             yes: 'oui',
-            no: 'non'
+            no: 'non',
+            auth_required_title: "Authentification requise",
+            auth_required_message: "Vous devez être authentifié pour publier un article.",
+            cancel: "Annuler"
         },
         cgu: {
             title: "Conditions Générales d'Utilisation",
@@ -374,7 +470,9 @@ const messages = {
                 article_create: "Création d'un article",
                 article_update: "Article mis à jour",
                 like_comment: "J'aime un commentaire",
+                report_comment: "Signaler un commentaire",
                 like_article: "J'aime un article",
+                report_article: "Signaler un article",
                 comment_create: "Commentaire sur un article",
                 new_badge: "Nouveau badge obtenu",
                 profile_error_user_fetch: "Erreur lors de la récupération de l'utilisateur",
@@ -382,12 +480,18 @@ const messages = {
                 report_reason: "Motif du signalement",
                 report_create: "Signalement",
                 delete_account: "Supprimer le compte",
-                update_user: "Mise à jour du compte"
+                update_user: "Mise à jour du compte",
+                delete_article: "Supprimer l'article",
+                delete_tag: "Supprimer le tag",
+                share_link: "Partage du lien",
+                file_upload: "Téléchargement du fichier",
+                article_process: "Traitement du fichier",
+                retry_process: "Relancement du traitement"
             },
             text: {
                 invalid_tags: "Certains tag(s) ne sont pas validés",
                 invalid_fields: "Certains champ(s) ne sont pas validés",
-                signup: "Votre compte a été créé. Veulliez vérifier vos mails (spam) pour valider l'inscription.",
+                signup: "Votre compte a été créé. Veulliez vérifier vos mails pour valider l'inscription.",
                 valid_tags: "Tags validés avec succès.",
                 error_tags_validation: "Erreur lors de la mise à jour de la validation des tags",
                 valid_article: "Article validé avec succès.",
@@ -402,7 +506,9 @@ const messages = {
                 article_update: "L'article a été mis à jour avec succès.",
                 like_comment_error_load: "Le commentaire n'est pas chargé ou l'ID est manquant.",
                 like_comment_error_auth: "Vous devez être authentifié pour aimer un commentaire.",
+                report_comment_error_auth: "Vous devez être authentifié pour signaler un commentaire.",
                 like_article_error_auth: "Vous devez être authentifié pour aimer un article.",
+                report_article_error_auth: "Vous devez être authentifié pour signaler un article.",
                 comment_error_auth: "Utilisateur non connecté. Impossible de publier un commentaire.",
                 comment_error_content_required: "Le commentaire ne peut pas être vide.",
                 comment_create: "Commentaire créé avec succès.",
@@ -414,12 +520,22 @@ const messages = {
                 log_error_language: "Erreur lors du changement de langue côté serveur",
                 delete_account_success: "Votre compte a été supprimé.",
                 delete_account_error: "Erreur lors de la suprression. Veuillez réesssayer.",
+                share_link_success: "Lien copié dans le presse-papiers.",
+                share_link_error: "Impossible de copier le lien.",
+                file_upload: "Le téléchargement du fichier à réussi",
+                article_process_ok: "Le traitement du fichier a réussi",
+                article_process_failed: "Le traitement du fichier a échoué",
+                retry_process: "Le traiement du fichier a été relancé"
             }
         },
         article_detail: {
             state_loading: "Chargement de l'article ...",
             state_error: "Impossible de charger cet article",
-            report: "Signaler"
+            report: "Signaler",
+            modify: "Modifier",
+            share: "Partager",
+            private: "privé",
+            public: "publique"
         },
         articles: {
             tag_filter: "Filtrer par tags",
@@ -435,7 +551,7 @@ const messages = {
             empty_list: "Aucun article trouvé"
         },
         validate: {
-            title: "Validation des tags",
+            tags_title: "Validation des tags",
             save_button: "Enregistrer",
             sub_title: "Validation des champs de l'article",
             label_title: "Titre",
@@ -448,13 +564,19 @@ const messages = {
             placeholder_description: "Motif du refus de la description",
             sub_title_final: "Validation générale de l'article",
             placeholder_final: "Motif du refus de l'article",
-            tags_title: "Validation des tags",
             th_tag: "Tag",
             th_validate: "Valider",
             th_refuse: "Refuser",
             th_reason: "Raison",
             th_save: "Enregistrer",
-            placeholder_tags: "Motif du refus des tags"
+            placeholder_tags: "Motif du refus des tags",
+            delete_button: "Supprimer",
+            processing_state: "Statut du traitement du fichier vidéo",
+            fileState_queued: "En attente de traitement",
+            fileState_processing: "En traitement",
+            fileState_ready: "Prêt",
+            fileState_failed: "Échec",
+            fileState_validation: "En attente d'une validation admin"
         },
         publish: {
             placeholder_file: "Aucun fichier choisi",
@@ -463,6 +585,9 @@ const messages = {
             preview_video: "Vidéo",
             state_error: "Impossible de charger les données",
             state_loading: "Chargement ...",
+            modal_title_upload: "Téléchargement et traitement du fichier",
+            state_uploading: "Progression de l'envoi de la vidéo",
+            processing_file: "Progression du traitement du fichier",
             title: "Publier un nouvel article",
             placeholder_title: "Mon article de zinzin",
             label_title: "Titre",
@@ -476,7 +601,11 @@ const messages = {
             media_type: "Type de média",
             option_image: "Image",
             option_video: "Vidéo",
-            option_youtube: "Lien YouTube"
+            option_youtube: "Lien YouTube",
+            option_public: "Publique",
+            option_private: "Privé",
+            can_switch: "Vous pouvez quitter cette page durant le traitement du fichier.",
+            navigate_articles: "Page d'accueil"
         },
         update: {
             placeholder_file: "Aucun fichier choisi",
@@ -494,11 +623,15 @@ const messages = {
             placeholder_tag: "un tag",
             add_button: "Ajouter",
             tag_required: "Sélectionnez au moins un tag.",
-            submit_button: "Mettre à jour"
+            submit_button: "Mettre à jour",
+            delete: "Supprimer",
+            delete_title: "Suppression de l'article",
+            delete_answer: "Êtes vous sur de vouloir supprimer cet article ?",
+            delete_warning: "Cette action est irréversible. ",
         },
         comments: {
             title: "Commentaires",
-            auth_required: "Connectez-vous pour laisser un commentaire.",
+            auth_required: "Connectez-vous pour liker, signaler ou laisser un nouveau commentaire.",
             placeholder_comment: "Mon commentaire de zinzin",
             label_comment: "Laisser un commentaire",
             label_textarea: "Zone de saisie",
@@ -512,6 +645,7 @@ const messages = {
             delete_title: "Suppression du compte",
             delete_answer: "Êtes vous sur de vouloir supprimer votre compte ?",
             delete_warning: "Cette action est irréversible et toute vos données seront perdues (articles, commentaires, uploads). ",
+            label_articles_valid_by_user: "Articles postés validés"
         },
         about: {
             title: "Pourquoi Agorium existe",
@@ -522,7 +656,59 @@ const messages = {
             line4: "documentaires, musiques, jeux ou autres contenus originaux.",
             line5: "C’est un espace sans publicité, sans contraintes éditoriales, ouvert à celles et ceux qui veulent s’exprimer avec sincérité.",
             line6: "Agorium est un projet personnel, fait seul, par passion, avec l’envie de proposer une plateforme utile."
-        },    
+        },
+        roadmap: {
+            title: "Roadmap du projet",
+            title_releases: "Mise à jour récentes",
+            title_core1: " CORE v1 — En cours",
+            title_core2: "CORE v2 — À venir",
+            core1: {
+                l1: "Un formulaire permet aux utilisateurs d'alimenter la liste des articles",
+                l2: "Les utilisateurs peuvent commenter les articles, les aimer et leur associer des tags",
+                l3: "Les administrateurs peuvent valider les articles et les tags associés",
+                l4: "Trier et filtrer les articles par date, tags et pertinence",
+                l5: "Implémenter le reporting des articles, la gamification, l'i18n et le chargement infini",
+                l6: "Acheter un domaine et déployer sur un serveur",
+                l7: "Dockerizer le projet",
+                l8: "Téléchargement et streaming vidéo",
+                l9: "Optimisation du stockage des fichiers",
+                l10: "Amélioration du reporting des abus",
+                l11: "Amélioration du style (Element+)",
+                l12: "Pipeline CI/CD avec Docker",
+            },
+            core2: {
+                l1: "Rendu coté serveur pour le SEO",
+                l2: "Fonctionnalités d'accessibilité",
+                l4: "Performances: cache, CDN"
+            },
+            releases: {
+                v150: {
+                    l1: "Ajout de la suppression d'articles (créateur et admin) et de tags (admin)",
+                    l2: "Ajout d'articles privés",
+                    l3: "Ajout d'une fenêtre modale pour la barre de progression du téléchargement et du traitement du fichier",
+                    l4: "Amélioration du traitement des fichiers: liste des tâches en file d'attente, worker et transcodage vidéo (mp4 et hls)",
+                    l5: "Ajout de la notification par e-mail aux admins en cas de nouvelle validation en attente",
+                    l6: "Ajout d'une icône et d'une bannière pour le site"
+                },
+                v141: "Ajout de la suppression de fichiers avant suppression utilisateur",
+                v140: "Ajout d'actions d'authentification (vérification, oubli, réinitialisation et suppression)",
+                v132: "Correctif du responsive",
+                v131: {
+                    l1: "Ajout des conditions d'utilisation",
+                    l2: "Ajout d'une page À propos"
+                },
+                v130: {
+                    l1: "Ajout des upload vidéos",
+                    l2: "Analyse et scan des uploads"
+                },
+                v121: "Correctif de la config",
+                v120: {
+                    l1: "Ajout de mise à jour d'un article (depuis la vue article)",
+                    l2: "Isoler le dossier de téléchargement et le rendre persistant",
+                    l3: "Ajouter une feuille de route"
+                }
+            }           
+        },
         report: {
             title: "Signaler un",
             title_subject_article: "article",

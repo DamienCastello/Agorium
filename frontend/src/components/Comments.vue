@@ -1,23 +1,25 @@
 <template>
   <div class="pico">
     <h3>{{ $t('comments.title') }}</h3>
-    <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
-      <Comment :comment="comment"/>
-    </div>
     <div class="comments-container" @mousedown="handleClickOutsideNavbar">
-      <label for="comment" class="comment-label">{{ $t('comments.label_comment') }} :</label>
-      <textarea id="comment" name="comment" v-model="newComment" :placeholder="$t('comments.placeholder_comment')"
-        :aria-label="$t('comments.label_textarea')" :disabled="!authStore.user" class="comment-textarea"></textarea>
-      <div class="submit-zone">
-        <p v-if="!authStore.user" class="comment-info">
-          {{ $t('comments.auth_required') }}
-        </p>
-        <button @click="submitComment" :disabled="!newComment || !authStore.user || navbarStore.isMenuOpen"
-          class="submit-button">
-          {{ $t('comments.submit_button') }}
-        </button>
+      <p v-if="!authStore.user" class="comment-info">
+        {{ $t('comments.auth_required') }}
+      </p>
+      <div v-if="authStore.isAuthenticated()">
+        <label for="comment" class="comment-label">{{ $t('comments.label_comment') }} :</label>
+        <textarea id="comment" name="comment" v-model="newComment" :placeholder="$t('comments.placeholder_comment')"
+          :aria-label="$t('comments.label_textarea')" class="comment-textarea"></textarea>
+        <div class="submit-zone">
+          <button @click="submitComment" :disabled="!newComment || navbarStore.isMenuOpen" class="submit-button">
+            {{ $t('comments.submit_button') }}
+          </button>
+        </div>
       </div>
     </div>
+    <div class="comments" v-for="comment in props.article.comments" :key="comment.id">
+      <Comment :comment="comment" />
+    </div>
+
     <notifications position="bottom right" />
   </div>
 </template>
@@ -80,13 +82,13 @@ const submitComment = () => {
         text: t('notification.text.comment_create'),
       });
 
-      if(response.data.achievement) {
+      if (response.data.achievement) {
         notify({
           title: t('notification.title.new_badge'),
           text: `${t('notification.text.new_badge')} ${response.data.achievement.name} !`,
         });
       }
-      
+
       newComment.value = "";
       if (props.refreshComments) {
         props.refreshComments();
@@ -172,7 +174,8 @@ const handleClickOutsideNavbar = (event) => {
 }
 
 .comment-info {
-  font-size: 12px;
+  text-align: center;
+  font-size: 18px;
   color: gray;
 }
 

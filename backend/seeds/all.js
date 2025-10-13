@@ -6,8 +6,8 @@ async function runSeeds() {
     await sequelize.authenticate();
     console.log('✅ Connection successful !');
 
-    console.log('🌱 Seeding users...');
-    await require('./01_users')();
+    //console.log('🌱 Seeding users...');
+    //await require('./01_users')();
 
     console.log('🌱 Seeding tags...');
     await require('./02_tags')();

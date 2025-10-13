@@ -1,7 +1,53 @@
 const models = require('../models');
 const { Op, Sequelize } = require('sequelize');
+const fs = require('fs');
 const path = require('path');
-const { Article, User, Like, Tag, Comment } = require('../models');
+const { safeUnlink } = require('../utils/safeUnlink');
+const { notifyAdminValidation } = require('../utils/notifyAdminValidation');
+const { sequelize, Article, User, Like, Tag, Comment } = require('../models');
+
+const { videoQueue } = require('../services/videoQueue');
+const ffmpeg = require('fluent-ffmpeg'); // for a light preflight probe
+
+// Quick preflight validation: cheap checks before enqueue
+async function quickVideoPreflight(absFullPath) {
+  // 1) existence + size
+  const stat = fs.statSync(absFullPath);
+  const maxBytes = 1_500_000_000; // 1.5 GB safety cap (tune if needed)
+  if (stat.size <= 0) throw new Error('Empty file');
+  if (stat.size > maxBytes) throw new Error('File too large for preflight');
+
+  // 2) naive extension allowlist (you can expand later)
+  const ext = path.extname(absFullPath).toLowerCase();
+  const allowed = new Set(['.mp4', '.mov', '.m4v', '.webm']);
+  if (!allowed.has(ext)) throw new Error(`Unsupported extension: ${ext}`);
+
+  // 3) very light ffprobe to ensure we see at least one video stream
+  const meta = await new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(absFullPath, (err, data) => (err ? reject(err) : resolve(data)));
+  });
+
+  const videoStream = meta?.streams?.find(s => s.codec_type === 'video');
+  if (!videoStream) throw new Error('No video stream detected');
+  // Optional: short duration sanity check (may be undefined on some files)
+  // const duration = Number(meta?.format?.duration || 0);
+  // if (Number.isFinite(duration) && duration <= 0) throw new Error('Invalid duration');
+}
+
+// helpers at top of file if not present:
+const isDev = process.env.NODE_ENV === 'development';
+function toAbs(rel) {
+  if (!rel) return null;
+  return isDev ? path.resolve(rel) : path.join('/app/public', rel);
+}
+async function purgeReactions(articleId) {
+  try {
+    await Like.destroy({ where: { articleId } })
+    await Comment.destroy({ where: { articleId } })
+  } catch (e) {
+    console.warn('[purgeReactions] warn:', e?.message || e)
+  }
+}
 
 module.exports = {
   indexValidated: async function (req, res, next) {
@@ -9,6 +55,12 @@ module.exports = {
       const { limit = 10, offset = 0, tag, search, dateFrom, dateTo, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
       const whereClause = { isValid: true };
+
+      if (!req.user?.isAdmin) {
+        whereClause[Op.and] = [
+          { isPrivate: false },
+        ];
+      }
 
       if (search) {
         whereClause[Op.or] = [
@@ -78,15 +130,21 @@ module.exports = {
   indexNotValidated: function (req, res, next) {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
+    const whereClause = {
+      [Op.and]: [
+        {
+          [Op.or]: [
+            { isValid: false },
+            { isValid: null }
+          ]
+        },
+      ]
+    };
+
     Article.findAll({
-      offset: offset,
-      limit: limit,
-      where: {
-        [Op.or]: [
-          { isValid: false },
-          { isValid: null }
-        ]
-      },
+      offset,
+      limit,
+      where: whereClause,
       include: [
         {
           model: models.Like,
@@ -173,14 +231,27 @@ module.exports = {
         },
       ]
     })
-      .then((articles) => { res.json({ articles }); })
+      .then((articles) => {
+        res.status(200).json({ articles });
+      })
       .catch((error) => {
         console.log("error: ", error);
         res.status(500).json({ message: req.t('error') });
       });
   },
-  show: function (req, res, next) {
-    Article.findByPk(req.params.id, {
+  indexValidatedByUser: function (req, res, next) {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    Article.findAll({
+      offset: offset,
+      limit: limit,
+      where: {
+        userId: req.params.id,
+        [Op.or]: [
+          { isValid: true },
+        ]
+      },
       include: [
         {
           model: models.Like,
@@ -214,43 +285,155 @@ module.exports = {
         },
       ]
     })
-      .then((article) => {
-        res.json({ article });
+      .then((articles) => {
+        res.status(200).json({ articles });
       })
       .catch((error) => {
-        console.error("Message Error fetching tracks: ", error.message);
+        console.log("error: ", error);
         res.status(500).json({ message: req.t('error') });
       });
   },
-  create: async function (req, res, next) {
+  show: async function (req, res, next) {
     try {
-      const { title, description, urlYoutube, tags } = req.body;
+      const article = await Article.findByPk(req.params.id, {
+        include: [
+          {
+            model: models.Like,
+            as: 'likes',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              }
+            ]
+          },
+          {
+            model: models.Tag,
+            as: 'tags',
+          },
+          {
+            model: models.Comment,
+            as: 'comments',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              },
+              {
+                model: models.Like,
+                as: 'likes',
+              },
+            ]
+          },
+        ]
+      });
 
-      if (!title || !description) {
-        return res.status(400).json({ message: req.t('article.fields_required') });
+      if (!article) {
+        return res.status(404).json({ message: req.t('notFound') });
       }
 
-      if (title.length < 3) {
-        return res.status(400).json({ message: req.t('article.title_length') });
+      if (article.isPrivate && (article.userId !== req.user?.id || !req.user?.isAdmin)) {
+        return res.status(403).json({ message: req.t('article_detail.private_access_denied') });
       }
 
-      if (typeof tags === 'string') {
-        try {
-          req.body.tags = JSON.parse(tags);
-        } catch (error) {
-          return res.status(400).json({ message: req.t('article.invalid_tags') });
-        }
+      res.status(200).json({ article });
+
+    } catch (error) {
+      console.error("Error fetching article:", error.message);
+      res.status(500).json({ message: req.t('error') });
+    }
+  },
+  showPrivate: async function (req, res, next) {
+    try {
+      const article = await Article.findOne({
+        where: { privateLink: req.params.privateLink },
+        include: [
+          {
+            model: models.Like,
+            as: 'likes',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              }
+            ]
+          },
+          {
+            model: models.Tag,
+            as: 'tags',
+          },
+          {
+            model: models.Comment,
+            as: 'comments',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+                attributes: ['id', 'pseudo', 'email'],
+              },
+              {
+                model: models.Like,
+                as: 'likes',
+              },
+            ]
+          },
+        ]
+      });
+
+      if (!article || !article.isPrivate) {
+        return res.status(404).json({ message: req.t('notFound') });
       }
 
-      if (!tags || !Array.isArray(tags) || tags.length === 0) {
-        return res.status(400).json({ message: req.t('article.tag_required') });
+      res.status(200).json({ article });
+    } catch (error) {
+      console.error("Error fetching private article:", error.message);
+      res.status(500).json({ message: req.t('error') });
+    }
+  },
+  create: async function (req, res, next) {
+    const { title, description, urlYoutube, tags, isPrivate } = req.body;
+    const { lang } = req.query;
+
+    if (!title || !description) {
+      return res.status(400).json({ message: req.t('article.fields_required') });
+    }
+
+    if (title.length < 3) {
+      return res.status(400).json({ message: req.t('article.title_length') });
+    }
+
+    if (typeof tags === 'string') {
+      try {
+        req.body.tags = JSON.parse(tags);
+      } catch (error) {
+        return res.status(400).json({ message: req.t('article.invalid_tags') });
       }
+    }
 
-      const userId = req.user.id;
+    if (!tags || !Array.isArray(tags) || tags.length === 0) {
+      return res.status(400).json({ message: req.t('article.tag_required') });
+    }
 
+    const userId = req.user.id;
+    if (!userId) {
+      return res.status(400).json({ message: req.t('article.user_required') });
+    }
+
+    const t = await sequelize.transaction();
+    try {
+      // Build paths from multer
+      let privateLink = null;
       let previewPath = null;
       let videoPath = null;
+      let originalVideo = null;
 
+      if (isPrivate) {
+        const crypto = require('crypto');
+        privateLink = crypto.randomBytes(16).toString('hex');
+      }
 
       if (req.files?.preview?.[0]) {
         previewPath = req.uploadedFiles.preview.replace('/app/public', '');
@@ -264,11 +447,18 @@ module.exports = {
         if (process.env.NODE_ENV === 'development') {
           videoPath = `uploads/videos/${req.files.video[0].filename}`;
         }
+        originalVideo = videoPath; // store original relative path
       }
 
-
-      if (!userId) {
-        return res.status(400).json({ message: req.t('article.user_required') });
+      // Compute absolute full path for the uploaded video (if any)
+      let fullVideoPath = null;
+      if (originalVideo) {
+        fullVideoPath = path.join('/app/public', originalVideo);
+        if (process.env.NODE_ENV === 'development') {
+          fullVideoPath = path.resolve(originalVideo); // local dev resolves to ./uploads/videos/xxx
+        }
+        // 🟣 PRE-FLIGHT ultra fast: if it throws → we delete file + rollback
+        await quickVideoPreflight(fullVideoPath);
       }
 
       // Création de l'article
@@ -276,8 +466,10 @@ module.exports = {
         title,
         description,
         preview: previewPath,
-        video: videoPath,
+        video: null,
         thumbnail: '',
+        isPrivate,
+        privateLink,
         urlYoutube: urlYoutube || null,
         refusalReasons: JSON.stringify({
           title: {
@@ -309,95 +501,85 @@ module.exports = {
         overallReasonForRefusal: null,
         isValid: false,
         userId,
-      });
+        processingStatus: originalVideo ? 'queued' : 'ready',
+        processingProgress: originalVideo ? 0 : 100,
+        originalVideo,
+        processingError: null,
+        processingRetries: 0,
+      }, { transaction: t });
 
-      if (videoPath) {
-        const {
-          isExecutableFile,
-          analyzeVideo,
-          extractFrameFromVideo,
-          scanForNSFW
-        } = require('../services/video');
-
-        const oldVideoPath = article.video;
-        const oldThumbnailPath = article.thumbnail;
-        let fullVideoPath = null;
-
-        fullVideoPath = path.join('/app/public', videoPath);
-        if(process.env.NODE_ENV === 'development') {
-          fullVideoPath = path.resolve(videoPath);
-        }
-
-        await isExecutableFile(fullVideoPath);
-        await analyzeVideo(fullVideoPath);
-
-        const fs = require('fs');
-        const { v4: uuidv4 } = require('uuid');
-        const { getUploadPath } = require('../utils/getUploadPath');
-
-        const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
-        const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
-        
-        if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
-          fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
-        }
-        
-        await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
-        await scanForNSFW(thumbnailFullPath);
-
-        // Mise à jour du chemin relatif dans la base
-        await article.update({ thumbnail: thumbnailDbPath });
-      }
-
+      // Associate tags inside the same transaction
       if (tags && Array.isArray(tags)) {
         const tagIds = tags.map((tag) => tag.id);
-        const tagsToAssociate = await models.Tag.findAll({ where: { id: tagIds } });
-
-        await article.setTags(tagsToAssociate);
-
-        // Vérifier le nombre d'articles pour débloquer des succès
-        const articleCount = await Article.count({ where: { userId } });
-        const user = await models.User.findByPk(userId);
-
-        let achievement;
-        let userAchievement;
-
-        if (articleCount === 1) {
-          achievement = await models.Achievement.findByPk(1);
-          await achievement.addUsers(user);
-          user.points += achievement.points;
-          await user.save();
-        } else if (articleCount === 5) {
-          achievement = await models.Achievement.findByPk(2);
-          await achievement.addUsers(user);
-          user.points += achievement.points;
-          await user.save();
-        } else if (articleCount % 20 === 0) {
-          achievement = await models.Achievement.findByPk(3);
-
-          [userAchievement, created] = await models.UserAchievement.findOrCreate({
-            where: { userId, achievementId: achievement.id },
-            defaults: {
-              dateEarned: new Date(),
-              iteration: 1,
-            },
-          });
-
-          if (!created) {
-            userAchievement.iteration += 1;
-            userAchievement.dateEarned = new Date();
-            await userAchievement.save();
-          }
-
-          user.points += achievement.points;
-          await user.save();
-        }
-
-        return res.status(200).json({ article, achievement, userAchievement, user });
+        const tagsToAssociate = await Tag.findAll({ where: { id: tagIds }, transaction: t });
+        await article.setTags(tagsToAssociate, { transaction: t });
       }
 
+      // Gamification
+      const articleCount = await Article.count({ where: { userId }, transaction: t });
+      const user = await User.findByPk(userId, { transaction: t });
+
+      let achievement;
+      let userAchievement;
+
+      if (articleCount === 1) {
+        achievement = await models.Achievement.findByPk(1, { transaction: t });
+        await achievement.addUsers(user, { transaction: t });
+        user.points += achievement.points;
+        await user.save({ transaction: t });
+      } else if (articleCount === 5) {
+        achievement = await models.Achievement.findByPk(2, { transaction: t });
+        await achievement.addUsers(user, { transaction: t });
+        user.points += achievement.points;
+        await user.save({ transaction: t });
+      } else if (articleCount % 20 === 0) {
+        achievement = await models.Achievement.findByPk(3, { transaction: t });
+        const [userAchievement, created] = await models.UserAchievement.findOrCreate({
+          where: { userId, achievementId: achievement.id },
+          defaults: { dateEarned: new Date(), iteration: 1 },
+          transaction: t,
+        });
+        if (!created) {
+          userAchievement.iteration += 1;
+          userAchievement.dateEarned = new Date();
+          await userAchievement.save({ transaction: t });
+        }
+        user.points += achievement.points;
+        await user.save({ transaction: t });
+      }
+
+
+      // ✅ All good → commit
+      await t.commit();
+
+      if (originalVideo && fullVideoPath) {
+        try {
+          await videoQueue.add('process', { articleId: article.id, fullVideoPath, runType: 'create', lang: lang });
+        } catch (e) {
+          console.error('[queue] enqueue afterCommit failed:', e?.message || e);
+          try {
+            await Article.update(
+              { processingStatus: 'failed', processingError: 'enqueue_failed' },
+              { where: { id: article.id } }
+            );
+          } catch (_) { }
+        }
+      } else if (urlYoutube || previewPath) {
+        await notifyAdminValidation(article, lang);
+      }
+
+      return res.status(200).json({ article, achievement, userAchievement, user });
+
     } catch (error) {
-      console.error("Error creating article: ", error.message);
+      // delete uploaded file only if we had one and we didn't commit
+      try {
+        if (originalVideo && fullVideoPath) {
+          safeUnlink(fullVideoPath);
+        }
+      } catch (_) { }
+
+      try { await t.rollback(); } catch (_) { }
+      console.error("Error creating article (preflight/enqueue): ", error.message);
       return res.status(500).json({ message: req.t('error') });
     }
   },
@@ -546,69 +728,110 @@ module.exports = {
   },
   update: async function (req, res, next) {
     try {
-      const { title, description, urlYoutube, tags: rawTags } = req.body;
-  
-      if (!title || !description) {
-        return res.status(400).json({ message: req.t('article.fields_required') });
-      }
-  
-      if (title.length < 3) {
-        return res.status(400).json({ message: req.t('article.title_length') });
-      }
-  
+      const { title, description, urlYoutube, isPrivate, tags: rawTags } = req.body;
+      const { lang } = req.query;
+
+      // ——— Basic validations ———
+      if (!title || !description) return res.status(400).json({ message: req.t('article.fields_required') });
+      if (title.length < 3) return res.status(400).json({ message: req.t('article.title_length') });
+
       let tags = rawTags;
       if (typeof tags === 'string') {
-        try {
-          tags = JSON.parse(tags);
-        } catch (error) {
-          return res.status(400).json({ message: req.t('article.invalid_tags') });
-        }
+        try { tags = JSON.parse(tags); }
+        catch { return res.status(400).json({ message: req.t('article.invalid_tags') }); }
       }
-  
-      if (!tags || !Array.isArray(tags) || tags.length === 0) {
+      if (!Array.isArray(tags) || tags.length === 0) {
         return res.status(400).json({ message: req.t('article.tag_required') });
       }
-  
+
       const userId = req.user.id;
-      if (!userId) {
-        return res.status(400).json({ message: req.t('article.user_required') });
-      }
-  
+      if (!userId) return res.status(400).json({ message: req.t('article.user_required') });
+
       const article = await Article.findByPk(req.params.id);
-      if (!article) {
-        return res.status(404).json({ message: req.t('article.not_found') });
+      if (!article) return res.status(404).json({ message: req.t('article.not_found') });
+
+      // ——— Privacy toggle ———
+      if (!req.user.isAdmin && article.userId !== req.user.id && Object.prototype.hasOwnProperty.call(req.body, 'isPrivate')) {
+        return res.status(403).json({ message: req.t('unauthorized') });
       }
-  
-      const oldVideoPath = article.video;
-      const oldThumbnailPath = article.thumbnail;
-      const oldPreviewPath = article.preview; 
-  
+      const isPrivateBool = isPrivate === 'true' || isPrivate === true;
+      const isPrivateChanged = typeof isPrivate !== 'undefined' && isPrivateBool !== article.isPrivate;
+      let privateLink = article.privateLink;
+      if (isPrivateChanged) {
+        if (isPrivateBool) {
+          const crypto = require('crypto');
+          privateLink = crypto.randomBytes(16).toString('hex');
+        } else {
+          privateLink = null;
+        }
+      }
+
+      // ——— Previous file refs (for cleanup decisions) ———
+      const prevPreviewRel = article.preview || null;
+      const prevVideoRel = article.video || null;
+      const prevThumbRel = article.thumbnail || null;
+      const prevOrigRel = article.originalVideo || null;
+      const prevHlsDirRel = article.hlsDir || null;
+      const prevHlsPlaylistRel = article.hlsPlaylist || null;
+
+      // ——— New uploads normalized by middleware ———
       let previewPath = null;
-      let videoPath = null;
-  
+      let uploadedVideoRel = null;
+
       if (req.files?.preview?.[0]) {
         previewPath = req.uploadedFiles.preview.replace('/app/public', '');
         if (process.env.NODE_ENV === 'development') {
           previewPath = `uploads/previews/${req.files.preview[0].filename}`;
         }
       }
-  
+
       if (req.files?.video?.[0]) {
-        videoPath = req.uploadedFiles.video.replace('/app/public', '');
+        uploadedVideoRel = req.uploadedFiles.video.replace('/app/public', '');
         if (process.env.NODE_ENV === 'development') {
-          videoPath = `uploads/videos/${req.files.video[0].filename}`;
+          uploadedVideoRel = `uploads/videos/${req.files.video[0].filename}`;
         }
       }
-  
-      let thumbnailPath = article.thumbnail;
-  
-      const updatedArticle = await article.update({
+
+      // ——— Determine intent (media type switch) ———
+      const wantsYoutube = !!urlYoutube && !uploadedVideoRel && !previewPath; // user provided a youtube URL without uploading media
+      const wantsPreview = !!previewPath && !uploadedVideoRel;                // user uploaded an image
+      const wantsNewVideo = !!uploadedVideoRel;                               // user uploaded a (new) video
+
+      // Compare tags sets (id-based)
+      function sameTagSet(a = [], b = []) {
+        const A = new Set(a.map(t => t.id))
+        const B = new Set(b.map(t => t.id))
+        if (A.size !== B.size) return false
+        for (const id of A) if (!B.has(id)) return false
+        return true
+      }
+
+      // What changes, except isPrivate
+      const titleChanged = title !== article.title
+      const descriptionChanged = description !== article.description
+      const urlYoutubeChanged = (typeof urlYoutube !== 'undefined') && ((urlYoutube || null) !== (article.urlYoutube || null))
+      const tagsChanged = !sameTagSet(tags, await article.getTags({ attributes: ['id'] }))
+
+
+      // If isPrivate changes AND nothing else changes
+      const isOnlyPrivacyChange =
+        isPrivateChanged &&
+        !titleChanged &&
+        !descriptionChanged &&
+        !urlYoutubeChanged &&
+        !tagsChanged &&
+        !wantsYoutube &&
+        !wantsPreview &&
+        !wantsNewVideo
+
+      // Build a base update for common fields (reset validation, etc.)
+      const baseUpdate = {
         title,
         description,
-        preview: previewPath || article.preview,
-        video: videoPath || article.video,
-        thumbnail: thumbnailPath,
-        urlYoutube: urlYoutube || article.urlYoutube,
+        isPrivate: typeof isPrivate === 'undefined' ? article.isPrivate : isPrivateBool,
+        privateLink,
+        // Reset validation to force a new validation cycle on content changes
+        isValid: isOnlyPrivacyChange ? article.isValid : false,
         refusalReasons: JSON.stringify({
           title: { value: '', isValid: null, validatedBy: null },
           description: { value: '', isValid: null, validatedBy: null },
@@ -617,87 +840,175 @@ module.exports = {
           preview: { value: '', isValid: null, validatedBy: null },
         }),
         overallReasonForRefusal: null,
-        isValid: false,
-        userId
+        validatedBy: null,
+        userId,
+      };
+
+      // ———————————————————————————————————————————————
+      // CASE A — Switch to YOUTUBE (no new video/image upload)
+      // ———————————————————————————————————————————————
+      if (wantsYoutube) {
+        const updatedArticle = await article.update({
+          ...baseUpdate,
+          urlYoutube,
+          preview: null,
+          video: null,
+          thumbnail: null,
+          originalVideo: null,
+          hlsPlaylist: null,
+          hlsDir: null,
+          processingStatus: 'ready',
+          processingProgress: 100,
+          processingError: null,
+        });
+
+        // Update tags
+        const tagIds = tags.map(t => t.id);
+        const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+        await updatedArticle.setTags(tagsToAssociate);
+
+        // Cleanup previous files (both video stack and preview)
+        safeUnlink(toAbs(prevPreviewRel));
+        safeUnlink(toAbs(prevVideoRel));
+        safeUnlink(toAbs(prevThumbRel));
+        safeUnlink(toAbs(prevOrigRel));
+        // remove HLS pack directory for this article if it exists
+        if (article.hlsDir) {
+          try { fs.rmSync(toAbs(article.hlsDir), { recursive: true, force: true }); } catch (_) {}
+        }
+
+        // Drop likes & comments because the article has been modified
+        await purgeReactions(updatedArticle.id);
+
+        if(!isOnlyPrivacyChange) {
+          await notifyAdminValidation(article, lang);
+        }
+
+        return res.json({ article: updatedArticle });
+      }
+
+      // ———————————————————————————————————————————————
+      // CASE B — Switch to IMAGE (new preview upload, no new video)
+      // ———————————————————————————————————————————————
+      if (wantsPreview) {
+        const updatedArticle = await article.update({
+          ...baseUpdate,
+          preview: previewPath,
+          urlYoutube: null,
+          video: null,
+          thumbnail: null,
+          originalVideo: null,
+          hlsPlaylist: null,
+          hlsDir: null,
+          processingStatus: 'ready',
+          processingProgress: 100,
+          processingError: null,
+        });
+
+        // Update tags
+        const tagIds = tags.map(t => t.id);
+        const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+        await updatedArticle.setTags(tagsToAssociate);
+
+        // Cleanup previous files:
+        // - previous preview only if replaced by a new one
+        if (prevPreviewRel && prevPreviewRel !== previewPath) safeUnlink(toAbs(prevPreviewRel));
+        // - drop the whole video stack if any
+        safeUnlink(toAbs(prevVideoRel));
+        safeUnlink(toAbs(prevThumbRel));
+        safeUnlink(toAbs(prevOrigRel));
+        // remove HLS pack directory for this article if it exists
+        if (article.hlsDir) {
+          try { fs.rmSync(toAbs(article.hlsDir), { recursive: true, force: true }); } catch (_) {}
+        }
+
+        // Drop likes & comments because the article has been modified
+        await purgeReactions(updatedArticle.id);
+
+        if(!isOnlyPrivacyChange) {
+          await notifyAdminValidation(article, lang);
+        }
+
+        return res.json({ article: updatedArticle });
+      }
+
+      // ———————————————————————————————————————————————
+      // CASE C — New VIDEO uploaded (stay video type or switch from image/youtube to video)
+      // ———————————————————————————————————————————————
+      if (wantsNewVideo) {
+        // Preflight
+        let fullVideoPath = toAbs(uploadedVideoRel);
+        await quickVideoPreflight(fullVideoPath);
+
+        // Queue processing; keep old player working until success
+        const updatedArticle = await article.update({
+          ...baseUpdate,
+          urlYoutube: null,
+          preview: null,
+          originalVideo: uploadedVideoRel,
+          processingStatus: 'queued',
+          processingProgress: 0,
+          processingError: null,
+        });
+
+        // Update tags
+        const tagIds = tags.map(t => t.id);
+        const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
+        await updatedArticle.setTags(tagsToAssociate);
+
+        if (prevPreviewRel) safeUnlink(toAbs(prevPreviewRel));
+
+        // Enqueue with runType=update so the worker will cleanup old processed assets on success
+        try {
+          await videoQueue.add('process', { articleId: updatedArticle.id, fullVideoPath, runType: 'update', lang: lang });
+        } catch (e) {
+          console.error('[queue] enqueue after update failed:', e?.message || e);
+          await updatedArticle.update({ processingStatus: 'failed', processingError: 'enqueue_failed' });
+        }
+
+        // Drop likes & comments because the article has been modified
+        await purgeReactions(updatedArticle.id);
+
+        return res.json({ article: updatedArticle });
+      }
+
+      // ———————————————————————————————————————————————
+      // CASE D — No media change (text/privacy/tags only)
+      // (Keep current media; preserve processing fields)
+      // If user cleared youtube without providing another media, keep existing preview/video as-is.
+      // ———————————————————————————————————————————————
+      const updatedArticle = await article.update({
+        ...baseUpdate,
+        urlYoutube: typeof urlYoutube === 'undefined' ? article.urlYoutube : urlYoutube || null,
+        preview: article.preview,
+        video: article.video,
+        thumbnail: article.thumbnail,
+        originalVideo: article.originalVideo,
+        processingStatus: article.processingStatus,
+        processingProgress: article.processingProgress,
+        processingError: article.processingError,
       });
-  
-      if (tags && Array.isArray(tags)) {
-        const tagIds = tags.map(tag => tag.id);
+
+      // Update tags
+      {
+        const tagIds = tags.map(t => t.id);
         const tagsToAssociate = await Tag.findAll({ where: { id: tagIds } });
         await updatedArticle.setTags(tagsToAssociate);
       }
-  
-      const fs = require('fs');
-      const path = require('path');
-  
-      // Suppression de l'ancien preview si un nouveau preview a été uploadé
-      if (previewPath && oldPreviewPath) {
-        const oldFullPreviewPath = process.env.NODE_ENV === 'development'
-          ? path.resolve(oldPreviewPath)
-          : path.join('/app/public', oldPreviewPath);
-        if (fs.existsSync(oldFullPreviewPath)) {
-          fs.unlinkSync(oldFullPreviewPath);
-        }
+
+      if (!isOnlyPrivacyChange) {
+        await purgeReactions(updatedArticle.id);
       }
-  
-      if (req.files?.video?.[0]) {
-        const {
-          isExecutableFile,
-          analyzeVideo,
-          extractFrameFromVideo,
-          scanForNSFW
-        } = require('../services/video');
-  
-        let fullVideoPath = path.join('/app/public', videoPath);
-        if (process.env.NODE_ENV === 'development') {
-          fullVideoPath = path.resolve(videoPath);
-        }
-  
-        await isExecutableFile(fullVideoPath);
-        await analyzeVideo(fullVideoPath);
-  
-        const { getUploadPath } = require('../utils/getUploadPath');
-        const { v4: uuidv4 } = require('uuid');
-        const thumbnailName = `thumbnail-${uuidv4()}.jpg`;
-        const { fullPath: thumbnailFullPath, dbPath: thumbnailDbPath } = getUploadPath('thumbnails', thumbnailName);
-  
-        if (!fs.existsSync(path.dirname(thumbnailFullPath))) {
-          fs.mkdirSync(path.dirname(thumbnailFullPath), { recursive: true });
-        }
-  
-        await extractFrameFromVideo(fullVideoPath, thumbnailFullPath);
-        await scanForNSFW(thumbnailFullPath);
-  
-        if (oldVideoPath) {
-          const oldFullVideoPath = process.env.NODE_ENV === 'development'
-            ? path.resolve(oldVideoPath)
-            : path.join('/app/public', oldVideoPath);
-          if (fs.existsSync(oldFullVideoPath)) {
-            fs.unlinkSync(oldFullVideoPath);
-          }
-        }
-  
-        if (oldThumbnailPath) {
-          const oldFullThumbnailPath = process.env.NODE_ENV === 'development'
-            ? path.resolve(oldThumbnailPath)
-            : path.join('/app/public', oldThumbnailPath);
-          if (fs.existsSync(oldFullThumbnailPath)) {
-            fs.unlinkSync(oldFullThumbnailPath);
-          }
-        }
-  
-        await article.update({
-          video: videoPath,
-          thumbnail: thumbnailDbPath
-        });
-      }
-  
-      return res.json({ updatedArticle });
+
+      await notifyAdminValidation(article, lang);
+
+      return res.json({ article: updatedArticle });
+
     } catch (error) {
       console.error("Error updating article:", error.message);
       return res.status(500).json({ message: req.t('error') });
     }
-  },  
+  },
   validate: function (req, res, next) {
     const user = req.user;
 
@@ -758,15 +1069,37 @@ module.exports = {
         res.status(500).json({ message: req.t('article.error_fetch') });
       });
   },
-  delete: function (req, res, next) {
-    Article.findByPk(req.params.id)
-      .then((article) => {
-        article.destroy();
-        res.status(200).json(`Article ${article.id} ${req.t('article.deleted')}.`);
-      })
-      .catch((error) => {
-        console.log("error: ", error.message);
-        res.status(500).json({ message: req.t('error') });
-      });
+  delete: async function (req, res, next) {
+    try {
+      const article = await Article.findByPk(req.params.id);
+      if (!article) {
+        return res.status(404).json({ message: req.t('article.not_found') });
+      }
+
+      // 🔴 Gather all file paths before destroying the article
+      const filesToDelete = [
+        article.preview,
+        article.video,
+        article.thumbnail,
+        article.originalVideo
+      ].filter(Boolean);
+
+      // 🔴 Delete reactions (likes/comments) if tu veux aussi nettoyer
+      await Like.destroy({ where: { articleId: article.id } });
+      await Comment.destroy({ where: { articleId: article.id } });
+
+      // 🔴 Destroy the article row
+      await article.destroy();
+
+      // 🔴 Cleanup physical files
+      for (const rel of filesToDelete) {
+        safeUnlink(toAbs(rel));
+      }
+
+      return res.status(200).json({ message: `Article ${article.id} ${req.t('article.deleted')}.` });
+    } catch (error) {
+      console.error("Error deleting article:", error.message);
+      return res.status(500).json({ message: req.t('error') });
+    }
   }
 };

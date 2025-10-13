@@ -1,4 +1,24 @@
 <template>
+  <el-dialog
+    v-model="showAuthModal"
+    width="420px"
+    :show-close="false"
+  >
+    <template #header>
+    <div class="modal-bloc">
+      <span>{{ $t('navigation.auth_required_title') }}</span>
+    </div>
+  </template>
+    <p class="modal-bloc">{{ $t('navigation.auth_required_message') }}</p>
+    <template #footer>
+      <div class="dialog-footer">
+        <div class="modal-bloc">
+        <el-button @click="goToSignup" plain>{{ $t('navigation.signup') }}</el-button>
+        <el-button @click="goToLogin">{{ $t('navigation.login') }}</el-button>
+        </div>
+      </div>
+    </template>
+  </el-dialog>
   <nav class="navbar" @click="handleClickOutsideNavbar">
     <ul class="navbar-title">
       <li>
@@ -36,8 +56,12 @@
           {{ $t('navigation.articles') }}
         </RouterLink>
       </li>
-      <li v-if="isAuthenticated">
-        <RouterLink to="/new-article" :class="{ 'active': isActiveRoute('/new-article') }" @click="closeMenu">
+      <li>
+        <RouterLink
+          to="/new-article"
+          :class="{ 'active': isActiveRoute('/new-article') }"
+          @click.prevent="handlePublishClick"
+        >
           {{ $t('navigation.publish') }}
         </RouterLink>
       </li>
@@ -65,7 +89,7 @@
               <button @click="logout">{{ $t('navigation.logout') }}</button>
             </li>
             <li>
-              <button class="delete-button" @click="deleteAccount">{{ $t('navigation.delete_account') }}</button>
+              <button class="delete-button" @click="deleteAccount($event)">{{ $t('navigation.delete_account') }}</button>
             </li>
             <li>
             </li>
@@ -93,6 +117,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const selectedLanguage = ref('fr');
+const showAuthModal = ref(false)
 const { locale, t } = useI18n();
 const { notify } = useNotification();
 
@@ -126,6 +151,24 @@ const changeLanguage = async (lang) => {
   navbarStore.closeTranslation();
 };
 
+const handlePublishClick = (evt) => {
+  closeMenu()
+
+  if (authStore.user) {
+    router.push('/new-article')
+  } else {
+    showAuthModal.value = true
+  }
+}
+const goToLogin = () => {
+  showAuthModal.value = false
+  router.push({ path: '/login', query: { redirect: '/new-article' } })
+}
+const goToSignup = () => {
+  showAuthModal.value = false
+  router.push({ path: '/signup', query: { redirect: '/new-article' } })
+}
+
 const handleClick = (event) => {
   closeMenu();
   closeDropdown(event);
@@ -137,7 +180,6 @@ const logout = () => {
 };
 
 const deleteAccount = (event) => {
-  toggleMenu();
   closeDropdown(event);
   router.push(`/profile/${authStore.user?.pseudo}/informations`);
 };
@@ -302,6 +344,13 @@ const handleClickOutsideNavbar = (event) => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.modal-bloc {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 @media (min-width: 769px) {
   .navbar-links {
     display: flex;
@@ -401,5 +450,90 @@ const handleClickOutsideNavbar = (event) => {
   }
 }
 
+.dropdown[open] ul li button {
+  font-size: clamp(12px, 2vw, 18px);
+}
 
+@media (min-width: 768px) and (max-width: 1450px) {
+  .dropdown[open] ul {
+    left: -130px !important;
+  }
+  .dropdown[open] ul li {
+    text-align: clamp(110px, 2vw, 130px);
+  }
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  align-self: flex-start;
+  z-index: 10;
+}
+
+.dropdown > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  outline: none;
+}
+
+.dropdown > summary::-webkit-details-marker { display: none; }
+.dropdown > summary::marker { content: ""; }
+
+.dropdown > ul {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  left: auto;
+  z-index: 1000;
+
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+
+  width: max-content;
+  min-width: 180px;
+  max-width: 260px;
+  box-shadow: 0 8px 16px rgba(0,0,0,.08);
+}
+
+.dropdown > ul > li {
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.dropdown > ul a {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.dropdown > ul a:hover {
+  background: #f6f6f6;
+}
+
+.dropdown > ul .delete-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  color: #fff;
+  background-color: darkred;
+  border: 2px solid brown;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.dropdown > ul .delete-button:hover {
+  background-color: rgb(112, 0, 0);
+}
 </style>

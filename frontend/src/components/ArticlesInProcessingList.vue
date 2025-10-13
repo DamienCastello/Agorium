@@ -1,34 +1,35 @@
-
-  <template>
-    <h1>{{ $t('profile.label_articles_treatment') }}</h1>
-  <div
-  ref="scrollRef"
-  class="scroll-container pico"
-  v-infinite-scroll="loadMore"
-  :infinite-scroll-disabled="isFetching || state === 'end'"
-  :infinite-scroll-delay="300"
-  >
-    <div class="article-card" v-for="(article, index) in articles" :key="index" @click="navigateToArticle(article.id)">
-      <img
-        v-if="article.urlYoutube"
-        :src="getYoutubeThumbnail(article.urlYoutube)"
-        alt="Preview"
-        class="card-image"
-      />
-      <img
-        v-else-if="article.preview"
-        :src="`${url.baseUrl}/${article.preview}`"
-        alt="Preview"
-        class="card-image"
-      />
-      <img
-        v-else-if="article.video"
-        :src="`${url.baseUrl}/${article.thumbnail}`"
-        alt="Preview"
-        class="card-image"
-      />
+<template>
+  <h1>{{ $t('profile.label_articles_treatment') }}</h1>
+  <div ref="scrollRef" class="scroll-container pico" v-infinite-scroll="loadMore"
+    :infinite-scroll-disabled="isFetching || state === 'end'" :infinite-scroll-delay="300">
+    <div class="article-card" v-for="(article, index) in articles" :key="index" @click="navigateToArticle(article)">
+      <img v-if="article.urlYoutube" :src="getYoutubeThumbnail(article.urlYoutube)" alt="Preview" class="card-image" />
+      <img v-else-if="article.preview" :src="`${url.baseUrl}/${article.preview}`" alt="Preview" class="card-image" />
+      <img v-else-if="article.video" :src="`${url.baseUrl}/${article.thumbnail}`" alt="Preview" class="card-image" />
       <div class="card-content">
-        <h3>{{ article.title }}</h3>
+        <div class="title-container">
+          <div class="badge-container">
+            <p v-if="article.processingStatus === 'queued'" class="queued-badge">
+              <QueuedIcon />
+            </p>
+            <p v-if="article.processingStatus === 'processing'" class="processing-badge">
+              <ProcessingIcon />
+            </p>
+            <p v-if="article.processingStatus === 'failed'" class="failed-badge">
+              <FailedIcon />
+            </p>
+            <p v-if="article.processingStatus === 'ready' && !article.isValid" class="queued-badge">
+                <QueuedIcon />
+            </p>
+          </div>
+          <h2>{{ article.title }}</h2>
+          <div v-if="article.isPrivate" class="private-icon">
+            <LockIcon />
+          </div>
+          <div v-if="!article.isPrivate" class="private-icon">
+            <UnlockIcon />
+          </div>
+        </div>
         <p class="description">
           {{
             article.description.length > 100
@@ -37,7 +38,7 @@
           }}
         </p>
         <div class="badge-container">
-          <span class="badge" v-for="(tag, index) in article.tags" :key="index">
+          <span class="badge" :class="{ 'invalid': !tag.isValid }" v-for="(tag, index) in article.tags" :key="index">
             {{ tag.name }}
           </span>
         </div>
@@ -48,7 +49,7 @@
 </template>
 
 
-  
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -60,7 +61,13 @@ import { useAuthStore } from '@/stores/auth';
 import getYoutubeThumbnail from '@/utils/getYoutubeThumbnail';
 import { useI18n } from 'vue-i18n';
 import { ElInfiniteScroll } from 'element-plus'
-
+import LockIcon from './icons/LockIcon.vue';
+import UnlockIcon from './icons/UnlockIcon.vue';
+import { useNavbarHandler } from '@/composables/useNavbarHandler';
+import QueuedIcon from './icons/QueuedIcon.vue';
+import ProcessingIcon from './icons/ProcessingIcon.vue';
+import ReadyIcon from './icons/ReadyIcon.vue';
+import FailedIcon from './icons/FailedIcon.vue';
 
 const articles = ref([]);
 const state = ref('loading');
@@ -72,6 +79,7 @@ const router = useRouter();
 const { notify } = useNotification();
 const authStore = useAuthStore();
 const { t } = useI18n();
+const { handleNavbar } = useNavbarHandler();
 
 defineExpose({ ElInfiniteScroll })
 
@@ -110,8 +118,14 @@ const fetchArticles = async () => {
   }
 };
 
-const navigateToArticle = (id) => {
-  router.push(`/articles/edit/${id}`);
+const navigateToArticle = (article) => {
+  handleNavbar(() => {
+    if (article.isPrivate) {
+      router.push(`/articles/private/${article.privateLink}`);
+    } else {
+      router.push(`/articles/${article.id}`);
+    }
+  })
 };
 
 onMounted(() => {
@@ -164,13 +178,72 @@ onMounted(() => {
   display: none;
 }
 
+.title-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: auto;
+  margin-bottom: 0 !important;
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.ready-badge {
+  background-color: rgb(31, 177, 43);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
+.failed-badge {
+  background-color: rgb(189, 26, 26);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 0px 3px !important;
+  border: 1px solid black
+}
+
 .article-card {
   flex: 0 0 auto;
-  width: clamp(120px, 25vw, 180px);
+  width: 250px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s ease;
   flex-shrink: 0;
@@ -192,8 +265,7 @@ onMounted(() => {
   padding: 0.6rem;
 }
 
-.card-content h3 {
-  font-size: clamp(0.4rem, 2vw, 0.5rem) !important;
+.card-content h2 {
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -201,7 +273,7 @@ onMounted(() => {
 }
 
 .description {
-  font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+  font-size: 0.6rem;
   color: #555;
   margin: 0.5rem 0;
   height: clamp(1.5rem, 2.5vw, 2.4rem);
@@ -223,6 +295,19 @@ onMounted(() => {
   font-size: clamp(7px, 1.3vw, 9px) !important;
 }
 
+.invalid {
+  background-color: #e4a100;
+}
+
+.private-icon {
+  text-align: end;
+  font-size: 15px;
+}
+
+h1 {
+  margin-top: 20px;
+}
+
 /* Orientation landscape: réduire un peu les tailles */
 @media (max-width: 600px) and (orientation: landscape) {
   .scroll-container {
@@ -235,4 +320,3 @@ onMounted(() => {
   }
 }
 </style>
-

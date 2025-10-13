@@ -3,22 +3,40 @@
 
 <head>
   <meta charset="UTF-8">
-  <script>
-    let xhr = new XMLHttpRequest()
-    window.environment = {}
+<script>
+  window.environment = {};
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/env.json?' + Date.now(), false);
+    xhr.send(null);
+    if (xhr.status === 200) window.environment = JSON.parse(xhr.responseText);
+  } catch (e) {}
+</script>
+  <!-- EN: Basic favicons -->
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#4040BF" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#ffffff" />
 
-    xhr.onload = function () {
-      if (xhr.status == 200) {
-        const vars = JSON.parse(xhr.responseText)
+  <!-- Default Open Graph (fallback for non-article pages) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Agorium" />
+  <meta property="og:description" content="La plateforme de diffusion libre." />
+  <meta property="og:url" content="%PUBLIC_ORIGIN%" />
+  <meta property="og:image" content="%PUBLIC_ORIGIN%/og-banner.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
-        Object.keys(vars).forEach((key) => (window.environment[key] = vars[key]))
-      }
-    }
 
-    xhr.open('GET', '/env.json?' + new Date().getTime(), false)
-    xhr.send()
-  </script>
-  <link rel="icon" href="/favicon.ico">
+  <!-- EN: Twitter card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Agorium" />
+  <meta name="twitter:description" content="La plateforme de diffusion libre." />
+  <meta name="twitter:image" content="%PUBLIC_ORIGIN%/og-banner.jpg" />
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.conditional.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

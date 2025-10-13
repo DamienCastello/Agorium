@@ -20,7 +20,7 @@ const articleUploader = multer({
     },
   }),
   limits: {
-    fileSize: 200 * 1024 * 1024,
+    fileSize: 2000 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
     if (file.fieldname === 'video' && !file.mimetype.startsWith('video/')) {

@@ -1,13 +1,68 @@
 <template>
+    <el-dialog v-model="uploading" :close-on-press-escape="false" :close-on-click-modal="false" :show-close="false"
+    :width="'clamp(300px, 90vw, 420px)'">
+    <template #header>
+      <h4>{{ $t('publish.modal_title_upload') }}</h4>
+    </template>
+    <p class="modal-text">{{ $t('publish.state_uploading') }}</p>
+    <el-progress :percentage="uploadProgress" class="progressBar" :stroke-width="12" color="#6400e4" />
+    <div v-if="uploadProgress === 100">
+
+      <p v-if="processing.status === 'queued'" class="queued-badge modal-text">
+        <QueuedIcon /> {{ $t('validate.fileState_queued') }}
+      </p>
+      <div v-if="processing.status === 'processing'">
+        <p class="processing-badge modal-text">
+          <ProcessingIcon /> {{ $t('validate.fileState_processing') }}
+        </p>
+        <el-progress :percentage="processing.progress" class="progressBar" :stroke-width="12" color="#6400e4" />
+      </div>
+
+      <p>
+        {{ $t('publish.can_switch') }}
+      </p>
+      <el-button color="#6400e4"  @click="goToArticles">{{ $t('publish.navigate_articles') }}</el-button>
+    </div>
+  </el-dialog>
+
     <div v-if="state === 'error'">
         <p>{{ $t('update.state_error') }}</p>
     </div>
+
     <div v-else class="pico" v-loading="state === 'loading'" :element-loading-text="$t('publish.state_loading')">
+
         <div @mousedown="handleClickOutsideNavbar">
             <h1>{{ $t('update.title') }}</h1>
+            <h3>{{ $t('validate.processing_state') }}</h3>
+            <div class="badge-container" v-if="processing.status">
+                <p v-if="processing.status === 'queued'" class="queued-badge">Queued</p>
+                <p v-else-if="processing.status === 'processing'" class="processing-badge">
+                    Processing <span v-if="Number.isFinite(processing.progress)"> - {{ processing.progress }}%</span>
+                </p>
+                <p v-else-if="processing.status === 'ready'" class="ready-badge">Ready</p>
+                <p v-else-if="processing.status === 'failed'" class="failed-badge">Failed</p>
+                </div>
+                <div v-if="processing.status === 'failed'" class="processing-actions">
+                <button @click="retryProcessing" :disabled="loadingRetry || processing.status === 'queued' || processing.status === 'processing'">
+                    {{ loadingRetry ? 'Retry...' : 'Retry processing file' }}
+                </button>
+            </div>
 
+                  <fieldset>
+                        <h3>{{ $t('publish.media_type') }}</h3>
+
+                        <el-radio-group v-model="mediaType">
+                        <el-radio value="image">{{ $t('publish.option_image') }}</el-radio>
+                        <el-radio value="video">{{ $t('publish.option_video') }}</el-radio>
+                        <el-radio value="youtube">{{ $t('publish.option_youtube') }}</el-radio>
+                        </el-radio-group>
+                    </fieldset>
 
             <form @submit.prevent="handleSubmit">
+                <el-radio-group v-model="form.isPrivate">
+                    <el-radio value="public">{{ $t('publish.option_public') }}</el-radio>
+                    <el-radio value="private">{{ $t('publish.option_private') }}</el-radio>
+                </el-radio-group>
                 <fieldset>
                     <label for="title">{{ $t('update.label_title') }}<span style="color: red">*</span></label>
                     <p v-if="!refusalReasons.title.isValid" class="validation-message">{{ refusalReasons.title.value }}
@@ -77,28 +132,32 @@
                 <p v-if="!refusalReasons.preview.isValid" class="validation-message">{{
                     refusalReasons.preview.value }}</p>
                 <FadeSlideTransition>
-                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'" :imagePreview="imagePreview"
-                        @update:videoThumbnail="updateVideoThumbnail" :videoThumbnail="videoThumbnail"
-                        @update:imagePreview="updateImagePreview" :videoPreview="videoPreview"
-                        @update:videoPreview="updateVideoPreview" @update:selectedFile="updateSelectedFile" />
+                    <component :is="componentToShow" v-model="form.urlYoutube" :mode="'update'"
+                        :imagePreview="imagePreview" @update:videoThumbnail="updateVideoThumbnail"
+                        :videoThumbnail="videoThumbnail" @update:imagePreview="updateImagePreview"
+                        :videoPreview="videoPreview" @update:videoPreview="updateVideoPreview"
+                        @update:selectedFile="updateSelectedFile" />
                 </FadeSlideTransition>
                 <p v-if="selectedTags.length === 0" class="comment-info">{{ $t('update.tag_required') }}</p>
                 <p v-if="overallReasonForRefusal" class="validation-message">{{ overallReasonForRefusal }}
                 </p>
                 <button type="submit"
-                    :disabled="!isFormValid || selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
+                    :disabled="selectedTags.length === 0 || isDropdownOpen || navbarStore.isMenuOpen">
                     {{ $t('update.submit_button') }}
                 </button>
             </form>
         </div>
     </div>
+    <el-button @click="showConfirmDialog" class="danger-btn" :disabled="isDropdownOpen || navbarStore.isMenuOpen">
+        {{ $t('update.delete') }}
+    </el-button>
     <notifications position="bottom right" />
 </template>
 
 
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import url from '@/utils/url';
 import axios from 'axios';
@@ -111,9 +170,9 @@ import { useNavbarStore } from "../stores/navbar";
 import { useNotification } from "@kyvg/vue3-notification";
 import extractVideoId from "@/utils/extractYoutubeUrl";
 import { useI18n } from "vue-i18n";
+import { ElMessageBox } from 'element-plus';
 
 const route = useRoute();
-const articleId = route.params.id;
 const authStore = useAuthStore();
 const navbarStore = useNavbarStore();
 const router = useRouter();
@@ -125,11 +184,11 @@ const state = ref("loading");
 const tags = ref([]);
 const selectedTags = ref([]);
 const refusalReasons = ref({
-  title: { isValid: true, value: "" },
-  description: { isValid: true, value: "" },
-  preview: { isValid: true, value: "" },
-  videoContent: { isValid: true, value: "" },
-  videoFile: { isValid: true, value: "" }
+    title: { isValid: true, value: "" },
+    description: { isValid: true, value: "" },
+    preview: { isValid: true, value: "" },
+    videoContent: { isValid: true, value: "" },
+    videoFile: { isValid: true, value: "" }
 });;
 const overallReasonForRefusal = ref(null);
 const selectedFile = ref(null);
@@ -138,28 +197,127 @@ const videoPreview = ref(null);
 const videoThumbnail = ref(null);
 const isDropdownOpen = ref(false);
 const isClosingNavbar = ref(false);
+const isConfirmedDelete = ref(false);
+const isDialogVisible = ref(false);
 const dropdownRef = ref(null);
 const newTag = ref("");
+const articleId = ref(null);
+// Keep track of initial media to allow "no file upload" edits
+const initialMediaType = ref(null)
+
+watch(mediaType, (next, prev) => {
+  // Clean conflicting inputs when switching media type
+  if (next === 'youtube') {
+    selectedFile.value = null
+    imagePreview.value = null
+    videoPreview.value = null
+    videoThumbnail.value = null
+  } else if (next === 'image') {
+    form.value.urlYoutube = ''
+    selectedFile.value = null
+    videoPreview.value = null
+    videoThumbnail.value = null
+  } else if (next === 'video') {
+    form.value.urlYoutube = ''
+    imagePreview.value = null
+  }
+})
+
+// Modal upload state
+const uploading = ref(false)
+const uploadProgress = ref(0)
+
+// Local processing state for Update page
+const processing = ref({ status: null, progress: 0, articleId: null })
+let statusTimer = null
+const loadingRetry = ref(false)
+
+// Warn user on refresh/close during upload
+let beforeUnloadHandler = null
 
 const form = ref({
     title: "",
     description: "",
-    urlYoutube: ""
+    urlYoutube: "",
+    isPrivate: 'public'
 });
 
-const isFormValid = computed(() => {
-    if (!form.value.title || !form.value.description) return false;
+function attachBeforeUnload() {
+  if (beforeUnloadHandler) return
+  beforeUnloadHandler = (e) => { e.preventDefault(); e.returnValue = '' }
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+}
+function detachBeforeUnload() {
+  if (!beforeUnloadHandler) return
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
+  beforeUnloadHandler = null
+}
 
-    switch (mediaType.value) {
-        case "youtube":
-            return form.value.urlYoutube.length > 0;
-        case "image":
-        case "video":
-            return selectedFile.value !== null;
-        default:
-            return false;
+function stopStatusPolling() {
+  if (statusTimer) {
+    clearInterval(statusTimer)
+    statusTimer = null
+  }
+}
+
+function startStatusPolling(id) {
+  processing.value.articleId = id
+  stopStatusPolling()
+
+  // When polling starts after upload, show modal in "processing" phase
+  uploading.value = true
+  uploadProgress.value = 100
+
+  statusTimer = setInterval(async () => {
+    try {
+      const { data } = await axios.get(`${url.baseUrl}/api/v1/articles/${id}/status`, {
+        headers: { Authorization: `Bearer ${authStore.token}`, 'Cache-Control': 'no-cache' },
+        params: { ts: Date.now() }
+      })
+      processing.value.status = data.status
+      processing.value.progress = typeof data.progress === 'number' ? data.progress : 0
+
+      if (data.status === 'ready') {
+        // ✅ Success — close modal and keep badges in "ready"
+        stopStatusPolling()
+        uploading.value = false
+        notify({ title: t('notification.title.article_process'), type: 'success', text: t('notification.text.article_process_ok') })
+      } else if (data.status === 'failed') {
+        // ❌ Failed — close modal and show Retry button via badges
+        stopStatusPolling()
+        uploading.value = false
+        notify({ title: t('notification.title.article_process'), type: 'error', text: t('notification.text.article_process_failed') })
+      }
+    } catch (e) {
+      console.warn('status poll error', e?.message || e)
     }
-});
+  }, 1500)
+}
+
+async function retryProcessing() {
+  if (!processing.value.articleId) return
+  loadingRetry.value = true
+  try {
+    await axios.post(
+      `${url.baseUrl}/api/v1/articles/${processing.value.articleId}/retry`,
+      {},
+      { headers: { Authorization: `Bearer ${authStore.token}` } }
+    )
+    processing.value.status = 'queued'
+    processing.value.progress = 0
+    startStatusPolling(processing.value.articleId)
+    notify({ title: t('notification.title.retry_process'), type: 'success', text: t('notification.text.retry_process') })
+  } catch (e) {
+    notify({
+      title: 'Retry',
+      type: 'error',
+      text: e?.response?.data?.message || e?.message || 'Retry error'
+    })
+  } finally {
+    loadingRetry.value = false
+  }
+}
+
 
 const handleSelectedTagClick = (tag, event) => {
     // Empêche la fermeture du dropdown si clic dans la sélection
@@ -209,15 +367,16 @@ const updateVideoThumbnail = (thumbnail) => {
 };
 
 const fetchArticle = async () => {
-    axios(`${url.baseUrl}/api/v1/articles/${articleId}`, {
-        withCredentials: true,
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        },
-    })
-        .then((response) => {
+    try {
+        let response;
+        if (route.params.privateLink) {
+        response = await axios.get(`${url.baseUrl}/api/v1/articles/private/${route.params.privateLink}`);
+        } else {
+        response = await axios.get(`${url.baseUrl}/api/v1/articles/${route.params.id}`);
+        }
+        if (response.data && response.data.article) {
             const article = response.data.article
+            articleId.value = article.id;
             if (article.video) mediaType.value = 'video'
             if (article.preview) mediaType.value = 'image'
             if (article.urlYoutube) mediaType.value = 'youtube'
@@ -225,12 +384,15 @@ const fetchArticle = async () => {
             overallReasonForRefusal.value = article.overallReasonForRefusal
             selectedTags.value = article.tags;
 
+            const isPrivateOption = article.isPrivate ? "private" : "public"
+
             if (mediaType.value === 'youtube') {
                 form.value = {
                     title: article.title,
                     description: article.description,
                     urlYoutube: article.urlYoutube,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
             } else if (mediaType.value === 'image') {
                 imagePreview.value = `${article.preview}`;
@@ -238,30 +400,43 @@ const fetchArticle = async () => {
                     title: article.title,
                     description: article.description,
                     preview: article.preview,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
             } else if (mediaType.value === 'video') {
                 form.value = {
                     title: article.title,
                     description: article.description,
                     video: article.video,
-                    tags: article.tags
+                    tags: article.tags,
+                    isPrivate: isPrivateOption
                 };
                 if (mediaType.value === 'video' && article.video) {
                     videoPreview.value = `${article.video}`;
                     videoThumbnail.value = `${article.thumbnail}`;
                 }
             }
-        })
-        .catch((error) => {
-            notify({
+            initialMediaType.value = mediaType.value
+
+            
+            // Initialize processing state from loaded article
+            processing.value.articleId = articleId.value
+            processing.value.status = article.processingStatus || null
+            processing.value.progress = Number.isFinite(article.processingProgress) ? article.processingProgress : 0
+            if (article.processingStatus === 'processing') {
+            startStatusPolling(articleId.value)
+            }
+        } else {
+            state.value = "error";
+        }
+    } catch (error) {
+        notify({
                 title: "Fetching Article",
                 type: 'error',
-                text: error.response.data.message,
+                text: error?.response?.data?.message,
             });
             state.value = "error";
-        });
-
+    }
 };
 
 onMounted(() => {
@@ -298,29 +473,97 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     document.removeEventListener("click", handleClickOutside);
+    stopStatusPolling();
+    detachBeforeUnload();
 });
 
-const handleSubmit = async () => {
-    state.value = 'loading';
+const addTag = () => {
+    if (!newTag.value.trim()) return;
 
-    if ((!selectedFile.value && mediaType !== 'youtube') || (!form.value.urlYoutube && mediaType === 'youtube')) {
+    const tagExists = tags.value.some((tag) => tag.name.toLowerCase() === newTag.value.toLowerCase());
+    if (tagExists) {
         notify({
-            title: t('notification.title.field_media_required'),
+            title: t('notification.title.tag_exists'),
             type: 'warn',
-            text: t('notification.text.field_media_required'),
+            text: t('notification.text.tag_exists'),
         });
+        newTag.value = "";
         return;
     }
 
+    const newTagObject = { name: newTag.value, isValid: false };
+
+    state.value = "loading";
+
+    axios
+        .post(`${url.baseUrl}/api/v1/tags/`, newTagObject, {
+            withCredentials: true,
+            headers: {
+                "Authorization": `Bearer ${authStore.token}`,
+                "Content-Type": "application/json",
+            },
+        })
+        .then(() => {
+            notify({
+                title: t('notification.title.tag_create'),
+                type: 'success',
+                text: t('notification.text.tag_create'),
+            });
+
+            return axios.get(`${url.baseUrl}/api/v1/tags/`, {
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+            });
+        })
+        .then((response) => {
+            if (response.data && response.data.tags) {
+                tags.value = response.data.tags;
+            }
+
+            newTag.value = "";
+            state.value = "idle";
+        })
+        .catch((error) => {
+            notify({
+                title: t('notification.title.error_tag_create'),
+                type: 'error',
+                text: error.response.data.message,
+            });
+            state.value = "error";
+        });
+};
+
+const handleSubmit = async () => {
     const cleanedTags = selectedTags.value.map(tag => {
         const { createdAt, updatedAt, ...cleanTag } = tag;
         return cleanTag;
     });
 
+    if (mediaType.value === 'youtube') {
+        const isValidYoutubeId = extractVideoId(form.value.urlYoutube ?? '')
+        if (!isValidYoutubeId) {
+            notify({ title: t('notification.title.field_media_required'), type: 'warn', text: t('notification.text.field_media_url') })
+            return
+        }
+    }
+    if (mediaType.value === 'video' && initialMediaType.value !== 'video' && !selectedFile.value) {
+        notify({ title: t('notification.title.field_media_required'), type: 'warn', text: t('notification.text.field_media_required') })
+        return
+    }
+    if (mediaType.value === 'preview' && initialMediaType.value !== 'preview' && !selectedFile.value) {
+        notify({ title: t('notification.title.field_media_required'), type: 'warn', text: t('notification.text.field_media_required') })
+        return
+    }
+
+
     const formData = new FormData();
 
     formData.append("title", form.value.title);
     formData.append("description", form.value.description);
+    formData.append("isPrivate", form.value.isPrivate !== 'public' ? true : false);
     if (mediaType.value === "youtube") {
         // Verify youtube ID is valid
         const isValidYoutubeId = extractVideoId(form.value.urlYoutube ?? '')
@@ -340,37 +583,73 @@ const handleSubmit = async () => {
     } else if (mediaType.value === "image") {
         formData.append("preview", selectedFile.value)
     } else if (mediaType.value === "video") {
+        uploading.value = true
+        uploadProgress.value = 0
+        attachBeforeUnload()
         formData.append("video", selectedFile.value)
     }
     formData.append("userId", authStore.user.id);
     formData.append("tags", JSON.stringify(cleanedTags));
 
     axios
-        .put(`${url.baseUrl}/api/v1/articles/${route.params.id}`, formData, {
+        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}?lang=${localStorage.getItem('lang')}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${authStore.token}`
+            },
+            onUploadProgress: (event) => {
+                if (event.total) {
+                    uploadProgress.value = Math.round((event.loaded * 100) / event.total);
+                }
             },
         })
-        .then(() => {
-            notify({
-                title: t('notification.title.article_update'),
-                type: 'success',
-                text: t('notification.text.article_update'),
-            });
-            setTimeout(() => {
-                // Improve it by call after navigation ...
-                state.value = 'idle';
-                router.push("/articles");
-            }, 2000);
+        .then((response) => {
+            if (response.data.article.originalVideo) {
+                notify({
+                    title: t('notification.title.file_upload'),
+                    type: 'success',
+                    text: t('notification.text.file_upload'),
+                });
+            } else {
+                notify({
+                    title: t('notification.title.article_update'),
+                    type: 'success',
+                    text: t('notification.text.article_update'),
+                });
+            }
+
+            // Expect backend to return the updated article
+            const updated = response?.data?.article || response?.data?.updatedArticle
+
+            if (mediaType.value === 'video' && selectedFile.value && updated) {
+                // Enter processing phase if backend queued the job
+                if (updated.processingStatus === 'queued' || updated.processingStatus === 'processing') {
+                    processing.value.articleId = updated.id
+                    processing.value.status = updated.processingStatus
+                    processing.value.progress = updated.processingProgress ?? 0
+                    uploadProgress.value = 100
+                    startStatusPolling(updated.id)
+                    return
+                }
+            }
+
+            setTimeout(() => router.push("/articles"), 5000)
         })
         .catch((error) => {
             notify({
-                title: t('notification.title.article_update'),
-                type: 'error',
-                text: error.response.data.message,
+            title: t('notification.title.article_update'),
+            type: 'error',
+            text: error?.response?.data?.message || error?.message || 'Error',
             });
-            state.value = 'error';
-        });
+            setTimeout(() => router.push("/articles"), 5000)
+        })
+        .finally(() => {
+            if (!(mediaType.value === 'video' && selectedFile.value)) {
+            uploading.value = false
+            uploadProgress.value = 0
+            }
+            detachBeforeUnload()
+        })
 
 
 };
@@ -415,6 +694,68 @@ const toggleDropdown = () => {
 
     isDropdownOpen.value = !isDropdownOpen.value;
 };
+
+const showConfirmDialog = () => {
+    ElMessageBox.confirm(
+        t('update.delete_warning') + t('update.delete_answer'),
+        t('update.delete_title'),
+
+        {
+            confirmButtonText: t('navigation.yes'),
+            cancelButtonText: t('navigation.no'),
+            type: 'warning',
+            center: true,
+        }
+    )
+        .then(() => {
+            confirmDelete()
+        })
+        .catch(() => {
+            // annulé
+        })
+}
+
+const confirmDelete = () => {
+    isConfirmedDelete.value = true;
+    isDialogVisible.value = false;
+    deleteArticle();
+};
+
+const deleteArticle = async (id) => {
+    if (isConfirmedDelete) {
+        try {
+            const response = await axios.delete(`${url.baseUrl}/api/v1/articles/${route.params.id}`, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "Authorization": `Bearer ${authStore.token}`,
+                },
+                withCredentials: true
+            })
+
+            notify({
+                title: t('notification.title.delete_article'),
+                type: 'success',
+                text: response.data.message,
+            });
+
+            setTimeout(() => {
+                router.push(`/profile/${authStore.user.pseudo}`)
+            }, 3000)
+
+        } catch (error) {
+            console.log("error: ", error)
+            notify({
+                title: t('notification.title.delete_article'),
+                type: 'error',
+                text: error.response?.data?.message || 'Delete failed.',
+            });
+        }
+    }
+};
+
+const goToArticles = () => {
+  router.push("/articles");
+}
 </script>
 
 <style scoped>
@@ -455,6 +796,45 @@ const toggleDropdown = () => {
     font-weight: bold;
     color: red;
     font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+}
+
+.queued-badge {
+  background-color: rgb(112, 112, 112);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 10px 3px !important;
+  border: 1px solid black;
+  padding: 5px
+}
+
+.processing-badge {
+  background-color: rgb(189, 192, 32);
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  border-radius: 12px;
+  display: inline-block;
+  margin: 10px 3px !important;
+  border: 1px solid black;
+}
+
+.modal-text {
+  padding: 10px 0;
+  font-size: 18px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+.progressBar {
+  margin-bottom: 20px;
+}
+
+h4 {
+  margin: 0px;
+  padding: 0px;
 }
 
 @media (max-width: 768px) {
@@ -592,5 +972,16 @@ const toggleDropdown = () => {
 
 .add-tag-button:hover {
     background-color: #4b00b3;
+}
+
+.danger-btn {
+    border-color: #ff4d4d;
+    color: red;
+}
+
+.danger-btn:hover {
+    background-color: #ff4d4d77;
+    border-color: #ff4d4d;
+    color: red;
 }
 </style>

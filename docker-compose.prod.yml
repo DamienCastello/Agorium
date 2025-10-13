@@ -1,11 +1,21 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: agorium-redis-prod
+    restart: always
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis-data-prod:/data
+    networks:
+      - proxy
+
   mysql:
     image: mysql:8.0
     container_name: agorium-db-prod
     restart: always
     env_file:
-      - .env      # Chargement du fichier d'environnement principal
-      - .env.prod # Chargement du fichier d'environnement spécifique à prod
+      - .env
+      - .env.prod
     environment:
       MYSQL_ROOT_PASSWORD: caS>13200.ago
       MYSQL_DATABASE: agorium_db_prod
@@ -21,11 +31,16 @@ services:
     container_name: agorium-backend-prod
     depends_on:
       - mysql
+      - redis
     env_file:
-      - .env          # Chargement du fichier d'environnement principal
-      - .env.prod # Chargement du fichier d'environnement spécifique à prod
+      - .env
+      - .env.prod
     environment:
-      - NODE_ENV=production  # Définition spécifique à cet environnement
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - VITE_FRONT_URL=https://agorium.castello.ovh
+      - API_PUBLIC_URL=https://agorium-backend.castello.ovh
     networks:
       - proxy
     volumes:
@@ -34,9 +49,32 @@ services:
     command: >
       sh -c "
         npm install &&
-        dockerize -wait tcp://agorium-db-prod:3306 -timeout 60s &&
+        dockerize -wait tcp://agorium-db-prod:3306 -wait tcp://redis:6379 -timeout 60s &&
         npx sequelize-cli db:migrate &&
         node ./bin/www"
+
+  worker:
+    build: ./backend
+    container_name: agorium-worker-prod
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    env_file:
+      - .env
+      - .env.prod
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - VITE_FRONT_URL=https://agorium.castello.ovh
+      - API_PUBLIC_URL=https://agorium-backend.castello.ovh
+    volumes:
+      - ./backend:/app
+      - /home/gamma/agorium-prod-uploads:/app/public/uploads
+    command: node ./services/videoWorker.js
+    networks:
+      - proxy
 
   frontend:
     build:
@@ -47,13 +85,14 @@ services:
     depends_on:
       - backend
     env_file:
-      - .env      # Chargement du fichier d'environnement principal
-      - .env.prod # Chargement du fichier d'environnement spécifique à prod
+      - .env
+      - .env.prod
     networks:
       - proxy
 
 volumes:
   mysql-data-prod:
+  redis-data-prod:
 
 networks:
   proxy:

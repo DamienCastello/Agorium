@@ -23,7 +23,11 @@
 			"reinitialize_error": "Error sending email.",
 			"invalid_link": "Invalid or expired link.",
 			"reset_again": "You need to recreate a valid link in forgot password.",
-			"verify_email_success": "Email verified successfully."
+			"verify_email_success": "Email verified successfully.",
+			"duplicate_email": "Email already used.",
+			"duplicate_pseudo": "Pseudo already used.",
+			"duplicate_generic": "One of the fields informed cannot be used.",
+			"validation_error": "Email already used."
 		},
 		"mailer_verification": {
 			"subject": "Verifying your email address",
@@ -55,7 +59,8 @@
 		"reason_overall": "Article overall refusal reason must have a value.",
 		"not_authorized": "You are not authorized to validate this article.",
 		"error_validation": "Error validating article.",
-		"deleted": "deleted"
+		"deleted": "deleted",
+		"enqueue_failed": "Video processing could not start. Please try again."
 	},
 	"comment": {
 		"not_authenticated": "User not authenticated.",
@@ -104,5 +109,16 @@
 		"error_validation": "An error occurred while validating the tag.",
 		"error_delete": "An error occurred while deleting the tag."
 	},
-	"error": "Internal server error."
+	"validation": {
+		"new_article_subject": "New article in validation",
+		"new_article_html": "New article awaiting validation by an administrator",
+		"title_label": "Title",
+		"author_label": "Author",
+		"open_label": "Open article"
+	},
+	"error": "Internal server error.",
+	"unauthorized": "unauthorized",
+	"article_detail": {
+		"private_access_denied": "article_detail.private_access_denied"
+	}
 }

@@ -157,8 +157,6 @@ const confirmDelete = () => {
     isConfirmedDelete.value = true;
     isDialogVisible.value = false;
     deleteAccount();
-    authStore.logout();
-    router.push(`/articles`);
 };
 
 const changeType = (field) => {
@@ -251,10 +249,9 @@ onBeforeRouteUpdate((to, from, next) => {
 
 onMounted(() => {
     window.scrollTo(0, 0);
+    navbarStore.closeMenu();
     fetchUser(route.params.pseudo)
 });
-
-
 
 const handleClickOutsideNavbar = (event) => {
     if (navbarStore.isMenuOpen) {

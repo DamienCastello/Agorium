@@ -12,9 +12,12 @@ var achievementsRouter = require('./routes/achievements');
 var commentsRouter = require('./routes/comments');
 var reportsRouter = require('./routes/reports');
 var authRouter = require('./routes/auth');
+const shareRoutes = require('./routes/share');
 
 const { localAuthStrategy } = require('./routes/strategies/local');
 const { jwtAuthStrategy } = require('./routes/strategies/jwt');
+const multer = require('multer');
+
 
 var app = express();
 
@@ -32,7 +35,7 @@ app.use((req, res, next) => {
   }
 
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Range');
   res.header('Access-Control-Allow-Credentials', 'true');
 
   // Handle OPTIONS method
@@ -66,6 +69,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// HLS MIME types
+// Ensure correct content types for HLS playlists and fMP4 segments
+app.use((req, res, next) => {
+  if (req.path.endsWith('.m3u8')) {
+    res.type('application/vnd.apple.mpegurl');
+  } else if (req.path.endsWith('.m4s')) {
+    res.type('video/iso.segment');
+  }
+  // Helpful: advertise byte-range support (static does it, but explicit is fine)
+  res.setHeader('Accept-Ranges', 'bytes');
+  next();
+});
+
 if (process.env.NODE_ENV === "development") {
   app.use('/uploads', express.static('uploads'));
   app.use(express.static(path.join(__dirname, 'public')));
@@ -87,6 +103,17 @@ app.use('/api/v1/comments', commentsRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/tags', tagsRouter);
 app.use('/api/v1/achievements', achievementsRouter);
+app.use('/api/v1/share', shareRoutes);
+
+
+// Gestion des erreurs Multer
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ message: `Erreur de téléversement : ${err.message}` });
+  }
+
+  next(err);
+});
 
 app.post('/api/v1/set-language', (req, res) => {
   const { language } = req.body;

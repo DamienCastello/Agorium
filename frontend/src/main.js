@@ -47,6 +47,7 @@ i18n.global.locale.value = savedLanguage;
 const app = createApp(App);
 app.use(router);
 app.use(pinia);
+useAuthStore().initialize();
 app.use(ElementPlus);
 app.use(Notifications);
 app.use(i18n);

@@ -76,7 +76,49 @@ module.exports = (sequelize, DataTypes) => {
     validatedBy: {
       type: DataTypes.INTEGER,
       allowNull: true
-    }
+    },
+    isPrivate: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    privateLink: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
+    processingStatus: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      defaultValue: 'queued',
+      validate: {
+        isIn: [['queued', 'processing', 'ready', 'failed']],
+      },
+    },
+    processingProgress: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
+    originalVideo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    processingError: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    processingRetries: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    hlsPlaylist: { type: DataTypes.STRING, allowNull: true },
+    hlsDir: { type: DataTypes.STRING, allowNull: true }
   }, {
     sequelize,
     modelName: 'Article',
