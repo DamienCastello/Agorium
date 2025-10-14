@@ -108,6 +108,8 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
 
     REDIS_HOST=127.0.0.1
     REDIS_PORT=6379
+
+    PENDING_SIGNUP_TTL_SEC=60
     ```
 
     Create a `.env.preprod` file in the root folder with the following parameters:
@@ -140,6 +142,8 @@ Agorium is a platform dedicated to empowering free expression and sharing altern
     # Redis
     REDIS_HOST=redis
     REDIS_PORT=6379
+
+    PENDING_SIGNUP_TTL_SEC=60
     ```
 
     Create a `.env.prod` file in the root folder with the following parameters:

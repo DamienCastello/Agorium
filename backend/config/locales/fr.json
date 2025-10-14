@@ -12,7 +12,6 @@
 			"not_found": "Utilisateur introuvable.",
 			"error_label": "Erreur lors de la connexion:",
 			"error_field_password": "Mot de passe invalide.",
-			"invalid_link": "Lien invalide ou expiré.",
 			"password_updated": "Mot de passe mis à jour avec succès."
 		},
 		"signup": {
@@ -21,13 +20,15 @@
 			"error_email_format": "Format de l'email invalide.",
 			"reinitialize_email": "Email de réinitialisation envoyé.",
 			"reinitialize_error": "Erreur lors de l'envoi de l'email.",
-			"invalid_link": "Lien invalide ou expiré.",
+			"invalid_token": "Token invalide ou expiré.",
 			"reset_again": "Il est nécessaire de recréer un lien valide dans oubli de mot de passe.",
 			"verify_email_success": "Email vérifié avec succès.",
 			"duplicate_email": "Email déjà utilisé.",
 			"duplicate_pseudo": "Pseudo déjà utilisé.",
 			"duplicate_generic": "Un des champs renseignés ne peut être utilisé.",
-			"validation_error": "Field validation error."
+			"validation_error": "Field validation error.",
+			"error_password_strength": "Mot de passe trop faible: 8+ caractères, 1 lettre, 1 chiffre et 1 symbole.",
+			"error_email_domain_mx": "Le domaine de l'e-mail ne semble pas valide."
 		},
 		"mailer_verification": {
 			"subject": "Vérification de votre adresse email",

@@ -68,13 +68,12 @@ footer {
   text-align: center;
   padding: 16px;
 }
-/* Variables pour le thème Indigo */
+
 :root {
   --primary: #6610f2;
   --border-radius: 0.375rem;
 }
 
-/* Boutons */
 .pico button,
 .pico input[type="button"],
 .pico input[type="submit"] {
@@ -94,7 +93,7 @@ input[type="checkbox"].switch:checked {
 .pico button:hover,
 .pico input[type="button"]:hover,
 .pico input[type="submit"]:hover {
-  background-color: rgb(87, 64, 191); /* Une version plus foncée de #6610f2 */
+  background-color: rgb(87, 64, 191);
   border-color: rgb(69, 50, 175);
   color: white;
 }
@@ -122,13 +121,12 @@ input[type="checkbox"].switch:checked {
 .pico button:disabled,
 .pico input[type="button"]:disabled,
 .pico input[type="submit"]:disabled {
-  background-color: #9980f2; /* Une version plus claire de #6610f2 */
+  background-color: #9980f2;
   border-color: #9980f2;
   color: white;
   cursor: not-allowed;
 }
 
-/* Bordures des champs de formulaire au focus */
 .pico input:focus,
 .pico textarea:focus,
 .pico select:focus {
@@ -137,7 +135,6 @@ input[type="checkbox"].switch:checked {
   box-shadow: 0 0 4px rgb(64, 64, 191);
 }
 
-/* Liens */
 .pico a {
   color: rgb(64, 64, 191);
   text-decoration: none;
@@ -145,14 +142,13 @@ input[type="checkbox"].switch:checked {
 }
 
 .pico a:hover {
-  color: #520dc2; /* Couleur plus foncée pour le lien au survol */
+  color: #520dc2;
 }
 
 .pico a:active {
-  color: #3e0ca3; /* Couleur encore plus foncée pour le lien actif */
+  color: #3e0ca3;
 }
 
-/* Hover pour les sélecteurs et les boutons */
 .pico select:hover,
 .pico button:hover,
 .pico input[type="button"]:hover,
@@ -160,7 +156,6 @@ input[type="checkbox"].switch:checked {
   border-color: #520dc2;
 }
 
-/* Input avec la classe "switch" */
 .pico input.switch {
   background-color: rgb(64, 64, 191);
   border: none;
@@ -173,7 +168,6 @@ input[type="checkbox"].switch:checked {
   outline: none;
 }
 
-/* Limiter Pico à .pico */
 .pico {
   all: revert;
 }

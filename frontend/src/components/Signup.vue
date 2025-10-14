@@ -39,11 +39,14 @@
       <fieldset>
         <label for="password">{{ $t('auth.signup.field_password') }}</label>
         <div class="password-container">
-          <input id="password" :type="passwordType === 'visible' ? 'text' : 'password'" v-model="form.password"
+          <input id="password" :type="passwordType === 'visible' ? 'text' : 'password'" v-model="form.password" :class="{ 'error-border': isProd && form.password && !strongPw.test(form.password) }"
             required />
           <SlashedEyeIcon v-if="passwordType === 'visible'" class="password-icon" @click="changeType('password')" />
           <EyeIcon v-if="passwordType === 'invisible'" class="password-icon" @click="changeType('password')" />
         </div>
+          <p class="error-text" v-if="isProd && form.password && !strongPw.test(form.password)">
+            {{ $t('auth.signup.password_policy_hint') }}
+          </p>
       </fieldset>
       <fieldset>
         <label for="confirmPassword">{{ $t('auth.signup.field_password_confirm') }}</label>
@@ -56,7 +59,7 @@
           <EyeIcon v-if="confirmPasswordType === 'invisible'" class="password-icon"
             @click="changeType('confirmPassword')" />
         </div>
-        <p v-if="form.password !== form.confirmPassword && form.password && form.confirmPassword">{{ $t('auth.signup.password_mismatch') }}</p>
+        <p class="error-text" v-if="form.password !== form.confirmPassword && form.password && form.confirmPassword">{{ $t('auth.signup.password_mismatch') }}</p>
       </fieldset>
       
       <FadeSlideTransition>
@@ -139,6 +142,9 @@ watch(avatarPreviewUrl, (newUrl, oldUrl) => {
   }
 });
 
+const isProd = import.meta.env.PROD;
+const strongPw = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 const changeType = (field) => {
   if (field === "password") {
     passwordType.value = passwordType.value === "visible" ? "invisible" : "visible";
@@ -210,7 +216,7 @@ const handleSignup = async () => {
       formData.append("avatar", avatarFile.value);
     }
 
-    await axios.post(`${url.baseUrl}/api/v1/auth/signup?lang=${localStorage.getItem('lang')}`, formData, {
+    await axios.post(`${url.baseUrl}/api/v1/auth/signup?lang=${localStorage.getItem('lang') || 'fr'}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -341,6 +347,38 @@ onMounted(() => window.scrollTo(0, 0));
   max-width: 90%;
   margin-left: 10px;
   
+}
+
+.signup-container {
+  width: min(300px, 100%);
+}
+
+.signup-container *, 
+.signup-container *::before, 
+.signup-container *::after {
+  box-sizing: border-box;
+}
+
+.signup-container form,
+.signup-container fieldset,
+.password-container {
+  width: 100%;
+  min-width: 0;
+}
+
+.password-container input {
+  width: 100%;
+  min-width: 0;
+}
+
+.error-text {
+  display: block;
+  margin: 6px 0 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: red;
 }
 
 @media (max-width: 500px) {
