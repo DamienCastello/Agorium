@@ -38,7 +38,7 @@ const submit = async () => {
     loading.value = true
 
     try {
-        const response = await axios.post(`${url.baseUrl}/api/v1/auth/forgot-password?lang=${localStorage.getItem('lang')}`, { email: email.value })
+        const response = await axios.post(`${url.baseUrl}/api/v1/auth/forgot-password?lang=${localStorage.getItem('lang') || 'fr'}`, { email: email.value })
         notify({
             title: t('notification.title.login'),
             type: 'success',

@@ -469,7 +469,7 @@ const handleSubmit = () => {
   formData.append("userId", authStore.user.id);
   formData.append("tags", JSON.stringify(cleanedTags));
   axios
-    .post(`${url.baseUrl}/api/v1/articles?lang=${localStorage.getItem('lang')}`, formData, {
+    .post(`${url.baseUrl}/api/v1/articles?lang=${localStorage.getItem('lang') || 'fr'}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         "Authorization": `Bearer ${authStore.token}`

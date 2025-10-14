@@ -12,7 +12,6 @@
 			"not_found": "User not found.",
 			"error_label": "Error while connecting:",
 			"error_field_password": "Invalid password.",
-			"invalid_link": "Invalid or expired link.",
 			"password_updated": "Password updated successfully."
 		},
 		"signup": {
@@ -21,13 +20,15 @@
 			"error_email_format": "Invali email format.",
 			"reinitialize_email": "Reset email sent.",
 			"reinitialize_error": "Error sending email.",
-			"invalid_link": "Invalid or expired link.",
+			"invalid_token": "Invalid or expired token.",
 			"reset_again": "You need to recreate a valid link in forgot password.",
 			"verify_email_success": "Email verified successfully.",
 			"duplicate_email": "Email already used.",
 			"duplicate_pseudo": "Pseudo already used.",
 			"duplicate_generic": "One of the fields informed cannot be used.",
-			"validation_error": "Email already used."
+			"validation_error": "Email already used.",
+			"error_password_strength": "Password too weak: 8+ characters, 1 letter, 1 number and 1 symbol.",
+			"error_email_domain_mx": "The email domain does not appear to be valid."
 		},
 		"mailer_verification": {
 			"subject": "Verifying your email address",

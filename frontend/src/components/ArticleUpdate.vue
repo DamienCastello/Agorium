@@ -592,7 +592,7 @@ const handleSubmit = async () => {
     formData.append("tags", JSON.stringify(cleanedTags));
 
     axios
-        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}?lang=${localStorage.getItem('lang')}`, formData, {
+        .put(`${url.baseUrl}/api/v1/articles/${articleId.value}?lang=${localStorage.getItem('lang') || 'fr'}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 "Authorization": `Bearer ${authStore.token}`

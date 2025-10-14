@@ -80,6 +80,7 @@ const messages = {
                 update_title: "Update my informations",
                 update_button: "Update",
                 password_mismatch: "The passwords do not match.",
+                password_policy_hint: "8+ characters, at least 1 letter, 1 number and 1 symbol."
             }
         },
         notification: {
@@ -451,6 +452,7 @@ const messages = {
                 update_title: "Mise a jour des informations",
                 update_button: "Mettre à jour",
                 password_mismatch: "Les mots de passe ne correspondent pas.",
+                password_policy_hint: "8+ caractères, au moins 1 lettre, 1 chiffre et 1 symbole."
             }
         },
         notification: {

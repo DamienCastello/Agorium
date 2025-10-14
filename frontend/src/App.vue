@@ -1,8 +1,10 @@
 <template>
   <Layout>
     <template #header>
-      <Navbar :isAdmin="authStore.isAdmin()" :isAuthenticated="authStore.isAuthenticated()" @logout="authStore.logout"
-        class="pico" />
+    <Navbar
+      :isAdmin="!!authStore.isAdmin()"
+      :isAuthenticated="!!authStore.isAuthenticated()"
+    />
     </template>
     <template #main>
       <slot name="main">
@@ -10,7 +12,7 @@
       </slot>
     </template>
     <template #footer>
-      <Footer class="pico" />
+      <Footer />
     </template>
   </Layout>
 </template>

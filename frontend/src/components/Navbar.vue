@@ -110,7 +110,10 @@ import url from '@/utils/url';
 import axios from 'axios';
 import { useNotification } from "@kyvg/vue3-notification";
 
-defineProps(['isAuthenticated', 'isAdmin']);
+const { isAuthenticated, isAdmin } = defineProps({
+  isAuthenticated: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false },
+})
 
 const navbarStore = useNavbarStore();
 const authStore = useAuthStore();

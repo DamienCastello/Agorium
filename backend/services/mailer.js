@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const i18n = require('../config/i18n-config');
+const { safeLocale } = require('../utils/locale');
 
 
 const transporter = nodemailer.createTransport({
@@ -18,7 +19,8 @@ transporter.verify()
   .catch(err => console.error('[mailer] SMTP error', err));
 
 exports.sendVerificationEmail = async (to, link, lang) => {
-  const t = (...args) => i18n.__({ phrase: args[0], locale: lang || 'en' });
+  const locale = safeLocale(lang, 'fr');
+  const t = (key) => i18n.__({ phrase: key, locale: locale });
   const subject = t('auth.mailer_verification.subject');
   const html = t('auth.mailer_verification.html');
 
@@ -36,7 +38,8 @@ exports.sendVerificationEmail = async (to, link, lang) => {
 };
 
 exports.sendPasswordResetEmail = async (to, link, lang) => {
-  const t = (...args) => i18n.__({ phrase: args[0], locale: lang || 'en' });
+  const locale = safeLocale(lang, 'fr');
+  const t = (key) => i18n.__({ phrase: key, locale: locale });
   const subject = t('auth.mailer_reset.subject');
   const html = t('auth.mailer_reset.html');
 
@@ -60,7 +63,8 @@ exports.sendPasswordResetEmail = async (to, link, lang) => {
 * - Use HTML + plain text fallback if you like; here a simple HTML is fine.
 */
 exports.sendAdminsVideoAwaitingValidation = async (recipients, article, author, lang) => {
-  const t = (...args) => i18n.__({ phrase: args[0], locale: lang || 'en' });
+  const locale = safeLocale(lang, 'fr');
+  const t = (key) => i18n.__({ phrase: key, locale: locale });
   if (!recipients?.length) return;
 
   const subject = `Agorium - ${t('validation.new_article_subject')}`;
