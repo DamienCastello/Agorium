@@ -36,6 +36,9 @@ services:
       - NODE_ENV=development
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - VITE_FRONT_URL=http://localhost:5173/
+      - API_PUBLIC_URL=http://localhost:3000/
+      - PENDING_SIGNUP_TTL_SEC=60
     ports:
       - "3000:3000"
     volumes:

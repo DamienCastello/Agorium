@@ -1,6 +1,8 @@
 const i18n = require('i18n');
 const path = require('path');
 
+const isDev = process.env.NODE_ENV === 'development';
+
 i18n.configure({
   locales: ['en', 'fr'], // Définissez les langues supportées
   directory: path.join(__dirname, 'locales'), // Dossier contenant les fichiers de traduction
@@ -11,8 +13,9 @@ i18n.configure({
     '__': 't', // On peut utiliser `req.t('key')` au lieu de `req.__('key')`
   },
   register: global, // Permet d'utiliser `__()` globalement
-  autoReload: true, // Recharge les fichiers de traduction si modifiés
-  syncFiles: true, // Crée automatiquement les fichiers JSON pour les traductions manquantes
+  autoReload: isDev,       // OK en dev
+  syncFiles: isDev,        // en prod => pas d’écriture automatique
+  updateFiles: isDev, // en prod => n’écrit pas de clés manquantes
   objectNotation: true, // Support pour les clés imbriquées (ex. auth.login.success)
 });
 

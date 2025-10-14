@@ -3,6 +3,7 @@ var path = require('path');
 const i18n = require('./config/i18n-config');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cron = require('node-cron');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -17,6 +18,19 @@ const shareRoutes = require('./routes/share');
 const { localAuthStrategy } = require('./routes/strategies/local');
 const { jwtAuthStrategy } = require('./routes/strategies/jwt');
 const multer = require('multer');
+
+const { cleanPendingAvatars } = require('./services/cleanupPendingAvatars');
+
+cron.schedule('0 3 * * *', async () => {
+  try {
+    await cleanPendingAvatars();
+    console.log('[cron] pending avatars cleaned');
+  } catch (e) {
+    console.error('[cron] cleanup error', e);
+  }
+});
+
+setTimeout(() => cleanPendingAvatars().catch(()=>{}), 10 * 60 * 1000);
 
 
 var app = express();

@@ -1,5 +1,5 @@
 <template>
-  <div class="pico">
+  <div class="pico login-container">
     <div @mousedown="handleClickOutsideNavbar">
       <h1>{{ $t('auth.login.title') }}</h1>
       <form @submit.prevent="handleLogin">
@@ -19,6 +19,12 @@
 
         <button :disabled="!password || navbarStore.isMenuOpen" type="submit">{{ $t('auth.login.title') }}</button>
       </form>
+      <!-- UNCOMMENT ONLY TO CHECK DELETION OF AVATAR PENDING WHEN USER CREATION EXPIRED  -->
+       <!--
+      <button v-if="!isProd" @click="cleanup">
+        ⚙️ Cleanup pending avatars (dev & preprod)
+      </button> 
+      -->
     </div>
     <notifications position="bottom right" />
   </div>
@@ -40,6 +46,17 @@ const router = useRouter();
 const navbarStore = useNavbarStore();
 const { notify } = useNotification();
 const { t } = useI18n();
+
+/*
+import url from '@/utils/url';
+
+const isProd = import.meta.env.PROD;
+
+async function cleanup() {
+  await fetch(`${url.baseUrl}/api/v1/auth/cleanup-avatars`, { method: 'POST' });
+  alert('Cleanup triggered');
+}
+*/
 
 const handleLogin = async () => {
   try {
@@ -76,3 +93,9 @@ const handleClickOutsideNavbar = (event) => {
   }
 };
 </script>
+
+<style scoped>
+.login-container {
+  width: min(300px, 100%);
+}
+</style>

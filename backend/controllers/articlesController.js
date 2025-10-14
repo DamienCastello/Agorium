@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { safeUnlink } = require('../utils/safeUnlink');
 const { notifyAdminValidation } = require('../utils/notifyAdminValidation');
+const { safeLocale } = require('../utils/locale');
 const { sequelize, Article, User, Like, Tag, Comment } = require('../models');
 
 const { videoQueue } = require('../services/videoQueue');
@@ -395,7 +396,7 @@ module.exports = {
   },
   create: async function (req, res, next) {
     const { title, description, urlYoutube, tags, isPrivate } = req.body;
-    const { lang } = req.query;
+    const lang = safeLocale(req.query.lang, 'en');
 
     if (!title || !description) {
       return res.status(400).json({ message: req.t('article.fields_required') });
@@ -729,7 +730,8 @@ module.exports = {
   update: async function (req, res, next) {
     try {
       const { title, description, urlYoutube, isPrivate, tags: rawTags } = req.body;
-      const { lang } = req.query;
+      const lang = safeLocale(req.query.lang, 'en');
+
 
       // ——— Basic validations ———
       if (!title || !description) return res.status(400).json({ message: req.t('article.fields_required') });
