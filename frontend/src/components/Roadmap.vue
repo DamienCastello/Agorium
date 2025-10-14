@@ -38,6 +38,7 @@ const { t } = useI18n()
 onMounted(() => window.scrollTo(0, 0))
 
 const releasesDefs = ref([
+  { version: 'v1.6.0', items: ['roadmap.releases.v160']},
   { version: 'v1.5.0', items: [
     'roadmap.releases.v150.l1',
     'roadmap.releases.v150.l2',
