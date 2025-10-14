@@ -28,7 +28,8 @@
 			"duplicate_generic": "One of the fields informed cannot be used.",
 			"validation_error": "Email already used.",
 			"error_password_strength": "Password too weak: 8+ characters, 1 letter, 1 number and 1 symbol.",
-			"error_email_domain_mx": "The email domain does not appear to be valid."
+			"error_email_domain_mx": "The email domain does not appear to be valid.",
+			"verify_email_sent": "The account verification email has been sent."
 		},
 		"mailer_verification": {
 			"subject": "Verifying your email address",

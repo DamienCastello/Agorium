@@ -745,6 +745,30 @@ span {
     background: none;
     max-width: none !important;
   }
+
+  .tags-badges {
+    margin-bottom: 5px;
+    gap: 5px;
+  }
+
+  .badge {
+    padding: 4px 6px;
+    font-size: 10px !important;
+    margin: 3px 3px;
+  }
+}
+
+@media (max-width: 500px) {
+  .tags-badges {
+    margin-bottom: 2px;
+    gap: 2px;
+  }
+
+  .badge {
+    padding: 2px 3px;
+    font-size: 8px !important;
+    margin: 2px 2px;
+  }
 }
 
 </style>
