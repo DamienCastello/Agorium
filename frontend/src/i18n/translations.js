@@ -312,30 +312,31 @@ const messages = {
                 l4: "Performance: cache, CDN"
             },
             releases: {
+                v160: "Added a cron to clean avatars from unverified and expired accounts",
                 v150: {
-                    l1: "Add remove article (creator and admin) and tag (admin)",
-                    l2: "Add private articles",
-                    l3: "Add modal progress bar of file upload and processing",
+                    l1: "Added deletion of an article (creator and admin) and tag (admin)",
+                    l2: "Added private articles",
+                    l3: "Added modal progress bar of file upload and processing",
                     l4: "Improve file process: queue job list, worker and video transcode (mp4 & hls)",
-                    l5: "Add notify admins by email on new validation awaiting",
-                    l6: "Add icon and banner site"
+                    l5: "Added notify admins by email on new validation awaiting",
+                    l6: "Added icon and banner site"
                 },
-                v141: "Add remove files before delete user",
-                v140: "Add auth actions (verify, forgot, reset & delete)",
+                v141: "Added deletion of files before delete user",
+                v140: "Added auth actions (verify, forgot, reset & delete)",
                 v132: "Fix responsive",
                 v131: {
-                    l1: "Add Terms of Service",
-                    l2: "Add About us page"
+                    l1: "Added Terms of Service",
+                    l2: "Added About us page"
                 },
                 v130: {
-                    l1: "Add upload video",
+                    l1: "Added upload video feature",
                     l2: "Analyze and scan uploads"
                 },
                 v121: "Fix config",
                 v120: {
-                    l1: "Add update article (from article view)",
+                    l1: "Added update of article (from article view)",
                     l2: "Isolate the upload folder and make it persistent",
-                    l3: "Add Roadmap"
+                    l3: "Added Roadmap"
                 }
             }
         },
@@ -684,6 +685,7 @@ const messages = {
                 l4: "Performances: cache, CDN"
             },
             releases: {
+                v160: "Ajout d'un cron pour néttoyer les avatars des comptes non vérifiés er expirés",
                 v150: {
                     l1: "Ajout de la suppression d'articles (créateur et admin) et de tags (admin)",
                     l2: "Ajout d'articles privés",
@@ -700,7 +702,7 @@ const messages = {
                     l2: "Ajout d'une page À propos"
                 },
                 v130: {
-                    l1: "Ajout des upload vidéos",
+                    l1: "Ajout de la fonctionnalité des upload vidéos",
                     l2: "Analyse et scan des uploads"
                 },
                 v121: "Correctif de la config",
