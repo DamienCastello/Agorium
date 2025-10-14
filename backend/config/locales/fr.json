@@ -28,7 +28,8 @@
 			"duplicate_generic": "Un des champs renseignés ne peut être utilisé.",
 			"validation_error": "Field validation error.",
 			"error_password_strength": "Mot de passe trop faible: 8+ caractères, 1 lettre, 1 chiffre et 1 symbole.",
-			"error_email_domain_mx": "Le domaine de l'e-mail ne semble pas valide."
+			"error_email_domain_mx": "Le domaine de l'e-mail ne semble pas valide.",
+			"verify_email_sent": "L'email de vérification de compte a été envoyé."
 		},
 		"mailer_verification": {
 			"subject": "Vérification de votre adresse email",
